@@ -10,6 +10,8 @@ file(GLOB_RECURSE CPP_HEADERS ${MAIN_SOURCE_DIR}/*.hpp)
 file(GLOB_RECURSE CPP_SOURCES ${MAIN_SOURCE_DIR}/*.cpp)
 
 if (NOT EMSCRIPTEN)
+    set(CMAKE_CXX_FLAGS_RELEASE "-O0")
+
     if (WIN32)
         message("--Detected Windows!")
         add_compile_definitions(_USE_MATH_DEFINES)
@@ -26,12 +28,12 @@ endif ()
 if (EMSCRIPTEN)
     message("--Detected Emscripten!")
 
-    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -std=c++17 -fexceptions")
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fexceptions")
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
 
     # set emscripten to .js environment creation (instead of .html or .wasm)
-    set(CMAKE_EXECUTABLE_SUFFIX ".js")
+    set(CMAKE_EXECUTABLE_SUFFIX ".html")
 
     add_subdirectory(${THIRD_PARTY_DIR}/glm)
 
@@ -47,10 +49,9 @@ if (EMSCRIPTEN)
     set_target_properties(
             karafuto_core PROPERTIES LINK_FLAGS
             "--bind \
-            -O3 \
+            -O0 \
             -s ENVIRONMENT=web \
             -s ALLOW_MEMORY_GROWTH=1 \
-            -s MODULARIZE=1 \
             -s 'EXPORTED_RUNTIME_METHODS=[\"getValue\"]'"
     )
     target_link_libraries(karafuto_core glm)

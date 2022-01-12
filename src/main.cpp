@@ -54,7 +54,7 @@ EMSCRIPTEN_BINDINGS(karafuto) {
             .function("emscripten_get_meta_tiles", &kcore::map_core::emscripten_get_meta_tiles);
 }
 
-#else
+#endif
 
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
@@ -62,38 +62,65 @@ EMSCRIPTEN_BINDINGS(karafuto) {
 #include <iostream>
 #include <chrono>
 
-int main() {
-    const uint16_t viewportWidth{ 3000 };
-    const uint16_t viewportHeight{ 1800 };
+struct TileDescription {
+    std::string quadcode;
+    glm::vec3 tileCode;
+    glm::vec2 center;
+    float sideLength;
+    uint32_t type;
+    uint32_t visibility;
+};
 
-    const float aspectRatio{ viewportWidth / viewportHeight };
+int main() {
+    const uint16_t viewportWidth{3000};
+    const uint16_t viewportHeight{1800};
+
+    const float aspectRatio{viewportWidth / viewportHeight};
 
     // create camera that reproduce equivalent point of view and matrix
 
     glm::mat4 cameraProjectionMatrix = glm::perspective(
-        glm::radians(60.0f), aspectRatio,
-        100.0f, 2500000.0f
+            glm::radians(60.0f), aspectRatio,
+            100.0f, 2500000.0f
     );
 
-    glm::vec3 cameraOpenGlSpacePosition{ 1000.0f, 10000.0f, 10000.0f };
-    glm::vec3 cameraOpenGlSpaceTarget{ 0.0f, 0.0f, 0.0f };
-    glm::vec3 cameraOpenGlSpaceUp{ 0.0f, 1.0f, 0.0f };
+    glm::vec3 cameraOpenGlSpacePosition{1000.0f, 10000.0f, 10000.0f};
+    glm::vec3 cameraOpenGlSpaceTarget{0.0f, 0.0f, 0.0f};
+    glm::vec3 cameraOpenGlSpaceUp{0.0f, 1.0f, 0.0f};
 
     glm::mat4 cameraViewMatrix = glm::lookAt(
-        cameraOpenGlSpacePosition,
-        cameraOpenGlSpaceTarget,
-        cameraOpenGlSpaceUp
+            cameraOpenGlSpacePosition,
+            cameraOpenGlSpaceTarget,
+            cameraOpenGlSpaceUp
     );
-
-    // 46.9181f, 142.7189f is latitude and longitude of 
-    // the surroundings of the city of Yuzhno-Sakhalinsk 
 
     const uint16_t iteration = 1000;
 
-    kcore::map_core core{ 46.9181f, 142.7189f };
+    std::vector<TileDescription> descriptions{};
+
+    // 46.9181f, 142.7189f is latitude and longitude of
+    // the surroundings of the city of Yuzhno-Sakhalinsk
+
+    kcore::map_core core{46.9181f, 142.7189f};
     auto start = std::chrono::system_clock::now();
-    for (uint16_t i = 0; i < iteration; i++)
+    for (uint16_t i = 0; i < iteration; i++) {
+        descriptions.clear();
+
         core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
+
+        auto tiles = core.get_tiles();
+        for (const auto &item: tiles) {
+            TileDescription description = {
+                    .quadcode = item->get_quadcode(),
+                    .tileCode = {item->get_tilecode().x, item->get_tilecode().y, item->get_tilecode().z},
+                    .center = {item->get_center().x, item->get_center().y},
+                    .sideLength = item->get_side_length(),
+                    .type = item->get_type(),
+                    .visibility = item->get_visibility()
+            };
+            descriptions.push_back(description);
+        }
+    }
     auto stop = std::chrono::system_clock::now();
 
     auto elapsed = stop - start;
@@ -101,5 +128,3 @@ int main() {
 
     return 0;
 }
-
-#endif
