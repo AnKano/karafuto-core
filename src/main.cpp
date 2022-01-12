@@ -88,14 +88,16 @@ int main() {
     // 46.9181f, 142.7189f is latitude and longitude of 
     // the surroundings of the city of Yuzhno-Sakhalinsk 
 
+    const uint16_t iteration = 1000;
+
     kcore::map_core core{ 46.9181f, 142.7189f };
     auto start = std::chrono::system_clock::now();
-    for (uint16_t i = 0; i < 1000; i++)
+    for (uint16_t i = 0; i < iteration; i++)
         core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
     auto stop = std::chrono::system_clock::now();
 
-    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
-    std::cout << std::chrono::duration<double>(elapsed).count() / 1000 << " seconds" << std::endl;
+    auto elapsed = stop - start;
+    std::cout << (elapsed / std::chrono::microseconds(1)) / iteration << " microseconds per iteration" << std::endl;
 
     return 0;
 }
