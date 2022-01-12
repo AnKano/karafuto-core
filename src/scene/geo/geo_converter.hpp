@@ -7,6 +7,10 @@
 
 #include "glm/glm.hpp"
 
+#ifdef WIN32
+    #include <cmath>
+#endif
+
 #include <string>
 #include <iostream>
 

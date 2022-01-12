@@ -47,6 +47,12 @@ namespace kcore {
         return m_world->get_tiles();
     }
 
+    const std::vector<std::shared_ptr<data_tile>>& map_core::get_height_tiles() {
+        return m_world->get_height_tiles();
+    }
+
+#ifdef __EMSCRIPTEN__
+
     const std::vector<data_tile> &map_core::emscripten_get_tiles() {
         m_tiles.clear();
 
@@ -55,11 +61,6 @@ namespace kcore {
 
         return std::move(m_tiles);
     }
-
-    const std::vector<std::shared_ptr<data_tile>> &map_core::get_height_tiles() {
-        return m_world->get_height_tiles();
-    }
-
     const std::vector<data_tile> &map_core::emscripten_get_meta_tiles() {
         m_meta_tiles.clear();
 
@@ -68,4 +69,5 @@ namespace kcore {
 
         return std::move(m_meta_tiles);
     }
+#endif
 }

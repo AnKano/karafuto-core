@@ -1,3 +1,5 @@
 cmake-*
 vscode
 .idea
+.vs
+out

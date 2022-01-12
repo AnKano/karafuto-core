@@ -9,12 +9,17 @@ set(THIRD_PARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party")
 file(GLOB_RECURSE CPP_HEADERS ${MAIN_SOURCE_DIR}/*.hpp)
 file(GLOB_RECURSE CPP_SOURCES ${MAIN_SOURCE_DIR}/*.cpp)
 
-if (UNIX AND NOT EMSCRIPTEN)
-    message("--Detected UNIX!")
+if (NOT EMSCRIPTEN)
+    if (WIN32)
+        message("--Detected Windows!")
+        add_compile_definitions(_USE_MATH_DEFINES)
+    else ()
+        message("--Detected UNIX!")
+    endif()
 
     add_subdirectory(${THIRD_PARTY_DIR}/glm)
 
-    add_library(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
+    add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
     target_link_libraries(karafuto_core glm)
 endif ()
 

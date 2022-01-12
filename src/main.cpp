@@ -59,9 +59,45 @@ EMSCRIPTEN_BINDINGS(karafuto) {
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
 
+#include <iostream>
+#include <chrono>
+
 int main() {
-    glm::vec3 vector{5.0f};
-    std::cout << glm::to_string(vector) << std::endl;
+    const uint16_t viewportWidth{ 3000 };
+    const uint16_t viewportHeight{ 1800 };
+
+    const float aspectRatio{ viewportWidth / viewportHeight };
+
+    // create camera that reproduce equivalent point of view and matrix
+
+    glm::mat4 cameraProjectionMatrix = glm::perspective(
+        glm::radians(60.0f), aspectRatio,
+        100.0f, 2500000.0f
+    );
+
+    glm::vec3 cameraOpenGlSpacePosition{ 1000.0f, 10000.0f, 10000.0f };
+    glm::vec3 cameraOpenGlSpaceTarget{ 0.0f, 0.0f, 0.0f };
+    glm::vec3 cameraOpenGlSpaceUp{ 0.0f, 1.0f, 0.0f };
+
+    glm::mat4 cameraViewMatrix = glm::lookAt(
+        cameraOpenGlSpacePosition,
+        cameraOpenGlSpaceTarget,
+        cameraOpenGlSpaceUp
+    );
+
+    // 46.9181f, 142.7189f is latitude and longitude of 
+    // the surroundings of the city of Yuzhno-Sakhalinsk 
+
+    kcore::map_core core{ 46.9181f, 142.7189f };
+    auto start = std::chrono::system_clock::now();
+    for (uint16_t i = 0; i < 1000; i++)
+        core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
+    auto stop = std::chrono::system_clock::now();
+
+    auto elapsed = std::chrono::duration_cast<std::chrono::seconds>(stop - start);
+    std::cout << std::chrono::duration<double>(elapsed).count() / 1000 << " seconds" << std::endl;
+
+    return 0;
 }
 
 #endif
