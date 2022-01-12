@@ -11,12 +11,13 @@
 
 using namespace emscripten;
 
-EMSCRIPTEN_BINDINGS(fibonacci) {
+EMSCRIPTEN_BINDINGS(karafuto) {
     register_vector<kcore::data_tile>("kcore_tile_vector");
     register_vector<glm::vec3>("glm_vec3_vector");
     register_vector<glm::vec2>("glm_vec2_vector");
     register_vector<uint32_t>("unsigned_int_vector");
     register_vector<float>("float_vector");
+    register_vector<std::string>("string_vector");
 
     value_object<glm::vec2>("vec2")
             .field("x", &glm::vec2::x)
@@ -46,14 +47,14 @@ EMSCRIPTEN_BINDINGS(fibonacci) {
             .property("side_length", &kcore::data_tile::get_side_length);
 
     class_<kcore::map_core>("map_core")
-            .constructor<>()
-            .constructor<intptr_t, intptr_t, intptr_t>()
+            .constructor<float, float>()
             .function("update", select_overload<void(intptr_t, intptr_t, intptr_t)>(&kcore::map_core::update))
             .function("get_tiles", &kcore::map_core::get_tiles)
-            .function("emscripten_get_tiles", &kcore::map_core::emscripten_get_tiles);
+            .function("emscripten_get_tiles", &kcore::map_core::emscripten_get_tiles)
+            .function("emscripten_get_meta_tiles", &kcore::map_core::emscripten_get_meta_tiles);
 }
 
-#endif
+#else
 
 #include "glm/glm.hpp"
 #include "glm/gtx/string_cast.hpp"
@@ -62,3 +63,5 @@ int main() {
     glm::vec3 vector{5.0f};
     std::cout << glm::to_string(vector) << std::endl;
 }
+
+#endif

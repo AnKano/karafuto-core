@@ -2,29 +2,29 @@
 // Created by Ash on 2/6/2021.
 //
 
-#include "data_layer.hpp"
+#include "data_world.hpp"
 
 #include <algorithm>
 
 namespace kcore {
-    glm::vec2 data_layer::lat_lon_to_world_point(const glm::vec2 &lat_lon) {
+    glm::vec2 data_world::lat_lon_to_world_point(const glm::vec2 &lat_lon) {
         auto projected_point = geo_converter::lat_lon_to_point(lat_lon);
-        return projected_point - origin_lat_lon;
+        return projected_point - m_origin_lat_lon;
     }
 
-    glm::vec2 data_layer::point_to_world_lat_lon(const glm::vec2 &point) {
-        auto projected_point = point + origin_lat_lon;
+    glm::vec2 data_world::point_to_world_lat_lon(const glm::vec2 &point) {
+        auto projected_point = point + m_origin_lat_lon;
         return geo_converter::point_to_lat_lon(projected_point);
     }
 
-    data_layer::data_layer(const glm::vec2 &origin_lat_lon, const glm::vec2 &origin_point) :
-            origin_lat_lon(origin_point) {}
+    data_world::data_world(const glm::vec2 &origin_lat_lon, const glm::vec2 &origin_point) :
+            m_origin_lat_lon(origin_point) {}
 
-    void data_layer::update_frustum(const glm::mat4 &projection_matrix, const glm::mat4 &view_matrix) {
-        filter.update_frustum(projection_matrix, view_matrix);
+    void data_world::update_frustum(const glm::mat4 &projection_matrix, const glm::mat4 &view_matrix) {
+        m_culling.update_frustum(projection_matrix, view_matrix);
     }
 
-    std::shared_ptr<data_tile> data_layer::create_tile(const std::string &quadcode, const data_tile *parent) {
+    std::shared_ptr<data_tile> data_world::create_tile(const std::string &quadcode, const data_tile *parent) {
         std::shared_ptr<data_tile> tile = std::make_shared<data_tile>(quadcode);
         tile->set_parent(parent);
 
@@ -64,19 +64,19 @@ namespace kcore {
         return tile;
     }
 
-    void data_layer::calculate_tiles() {
+    void data_world::calculate_tiles() {
         // clear up all tiles
-        tiles.clear();
+        m_tiles.clear();
 
         // create root nodes
-        tiles.emplace_back(create_tile("0", nullptr));
-        tiles.emplace_back(create_tile("1", nullptr));
-        tiles.emplace_back(create_tile("2", nullptr));
-        tiles.emplace_back(create_tile("3", nullptr));
+        m_tiles.emplace_back(create_tile("0", nullptr));
+        m_tiles.emplace_back(create_tile("1", nullptr));
+        m_tiles.emplace_back(create_tile("2", nullptr));
+        m_tiles.emplace_back(create_tile("3", nullptr));
 
         std::size_t count = 0;
-        while (count != tiles.size()) {
-            auto *tile = tiles[count].get();
+        while (count != m_tiles.size()) {
+            auto *tile = m_tiles[count].get();
             auto quadcode = tile->get_quadcode();
 
             if (screen_space_error(*tile, 3.0)) {
@@ -89,10 +89,10 @@ namespace kcore {
                 auto tile_sw = create_tile(quadcode + "2", tile);
                 auto tile_se = create_tile(quadcode + "3", tile);
 
-                tiles.emplace_back(tile_nw);
-                tiles.emplace_back(tile_ne);
-                tiles.emplace_back(tile_sw);
-                tiles.emplace_back(tile_se);
+                m_tiles.emplace_back(tile_nw);
+                m_tiles.emplace_back(tile_ne);
+                m_tiles.emplace_back(tile_sw);
+                m_tiles.emplace_back(tile_se);
 
                 tile->childs.quad[north_west] = tile_nw;
                 tile->childs.quad[north_east] = tile_ne;
@@ -116,20 +116,20 @@ namespace kcore {
         }
     }
 
-    void data_layer::calculate_additional_tiles() {
-        height_tiles.clear();
+    void data_world::calculate_additional_tiles() {
+        m_meta_tiles.clear();
 
         auto depth = calculate_maximal_depth();
 
         // create height nodes
-        height_tiles.emplace_back(create_tile("0", nullptr));
-        height_tiles.emplace_back(create_tile("1", nullptr));
-        height_tiles.emplace_back(create_tile("2", nullptr));
-        height_tiles.emplace_back(create_tile("3", nullptr));
+        m_meta_tiles.emplace_back(create_tile("0", nullptr));
+        m_meta_tiles.emplace_back(create_tile("1", nullptr));
+        m_meta_tiles.emplace_back(create_tile("2", nullptr));
+        m_meta_tiles.emplace_back(create_tile("3", nullptr));
 
         std::size_t count = 0;
-        while (count != height_tiles.size()) {
-            auto *tile = height_tiles[count].get();
+        while (count != m_meta_tiles.size()) {
+            auto *tile = m_meta_tiles[count].get();
             auto quadcode = tile->get_quadcode();
 
             if (targeted_screen_space_error(*tile, depth)) {
@@ -142,10 +142,10 @@ namespace kcore {
                 auto tile_sw = create_tile(quadcode + "2", tile);
                 auto tile_se = create_tile(quadcode + "3", tile);
 
-                height_tiles.emplace_back(tile_nw);
-                height_tiles.emplace_back(tile_ne);
-                height_tiles.emplace_back(tile_sw);
-                height_tiles.emplace_back(tile_se);
+                m_meta_tiles.emplace_back(tile_nw);
+                m_meta_tiles.emplace_back(tile_ne);
+                m_meta_tiles.emplace_back(tile_sw);
+                m_meta_tiles.emplace_back(tile_se);
 
                 tile->childs.quad[north_west] = tile_nw;
                 tile->childs.quad[north_east] = tile_ne;
@@ -169,15 +169,15 @@ namespace kcore {
         }
     }
 
-    uint8_t data_layer::calculate_maximal_depth() {
+    uint8_t data_world::calculate_maximal_depth() {
         uint8_t depth{0};
-        for (const auto &item: tiles)
+        for (const auto &item: m_tiles)
             if (item->get_tilecode().z > depth)
                 depth = item->get_tilecode().z;
         return depth;
     }
 
-    bool data_layer::targeted_screen_space_error(data_tile &tile, const uint8_t &depth) {
+    bool data_world::targeted_screen_space_error(data_tile &tile, const uint8_t &depth) {
         const auto &quadcode = tile.get_quadcode();
 
         if (!check_tile_in_frustum(tile)) {
@@ -189,7 +189,7 @@ namespace kcore {
         return (depth - 3) >= tile.get_tilecode().z;
     }
 
-    bool data_layer::screen_space_error(data_tile &tile, float quality = 3.0f) {
+    bool data_world::screen_space_error(data_tile &tile, float quality = 3.0f) {
         const auto &quadcode = tile.get_quadcode();
 
         if (!check_tile_in_frustum(tile)) {
@@ -199,13 +199,13 @@ namespace kcore {
         }
 
         auto center = tile.get_center();
-        auto distance = glm::length(glm::vec3(center.x, 0, center.y) - origin_position);
+        auto distance = glm::length(glm::vec3(center.x, 0, center.y) - m_origin_position);
         auto error = quality * tile.get_side_length() / distance;
 
         return error > 1.0f;
     }
 
-    bool data_layer::check_tile_in_frustum(const data_tile &tile) {
+    bool data_world::check_tile_in_frustum(const data_tile &tile) {
         auto pos = tile.get_center();
         auto scale = tile.get_side_length();
 
@@ -213,28 +213,19 @@ namespace kcore {
         float min_z = (float) pos.y - scale, max_z = (float) pos.y + scale;
         float min_y = 0.0f, max_y = 0.0f;
 
-        auto result = filter.test_box(min_x, min_y, min_z, max_x, max_y, max_z);
+        auto result = m_culling.test_box(min_x, min_y, min_z, max_x, max_y, max_z);
         return result;
     }
 
-    void data_layer::set_position(const glm::vec3 &position) {
-        origin_position = position;
+    void data_world::set_position(const glm::vec3 &position) {
+        m_origin_position = position;
     }
 
-    void data_layer::store_height_borders(const std::string &quadcode,
-                                          const std::vector<unsigned short> &north_border,
-                                          const std::vector<unsigned short> &south_border,
-                                          const std::vector<unsigned short> &west_border,
-                                          const std::vector<unsigned short> &east_border) {
-        load_state[quadcode] = true;
-        border_heights[quadcode] = {true, north_border, south_border, west_border, east_border};
+    const std::vector<std::shared_ptr<data_tile>> &data_world::get_tiles() {
+        return m_tiles;
     }
 
-    const std::vector<std::shared_ptr<data_tile>> &data_layer::get_tiles() {
-        return tiles;
-    }
-
-    const std::vector<std::shared_ptr<data_tile>> &data_layer::get_height_tiles() {
-        return height_tiles;
+    const std::vector<std::shared_ptr<data_tile>> &data_world::get_height_tiles() {
+        return m_meta_tiles;
     }
 }
