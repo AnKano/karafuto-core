@@ -7,8 +7,6 @@
 
 namespace kcore {
     map_core::map_core(float latitude, float longitude) {
-//        glm::vec2 origin_lat_lon{46.9181, 142.7189};
-
         glm::vec2 origin_lat_lon{latitude, longitude};
         glm::vec2 origin_point{kcore::geo_converter::lat_lon_to_point(origin_lat_lon)};
 
@@ -24,10 +22,7 @@ namespace kcore {
         this->m_camera_projection_matrix = glm::make_mat4x4(camera_projection_matrix_raw);
         this->m_camera_position = glm::make_vec3(camera_position_data);
 
-        m_world->update_frustum(this->m_camera_projection_matrix, this->m_camera_view_matrix);
-        m_world->set_position(this->m_camera_position);
-        m_world->calculate_tiles();
-        m_world->calculate_additional_tiles();
+        general_update();
     }
 
     void map_core::update(const glm::mat4 &camera_projection_matrix,
@@ -37,21 +32,33 @@ namespace kcore {
         this->m_camera_projection_matrix = camera_projection_matrix;
         this->m_camera_position = camera_position;
 
+        general_update();
+    }
+
+    void map_core::general_update() {
         m_world->update_frustum(this->m_camera_projection_matrix, this->m_camera_view_matrix);
         m_world->set_position(this->m_camera_position);
         m_world->calculate_tiles();
-        m_world->calculate_additional_tiles();
+        m_world->calculate_meta_tiles();
     }
 
-    const std::vector<std::shared_ptr<data_tile>> &map_core::get_tiles() {
+    const std::list<data_tile> &map_core::get_tiles() {
         return m_world->get_tiles();
     }
 
-    const std::vector<std::shared_ptr<data_tile>>& map_core::get_height_tiles() {
-        return m_world->get_height_tiles();
+    const std::list<data_tile>& map_core::get_meta_tiles() {
+        return m_world->get_meta_tiles();
     }
 
 #ifdef __EMSCRIPTEN__
+    void map_core::update(intptr_t camera_projection_matrix_addr,
+        intptr_t camera_view_matrix_addr,
+        intptr_t camera_position_addr) {
+		return update(reinterpret_cast<float*>(camera_projection_matrix_addr),
+            reinterpret_cast<float*>(camera_view_matrix_addr),
+            reinterpret_cast<float*>(camera_position_addr));
+    }
+
 
     const std::vector<data_tile> &map_core::emscripten_get_tiles() {
         m_tiles.clear();

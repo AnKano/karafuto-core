@@ -3,7 +3,7 @@
 //
 
 #include "scene/map_core.hpp"
-#include "scene/utils/grid_mesh.hpp"
+#include "scene/misc/grid_mesh.hpp"
 
 #ifdef __EMSCRIPTEN__
 
@@ -62,6 +62,10 @@ EMSCRIPTEN_BINDINGS(karafuto) {
 #include <iostream>
 #include <chrono>
 
+#define GLFW_INCLUDE_NONE
+#include <glad/glad.h>
+#include <GLFW/glfw3.h>
+
 struct TileDescription {
     std::string quadcode;
     glm::vec3 tileCode;
@@ -72,6 +76,18 @@ struct TileDescription {
 };
 
 int main() {
+    if (!glfwInit())
+        std::cout << "Not initialized!" << std::endl;
+
+    GLFWwindow* window = glfwCreateWindow(640, 480, "My Title", NULL, NULL);
+    if (!window)
+    {
+        // Window or OpenGL context creation failed
+    }
+
+    glfwTerminate();
+    std::cout << "Terminated!" << std::endl;
+
     const uint16_t viewportWidth{3000};
     const uint16_t viewportHeight{1800};
 
@@ -110,14 +126,14 @@ int main() {
 
         auto tiles = core.get_tiles();
         for (const auto &item: tiles) {
-            TileDescription description = {
-                    .quadcode = item->get_quadcode(),
-                    .tileCode = {item->get_tilecode().x, item->get_tilecode().y, item->get_tilecode().z},
-                    .center = {item->get_center().x, item->get_center().y},
-                    .sideLength = item->get_side_length(),
-                    .type = item->get_type(),
-                    .visibility = item->get_visibility()
-            };
+            TileDescription description;
+            description.quadcode = item.get_quadcode();
+            description.tileCode = { item.get_tilecode().x, item.get_tilecode().y, item.get_tilecode().z };
+            description.center = { item.get_center().x, item.get_center().y };
+            description.sideLength = item.get_side_length();
+            description.type = item.get_type();
+            description.visibility = item.get_visibility();
+            
             descriptions.push_back(description);
         }
     }

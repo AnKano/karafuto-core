@@ -1,9 +1,4 @@
-//
-// Created by ash on 01.10.2021.
-//
-
-#ifndef RAYLIB_RENDERER_GRID_MESH_HPP
-#define RAYLIB_RENDERER_GRID_MESH_HPP
+#pragma once
 
 #include "glm/glm.hpp"
 
@@ -60,5 +55,3 @@ namespace kcore {
                                      float uv_constant, float uv_interpolated_constant);
     };
 }
-
-#endif //RAYLIB_RENDERER_GRID_MESH_HPP

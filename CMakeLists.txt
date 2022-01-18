@@ -10,7 +10,7 @@ file(GLOB_RECURSE CPP_HEADERS ${MAIN_SOURCE_DIR}/*.hpp)
 file(GLOB_RECURSE CPP_SOURCES ${MAIN_SOURCE_DIR}/*.cpp)
 
 if (NOT EMSCRIPTEN)
-    set(CMAKE_CXX_FLAGS_RELEASE "-O0")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
     if (WIN32)
         message("--Detected Windows!")
@@ -20,9 +20,11 @@ if (NOT EMSCRIPTEN)
     endif()
 
     add_subdirectory(${THIRD_PARTY_DIR}/glm)
+    add_subdirectory(${THIRD_PARTY_DIR}/glfw)
+    add_subdirectory(${THIRD_PARTY_DIR}/glad)
 
     add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
-    target_link_libraries(karafuto_core glm)
+    target_link_libraries(karafuto_core glad glfw glm)
 endif ()
 
 if (EMSCRIPTEN)
