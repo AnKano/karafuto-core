@@ -12,6 +12,9 @@ file(GLOB_RECURSE CPP_SOURCES ${MAIN_SOURCE_DIR}/*.cpp)
 if (NOT EMSCRIPTEN)
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
+    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
+
     if (WIN32)
         message("--Detected Windows!")
         add_compile_definitions(_USE_MATH_DEFINES)

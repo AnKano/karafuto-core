@@ -1,5 +1,6 @@
-cmake-*
-vscode
+.vscode
 .idea
 .vs
+
 out
+cmake-*
