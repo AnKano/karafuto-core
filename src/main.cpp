@@ -2,8 +2,8 @@
 // Created by Anton Shubin on 1/18/2021.
 //
 
-#include "scene/MapCore.hpp"
-#include "scene/meshes/GridMesh.hpp"
+#include "core/MapCore.hpp"
+#include "core/meshes/GridMesh.hpp"
 
 #ifdef __EMSCRIPTEN__
 
@@ -12,7 +12,7 @@
 using namespace emscripten;
 
 EMSCRIPTEN_BINDINGS(karafuto) {
-    register_vector<KCore::DataTile>("kcore_tile_vector");
+    register_vector<KCore::TileDescription>("kcore_tile_vector");
     register_vector<glm::vec3>("glm_vec3_vector");
     register_vector<glm::vec2>("glm_vec2_vector");
     register_vector<uint32_t>("unsigned_int_vector");
@@ -42,9 +42,9 @@ EMSCRIPTEN_BINDINGS(karafuto) {
             .function("emscripten_get_vertices_count", &KCore::GridMesh::emscripten_get_vertices_count)
             .function("emscripten_get_constant_count", &KCore::GridMesh::emscripten_get_constant_count);
 
-    class_<KCore::DataTile>("DataTile")
-            .property("Quadcode", &KCore::DataTile::get_quadcode)
-            .property("side_length", &KCore::DataTile::get_side_length);
+    class_<KCore::TileDescription>("TileDescription")
+            .property("Quadcode", &KCore::TileDescription::get_quadcode)
+            .property("side_length", &KCore::TileDescription::get_side_length);
 
     class_<KCore::map_core>("map_core")
             .constructor<float, float>()

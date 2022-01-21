@@ -22,12 +22,17 @@ if (NOT EMSCRIPTEN)
         message("--Detected UNIX!")
     endif()
 
+    # include these libraries as is
     add_subdirectory(${THIRD_PARTY_DIR}/glm)
     add_subdirectory(${THIRD_PARTY_DIR}/glfw)
     add_subdirectory(${THIRD_PARTY_DIR}/glad)
 
+    # include libcurl to project only with http features
+    set(HTTP_ONLY ON)
+    add_subdirectory(${THIRD_PARTY_DIR}/curl)
+
     add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
-    target_link_libraries(karafuto_core glad glfw glm)
+    target_link_libraries(karafuto_core glad glfw libcurl glm)
 endif ()
 
 if (EMSCRIPTEN)
