@@ -4,11 +4,12 @@
 #include "sources/local/TerrainFileSource.hpp"
 #include "sources/remote/RasterRemoteSource.hpp"
 #include "worlds/PlainWorld.hpp"
+#include "queues/tasks/CallbackTask.hpp"
 
 namespace KCore {
     MapCore::MapCore(float latitude, float longitude) {
         glm::vec2 origin_lat_lon{latitude, longitude};
-        glm::vec2 origin_point{KCore::GeographyConverter::latLonToPoint(origin_lat_lon)};
+        glm::vec2 origin_point{GeographyConverter::latLonToPoint(origin_lat_lon)};
 
         KCore::WorldConfig config{};
         config.GenerateMeta = true;
@@ -21,19 +22,28 @@ namespace KCore {
         networkQueue.perform_request();
 
         RasterRemoteSource source("https://tile.openstreetmap.org/", ".png");
-        source = source;
 
-//        mWorld->setConfig();
-//        mMesh = new GridMesh(1.0, 1.0, 32);
-//        auto a = mMesh->getVertices();
+        mRendererThread = std::make_unique<std::thread>([this]() {
+            mRenderingContext = std::make_unique<RenderContext>();
+            mRenderingContext->runRenderLoop();
+        });
+        mRendererThread->detach();
 
-        // instantiate TileRenderer with queue
-//        RendererThread = std::make_shared<std::thread>([this]() {
-//            Renderer = std::make_unique<KCore::TileRenderer>();
-//            Renderer->loadToTexture();
-//            Renderer->readFromTexture();
-//        });
-//        RendererThread->detach();
+        // !TODO: resolve this shit!
+        std::this_thread::sleep_for(1000ms);
+
+        auto queue = mRenderingContext->getQueue();
+        for (int i = 0; i < 100; i++) {
+            auto task = new CallbackTask([i]() {
+                std::cout << "quack " << i << std::endl;
+            });
+
+            queue->pushTask(task);
+        }
+    }
+
+    MapCore::~MapCore() {
+        disposeThreads();
     }
 
     void MapCore::update(const float *cameraProjectionMatrix_ptr,
@@ -70,6 +80,13 @@ namespace KCore {
     const std::list<TileDescription> &MapCore::getMetaTiles() {
         return ((TerrainedWorld *) mWorld)->getMetaTiles();
     }
+
+    void MapCore::disposeThreads() {
+        // dispose rendering context thread
+        mRenderingContext->setShouldClose(true);
+        while (mRenderingContext->getWorkingStatus());
+    }
+
 
 #ifdef __EMSCRIPTEN__
     void map_core::update(intptr_t camera_projection_matrix_addr,

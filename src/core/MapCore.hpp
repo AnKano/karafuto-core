@@ -7,8 +7,9 @@
 
 #include "geography/TileDescription.hpp"
 #include "worlds/TerrainedWorld.hpp"
-#include "rendering/TileRenderer.hpp"
+#include "rendering/_TileRenderer.hpp"
 #include "meshes/GridMesh.hpp"
+#include "rendering/RenderContext.hpp"
 
 namespace KCore {
     class MapCore {
@@ -22,10 +23,13 @@ namespace KCore {
 
         KCore::BaseMesh* mMesh{};
 
-    public:
-        MapCore() = default;
+        std::unique_ptr<RenderContext> mRenderingContext;
+        std::unique_ptr<std::thread> mRendererThread;
 
+    public:
         MapCore(float latitude, float longitude);
+
+        ~MapCore();
 
         void update(const glm::mat4 &cameraProjectionMatrix,
                     const glm::mat4 &cameraViewMatrix,
@@ -48,6 +52,8 @@ namespace KCore {
 
         const std::vector<TileDescription>& emscripten_get_meta_tiles();
 #endif
+
+        void disposeThreads();
 
     private:
         void performUpdate();
