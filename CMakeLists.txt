@@ -9,11 +9,8 @@ set(THIRD_PARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party")
 file(GLOB_RECURSE CPP_HEADERS ${MAIN_SOURCE_DIR}/*.hpp ${MAIN_SOURCE_DIR}/*.inl)
 file(GLOB_RECURSE CPP_SOURCES ${MAIN_SOURCE_DIR}/*.cpp)
 
-message(${CPP_HEADERS})
-
 #remote it after
 list(REMOVE_ITEM CPP_HEADERS C:/Users/anshu/source/repos/karafuto-core/src/core/rendering/_TileRenderer.hpp)
-message(${CPP_HEADERS})
 
 if (NOT EMSCRIPTEN)
     set(CMAKE_CXX_FLAGS_RELEASE "-O3")

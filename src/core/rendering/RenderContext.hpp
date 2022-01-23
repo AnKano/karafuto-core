@@ -42,9 +42,7 @@ namespace KCore {
                     throw std::runtime_error("Can't instantiate glfw window!");
                 glfwMakeContextCurrent(mWindowContext_ptr);
 
-#ifdef WIN32
                 gladLoadGL();
-#endif
 
                 glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
                 glEnable(GL_BLEND);
