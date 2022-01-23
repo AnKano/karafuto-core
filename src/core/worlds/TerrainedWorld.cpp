@@ -3,8 +3,7 @@
 #include <algorithm>
 
 namespace KCore {
-    TerrainedWorld::TerrainedWorld(const glm::vec2 &originLatLon,
-                                   const glm::vec2 &originPoint,
+    TerrainedWorld::TerrainedWorld(const glm::vec2 &originLatLon, const glm::vec2 &originPoint,
                                    const struct WorldConfig &config) : BaseWorld(originLatLon, originPoint, config) {}
 
     void TerrainedWorld::calculateTiles() {
@@ -40,40 +39,15 @@ namespace KCore {
                     tile.setType(TileType::Separated);
                 tile.setVisibility(TileVisibility::Hide);
 
-                auto founded = mTilesCache[quadcode + "0"];
-                if (founded != std::nullopt) {
-                    mMetaTiles.push_back(founded.value());
-                } else {
-                    auto tileNW = createTile(quadcode + "0");
-                    auto tileDescription = mTilesCache.setOrReplace(quadcode + "0", tileNW);
-                    mMetaTiles.push_back(tileDescription);
-                }
-
-                founded = mTilesCache[quadcode + "1"];
-                if (founded != std::nullopt) {
-                    mMetaTiles.push_back(founded.value());
-                } else {
-                    auto tileNE = createTile(quadcode + "1");
-                    auto tileDescription = mTilesCache.setOrReplace(quadcode + "1", tileNE);
-                    mMetaTiles.push_back(tileDescription);
-                }
-
-                founded = mTilesCache[quadcode + "2"];
-                if (founded != std::nullopt) {
-                    mMetaTiles.push_back(founded.value());
-                } else {
-                    auto tileSW = createTile(quadcode + "2");
-                    auto tileDescription = mTilesCache.setOrReplace(quadcode + "2", tileSW);
-                    mMetaTiles.push_back(tileDescription);
-                }
-
-                founded = mTilesCache[quadcode + "3"];
-                if (founded != std::nullopt) {
-                    mMetaTiles.push_back(founded.value());
-                } else {
-                    auto tileSE = createTile(quadcode + "3");
-                    auto tileDescription = mTilesCache.setOrReplace(quadcode + "3", tileSE);
-                    mMetaTiles.push_back(tileDescription);
+                for (const auto &item: std::vector{"0", "1", "2", "3"}) {
+                    auto founded = mTilesCache[quadcode + item];
+                    if (founded != std::nullopt) {
+                        mMetaTiles.push_back(founded.value());
+                    } else {
+                        auto child = createTile(quadcode + item);
+                        auto tileDescription = mTilesCache.setOrReplace(quadcode + item, child);
+                        mMetaTiles.push_back(tileDescription);
+                    }
                 }
             }
 

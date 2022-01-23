@@ -22,12 +22,12 @@ namespace KCore {
         TimeoutCache<TileDescription> mTilesCache;
         std::vector<TileDescription> mCommonTiles{};
 
-        glm::vec2 mOriginPositionWGS84{};
-        glm::vec3 mOriginPositionOGL{};
+        glm::vec2 mOriginPositionReal{};
+        glm::vec3 mOriginPositionWebMercator{};
 
     public:
         BaseWorld(const glm::vec2 &originLatLon, const glm::vec2 &originPoint, const struct WorldConfig &config)
-                : mOriginPositionWGS84(originPoint), mConfig(config) {}
+                : mOriginPositionReal(originPoint), mConfig(config) {}
 
         void setConfig(const WorldConfig &config) {
             mConfig = config;
@@ -45,11 +45,11 @@ namespace KCore {
 
         glm::vec2 latLonToGlPoint(const glm::vec2 &latLon) {
             auto projectedPoint = GeographyConverter::latLonToPoint(latLon);
-            return projectedPoint - mOriginPositionWGS84;
+            return projectedPoint - mOriginPositionReal;
         }
 
         glm::vec2 glPointToLatLon(const glm::vec2 &point) {
-            auto projectedPoint = point + mOriginPositionWGS84;
+            auto projectedPoint = point + mOriginPositionReal;
             return GeographyConverter::pointToLatLon(projectedPoint);
         }
 
@@ -58,7 +58,7 @@ namespace KCore {
         }
 
         void setPosition(const glm::vec3 &position) {
-            mOriginPositionOGL = position;
+            mOriginPositionWebMercator = position;
         }
 
         virtual void update() {
@@ -67,17 +67,14 @@ namespace KCore {
 
     protected:
         virtual void calculateTiles() {
-            // clear up tile tree
-//            mTileTree.clear();
-
             // clear up all mCommonTiles
             mCommonTiles.clear();
 
-            // create height nodes
+            // create tiles
             for (const auto &item: std::vector{"0", "1", "2", "3"}) {
                 auto founded = mTilesCache[item];
                 if (founded != std::nullopt) {
-                    mCommonTiles.emplace_back(founded.value());
+                    mCommonTiles.push_back(founded.value());
                     continue;
                 }
 
@@ -96,40 +93,15 @@ namespace KCore {
                         tile.setType(TileType::Separated);
                     tile.setVisibility(TileVisibility::Hide);
 
-                    auto founded = mTilesCache[quadcode + "0"];
-                    if (founded != std::nullopt) {
-                        mCommonTiles.push_back(founded.value());
-                    } else {
-                        auto tileNW = createTile(quadcode + "0");
-                        auto tileDescription = mTilesCache.setOrReplace(quadcode + "0", tileNW);
-                        mCommonTiles.push_back(tileDescription);
-                    }
-
-                    founded = mTilesCache[quadcode + "1"];
-                    if (founded != std::nullopt) {
-                        mCommonTiles.push_back(founded.value());
-                    } else {
-                        auto tileNE = createTile(quadcode + "1");
-                        auto tileDescription = mTilesCache.setOrReplace(quadcode + "1", tileNE);
-                        mCommonTiles.push_back(tileDescription);
-                    }
-
-                    founded = mTilesCache[quadcode + "2"];
-                    if (founded != std::nullopt) {
-                        mCommonTiles.push_back(founded.value());
-                    } else {
-                        auto tileSW = createTile(quadcode + "2");
-                        auto tileDescription = mTilesCache.setOrReplace(quadcode + "2", tileSW);
-                        mCommonTiles.push_back(tileDescription);
-                    }
-
-                    founded = mTilesCache[quadcode + "3"];
-                    if (founded != std::nullopt) {
-                        mCommonTiles.push_back(founded.value());
-                    } else {
-                        auto tileSE = createTile(quadcode + "3");
-                        auto tileDescription = mTilesCache.setOrReplace(quadcode + "3", tileSE);
-                        mCommonTiles.push_back(tileDescription);
+                    for (const auto &item: std::vector{"0", "1", "2", "3"}) {
+                        auto founded = mTilesCache[quadcode + item];
+                        if (founded != std::nullopt) {
+                            mCommonTiles.push_back(founded.value());
+                        } else {
+                            auto child = createTile(quadcode + item);
+                            auto tileDescription = mTilesCache.setOrReplace(quadcode + item, child);
+                            mCommonTiles.push_back(tileDescription);
+                        }
                     }
                 }
 
@@ -147,7 +119,7 @@ namespace KCore {
             }
 
             auto center = tile.getCenter();
-            auto distance = glm::length(glm::vec3(center.x, 0, center.y) - mOriginPositionOGL);
+            auto distance = glm::length(glm::vec3(center.x, 0, center.y) - mOriginPositionWebMercator);
             auto error = quality * tile.getSideLength() / distance;
 
             return error > 1.0f;
@@ -168,7 +140,6 @@ namespace KCore {
         TileDescription createTile(const std::string &quadcode) {
             TileDescription tile(quadcode);
 
-//            tile.setParent(parent);
             tile.setTilecode(GeographyConverter::quadcodeToTilecode(quadcode));
 
             {
@@ -207,12 +178,5 @@ namespace KCore {
 
             return tile;
         }
-
-//        TileDescription findOrCreateTile(const std::string &quadcode, const TileDescription *parent) {
-//            if (mTileTree.find(quadcode) != mTileTree.end())
-//                return *mTileTree[quadcode];
-//
-//            return createTile(quadcode, parent);
-//        }
     };
 }

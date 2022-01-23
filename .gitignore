@@ -1,9 +1,13 @@
-.vscode
+# exclude some IDE or HotNotepads garbage
 .idea
+.vscode
 .vs
 
+# exclude out folder produced by Visual Studio
 out
+# exclude cmake-* folders produced by CLion
 cmake-*
 
+# exclude build fils but assets
 build/*
 !build/assets

@@ -4,7 +4,11 @@
 #include "sources/local/TerrainFileSource.hpp"
 #include "sources/remote/RasterRemoteSource.hpp"
 #include "worlds/PlainWorld.hpp"
-#include "queues/tasks/CallbackTask.hpp"
+
+#include "queue/tasks/CallbackTask.hpp"
+#include "queue/tasks/NetworkTask.hpp"
+
+#include "meshes/PolygonMesh.hpp"
 
 namespace KCore {
     MapCore::MapCore(float latitude, float longitude) {
@@ -18,36 +22,27 @@ namespace KCore {
         mWorld->updateFrustum(this->mCameraProjectionMatrix, this->mCameraViewMatrix);
         mWorld->setPosition(this->mCameraPosition);
 
-        NetworkQueue networkQueue;
-        networkQueue.perform_request();
+        PolygonMesh mesh;
+        mesh.createMesh();
 
         RasterRemoteSource source("https://tile.openstreetmap.org/", ".png");
 
         // !TODO: resolve this shit!
         std::this_thread::sleep_for(1000ms);
 
-        auto queue = mRenderingContext.getQueue();
         for (int i = 0; i < 100; i++) {
             auto task = new CallbackTask([i]() {
                 std::cout << "first quack " << i << std::endl;
             });
 
-            queue->pushTask(task);
+            mRenderingContext.pushTaskToQueue(task);
         }
 
-        std::this_thread::sleep_for(1000ms);
-
-        for (int i = 101; i < 201; i++) {
-            auto task = new CallbackTask([i]() {
-                std::cout << "second quack " << i << std::endl;
-            });
-
-            queue->pushTask(task);
-        }
+        mRenderingContext.pushTaskToQueue(new NetworkTask("a"));
     }
 
     MapCore::~MapCore() {
-        disposeThreads();
+        dispose();
     }
 
     void MapCore::update(const float *cameraProjectionMatrix_ptr,
@@ -80,31 +75,20 @@ namespace KCore {
     }
 
     const std::vector<TileDescription> &MapCore::getTiles() {
-        if (!mWorld) return mCommonTiles;
-
-//        auto tiles = mWorld->getTiles();
-//        for (const auto &item: tiles)
-//            mCommonTiles.emplace_back(TileDescription(*item));
-
-        return mCommonTiles;
+        if (!mWorld) throw std::runtime_error("world not initialized");
+        return mWorld->getTiles();
     }
 
     const std::vector<TileDescription> &MapCore::getMetaTiles() {
-        if (!mWorld) return mMetaTiles;
-
-//        auto tiles = ((TerrainedWorld *) mWorld)->getMetaTiles();
-//        for (const auto &item: tiles)
-//            mMetaTiles.emplace_back(TileDescription(*item));
-
-        return mMetaTiles;
+        if (!mWorld) throw std::runtime_error("world not initialized");
+        return ((TerrainedWorld *) mWorld)->getMetaTiles();
     }
 
-    void MapCore::disposeThreads() {
+    void MapCore::dispose() {
         // dispose rendering context thread
         mRenderingContext.setShouldClose(true);
         while (mRenderingContext.getWorkingStatus());
     }
-
 
 #ifdef __EMSCRIPTEN__
     void map_core::update(intptr_t camera_projection_matrix_addr,

@@ -6,7 +6,7 @@ set(CMAKE_CXX_STANDARD 17)
 set(MAIN_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(THIRD_PARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party")
 
-file(GLOB_RECURSE CPP_HEADERS ${MAIN_SOURCE_DIR}/*.hpp)
+file(GLOB_RECURSE CPP_HEADERS ${MAIN_SOURCE_DIR}/*.hpp ${MAIN_SOURCE_DIR}/*.inl)
 file(GLOB_RECURSE CPP_SOURCES ${MAIN_SOURCE_DIR}/*.cpp)
 
 message(${CPP_HEADERS})
@@ -16,7 +16,7 @@ list(REMOVE_ITEM CPP_HEADERS C:/Users/anshu/source/repos/karafuto-core/src/core/
 message(${CPP_HEADERS})
 
 if (NOT EMSCRIPTEN)
-    set(CMAKE_CXX_FLAGS_RELEASE "-O0")
+    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
@@ -26,12 +26,15 @@ if (NOT EMSCRIPTEN)
         add_compile_definitions(_USE_MATH_DEFINES)
     else ()
         message("--Detected UNIX!")
-    endif()
+    endif ()
 
     # include these libraries as is
     add_subdirectory(${THIRD_PARTY_DIR}/glm)
     add_subdirectory(${THIRD_PARTY_DIR}/glfw)
     add_subdirectory(${THIRD_PARTY_DIR}/glad)
+
+    # include earcut library (only base functionality needed)
+    include_directories(${THIRD_PARTY_DIR}/earcut/include)
 
     # include libcurl to project only with http features
     set(HTTP_ONLY ON)

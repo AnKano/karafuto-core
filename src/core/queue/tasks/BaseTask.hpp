@@ -9,10 +9,10 @@ namespace KCore {
             onTaskComplete();
         }
 
-        virtual void onTaskBeforeStart() = 0;
+        virtual void onTaskBeforeStart() {};
 
         virtual void performTask() = 0;
 
-        virtual void onTaskComplete() = 0;
+        virtual void onTaskComplete() {};
     };
 }

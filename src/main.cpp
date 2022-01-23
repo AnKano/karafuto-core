@@ -12,8 +12,7 @@
 using namespace emscripten;
 
 EMSCRIPTEN_BINDINGS(karafuto) {
-    register_vector<KCore::TileDescription>("kcore_tile_vector");
-    register_vector<glm::vec3>("glm_vec3_vector");
+    register_vector<KCore::TileDescription>("kcore_tile_vector");    register_vector<glm::vec3>("glm_vec3_vector");
     register_vector<glm::vec2>("glm_vec2_vector");
     register_vector<uint32_t>("unsigned_int_vector");
     register_vector<float>("float_vector");
@@ -127,11 +126,11 @@ int main() {
 //    KCore::MapCore core{46.9181f, 142.7189f};
 //    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
 //
-    std::this_thread::sleep_for(10s);
-
-    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-
-    std::this_thread::sleep_for(10s);
+//    std::this_thread::sleep_for(10s);
+//
+//    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
+//
+//    std::this_thread::sleep_for(10s);
 
     return 0;
 }

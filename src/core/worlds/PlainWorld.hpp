@@ -5,8 +5,7 @@
 namespace KCore {
     class PlainWorld : public BaseWorld {
     public:
-        PlainWorld(const glm::vec2 &originLatLon,
-                   const glm::vec2 &originPoint,
+        PlainWorld(const glm::vec2 &originLatLon, const glm::vec2 &originPoint,
                    const struct WorldConfig &config) : BaseWorld(originLatLon, originPoint, config) {}
 
         void update() override {

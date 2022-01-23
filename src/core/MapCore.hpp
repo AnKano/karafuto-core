@@ -52,9 +52,10 @@ namespace KCore {
         const std::vector<TileDescription>& emscripten_get_meta_tiles();
 #endif
 
-        void disposeThreads();
 
     private:
+        void dispose();
+
         void performUpdate();
     };
 }

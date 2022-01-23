@@ -6,15 +6,13 @@
 #include <fstream>
 #include <vector>
 
-#include "../../queues/network/NetworkQueue.hpp"
+#include "../../queue/Queue.hpp"
 
 namespace KCore {
     class BaseRemoteSource {
     protected:
         std::string mRawUrl;
         std::string mURLPrefix, mURLSuffix;
-
-        NetworkQueue *mQueue;
 
     public:
         /** example: https://10.0.0.1:8080/{z}/{x}/{y}.png

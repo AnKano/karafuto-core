@@ -15,6 +15,27 @@ namespace KCore {
         virtual void createMesh() = 0;
 
     public:
+        [[nodiscard]]
+        const std::vector<glm::vec3> &getVertices() const {
+            return mVertices;
+        }
+
+        [[nodiscard]]
+        const std::vector<glm::vec3> &getNormals() const {
+            return mNormals;
+        }
+
+        [[nodiscard]]
+        const std::vector<glm::vec2> &getUVs() const {
+            return mUVs;
+        }
+
+        [[nodiscard]]
+        const std::vector<uint32_t> &getIndices() const {
+            return mIndices;
+        }
+
+#ifdef __EMSCRIPTEN__
         intptr_t getIndices_ptr_emscripten() {
             return reinterpret_cast<intptr_t>(mIndices.data());
         }
@@ -46,25 +67,6 @@ namespace KCore {
         uint32_t getVerticesCount_emscripten() {
             return mVertices.size() * 3;
         }
-
-        [[nodiscard]]
-        const std::vector<glm::vec3> &getVertices() const {
-            return mVertices;
-        }
-
-        [[nodiscard]]
-        const std::vector<glm::vec3> &getNormals() const {
-            return mNormals;
-        }
-
-        [[nodiscard]]
-        const std::vector<glm::vec2> &getUVs() const {
-            return mUVs;
-        }
-
-        [[nodiscard]]
-        const std::vector<uint32_t> &getIndices() const {
-            return mIndices;
-        }
+#endif
     };
 }

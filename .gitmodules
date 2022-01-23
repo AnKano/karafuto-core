@@ -7,3 +7,6 @@
 [submodule "third-party/curl"]
 	path = third-party/curl
 	url = https://github.com/curl/curl.git
+[submodule "third-party/earcut"]
+	path = third-party/earcut
+	url = https://github.com/mapbox/earcut.hpp

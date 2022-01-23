@@ -11,7 +11,7 @@
 #include <chrono>
 #include <iostream>
 
-#include "../queues/BaseQueue.hpp"
+#include "../queue/Queue.hpp"
 
 using namespace std::chrono_literals;
 
@@ -19,7 +19,7 @@ namespace KCore {
     class RenderContext {
     private:
         GLFWwindow *mWindowContext_ptr;
-        BaseQueue mQueue;
+        Queue mQueue;
 
         std::unique_ptr<std::thread> mRenderThread;
 
@@ -79,17 +79,22 @@ namespace KCore {
             return mReadyToBeDead;
         }
 
-        BaseQueue *getQueue() {
-            return &mQueue;
+        void pushTaskToQueue(BaseTask *task) {
+            mQueue.pushTask(task);
         }
 
     private:
+        Queue *getQueue() {
+            return &mQueue;
+        }
+
         void runRenderLoop() {
             while (!mShouldClose) {
-                //!TODO: perform queue actions here
                 auto task = mQueue.popTask();
                 while (task) {
                     task->invoke();
+
+                    // get next task or nullptr
                     task = mQueue.popTask();
                 }
 

@@ -7,18 +7,20 @@
 #include "tasks/BaseTask.hpp"
 
 namespace KCore {
-    class BaseQueue {
+    class Queue {
     private:
-        std::queue<BaseTask *> mQueue;
+        std::queue<std::shared_ptr<BaseTask>> mQueue;
         std::mutex mQueueLock;
 
     public:
         void pushTask(BaseTask *task) {
             std::lock_guard<std::mutex> lock{mQueueLock};
-            mQueue.push(task);
+
+            std::shared_ptr<BaseTask> task_ptr(task);
+            mQueue.push(task_ptr);
         }
 
-        BaseTask *popTask() {
+        std::shared_ptr<BaseTask> popTask() {
             std::lock_guard<std::mutex> lock{mQueueLock};
 
             if (mQueue.empty())
