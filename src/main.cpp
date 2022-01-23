@@ -128,10 +128,10 @@ int main() {
 //    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
 //
     std::this_thread::sleep_for(10s);
-//
-//    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-//
-//    std::this_thread::sleep_for(10s);
+
+    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
+
+    std::this_thread::sleep_for(10s);
 
     return 0;
 }

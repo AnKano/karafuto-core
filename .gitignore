@@ -4,3 +4,6 @@
 
 out
 cmake-*
+
+build/*
+!build/assets
