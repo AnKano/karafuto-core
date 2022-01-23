@@ -6,6 +6,8 @@
 #include "../misc/FrustumCulling.hpp"
 #include "../geography/TileDescription.hpp"
 
+#include "../cache/TimeoutCache.hpp"
+
 namespace KCore {
     struct WorldConfig {
         bool GenerateMeta;
@@ -17,8 +19,8 @@ namespace KCore {
 
         KCore::FrustumCulling mCullingFilter{};
 
-        std::list<TileDescription> mCommonTiles{};
-        std::map<std::string, TileDescription *> mTileTree;
+        TimeoutCache<TileDescription> mTilesCache;
+        std::vector<TileDescription> mCommonTiles{};
 
         glm::vec2 mOriginPositionWGS84{};
         glm::vec3 mOriginPositionOGL{};
@@ -32,7 +34,7 @@ namespace KCore {
         }
 
         [[nodiscard]]
-        const std::list<TileDescription> &getTiles() {
+        const std::vector<TileDescription> &getTiles() {
             return mCommonTiles;
         }
 
@@ -66,56 +68,69 @@ namespace KCore {
     protected:
         virtual void calculateTiles() {
             // clear up tile tree
-            mTileTree.clear();
+//            mTileTree.clear();
 
             // clear up all mCommonTiles
             mCommonTiles.clear();
 
-            // create root nodes
-            for (const auto &item: std::vector{"0", "1", "2", "3"})
-                mCommonTiles.emplace_back(createTile(item, nullptr));
+            // create height nodes
+            for (const auto &item: std::vector{"0", "1", "2", "3"}) {
+                auto founded = mTilesCache[item];
+                if (founded != std::nullopt) {
+                    mCommonTiles.emplace_back(founded.value());
+                    continue;
+                }
+
+                auto tile = createTile(item);
+                auto element = mTilesCache.setOrReplace(item, tile);
+                mCommonTiles.push_back(element);
+            }
 
             std::size_t count{0};
             while (count != mCommonTiles.size()) {
-                // move iterator through list
-                auto it = mCommonTiles.begin();
-                std::advance(it, count);
+                auto tile = mCommonTiles[count];
+                auto quadcode = tile.getQuadcode();
 
-                // unpack iterator
-                auto tile = &(*it);
-                auto quadcode = tile->getQuadcode();
+                if (screenSpaceError(tile, 3.0)) {
+                    if (tile.getType() != TileType::Root)
+                        tile.setType(TileType::Separated);
+                    tile.setVisibility(TileVisibility::Hide);
 
-                if (screenSpaceError(*tile, 3.0)) {
-                    if (tile->getType() != TileType::Root)
-                        tile->setType(TileType::Separated);
-                    tile->setVisibility(TileVisibility::Hide);
+                    auto founded = mTilesCache[quadcode + "0"];
+                    if (founded != std::nullopt) {
+                        mCommonTiles.push_back(founded.value());
+                    } else {
+                        auto tileNW = createTile(quadcode + "0");
+                        auto tileDescription = mTilesCache.setOrReplace(quadcode + "0", tileNW);
+                        mCommonTiles.push_back(tileDescription);
+                    }
 
-                    auto tileNW = createTile(quadcode + "0", tile);
-                    auto tileNE = createTile(quadcode + "1", tile);
-                    auto tileSW = createTile(quadcode + "2", tile);
-                    auto tileSE = createTile(quadcode + "3", tile);
+                    founded = mTilesCache[quadcode + "1"];
+                    if (founded != std::nullopt) {
+                        mCommonTiles.push_back(founded.value());
+                    } else {
+                        auto tileNE = createTile(quadcode + "1");
+                        auto tileDescription = mTilesCache.setOrReplace(quadcode + "1", tileNE);
+                        mCommonTiles.push_back(tileDescription);
+                    }
 
-                    mCommonTiles.emplace_back(tileNW);
-                    mCommonTiles.emplace_back(tileNE);
-                    mCommonTiles.emplace_back(tileSW);
-                    mCommonTiles.emplace_back(tileSE);
+                    founded = mTilesCache[quadcode + "2"];
+                    if (founded != std::nullopt) {
+                        mCommonTiles.push_back(founded.value());
+                    } else {
+                        auto tileSW = createTile(quadcode + "2");
+                        auto tileDescription = mTilesCache.setOrReplace(quadcode + "2", tileSW);
+                        mCommonTiles.push_back(tileDescription);
+                    }
 
-                    auto tileNW_ptr = &(tileNW);
-                    auto tileNE_ptr = &(tileNE);
-                    auto tileSW_ptr = &(tileSW);
-                    auto tileSE_ptr = &(tileSE);
-
-                    auto childs = tile->getChilds();
-
-                    childs.InQuad[NorthWest] = tileNW_ptr;
-                    childs.InQuad[NorthEast] = tileNE_ptr;
-                    childs.InQuad[SouthWest] = tileSW_ptr;
-                    childs.InQuad[SouthEast] = tileSE_ptr;
-
-                    childs.Sides[North] = {tileNW_ptr, tileNE_ptr};
-                    childs.Sides[South] = {tileSW_ptr, tileSE_ptr};
-                    childs.Sides[West] = {tileNW_ptr, tileSW_ptr};
-                    childs.Sides[East] = {tileNE_ptr, tileSE_ptr};
+                    founded = mTilesCache[quadcode + "3"];
+                    if (founded != std::nullopt) {
+                        mCommonTiles.push_back(founded.value());
+                    } else {
+                        auto tileSE = createTile(quadcode + "3");
+                        auto tileDescription = mTilesCache.setOrReplace(quadcode + "3", tileSE);
+                        mCommonTiles.push_back(tileDescription);
+                    }
                 }
 
                 count++;
@@ -146,14 +161,14 @@ namespace KCore {
             float minZ = (float) pos.y - scale, maxZ = (float) pos.y + scale;
             float minY = 0.0f, maxY = 0.0f;
 
-            auto result = mCullingFilter.test_box(minX, minY, minZ, maxX, maxY, maxZ);
+            auto result = mCullingFilter.testAABB(minX, minY, minZ, maxX, maxY, maxZ);
             return result;
         }
 
-        TileDescription createTile(const std::string &quadcode, const TileDescription *parent) {
+        TileDescription createTile(const std::string &quadcode) {
             TileDescription tile(quadcode);
 
-            tile.setParent(parent);
+//            tile.setParent(parent);
             tile.setTilecode(GeographyConverter::quadcodeToTilecode(quadcode));
 
             {
@@ -193,11 +208,11 @@ namespace KCore {
             return tile;
         }
 
-        TileDescription findOrCreateTile(const std::string &quadcode, const TileDescription *parent) {
-            if (mTileTree.find(quadcode) != mTileTree.end())
-                return *mTileTree[quadcode];
-
-            return createTile(quadcode, parent);
-        }
+//        TileDescription findOrCreateTile(const std::string &quadcode, const TileDescription *parent) {
+//            if (mTileTree.find(quadcode) != mTileTree.end())
+//                return *mTileTree[quadcode];
+//
+//            return createTile(quadcode, parent);
+//        }
     };
 }

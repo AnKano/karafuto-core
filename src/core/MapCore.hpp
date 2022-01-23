@@ -18,13 +18,12 @@ namespace KCore {
         glm::vec3 mCameraPosition{};
 
         BaseWorld* mWorld{};
-        std::vector<TileDescription> mTiles;
+        std::vector<TileDescription> mCommonTiles;
         std::vector<TileDescription> mMetaTiles;
 
         KCore::BaseMesh* mMesh{};
 
-        std::unique_ptr<RenderContext> mRenderingContext;
-        std::unique_ptr<std::thread> mRendererThread;
+        RenderContext mRenderingContext;
 
     public:
         MapCore(float latitude, float longitude);
@@ -39,9 +38,9 @@ namespace KCore {
                     const float *cameraViewMatrix_ptr,
                     const float *cameraPosition_ptr);
 
-        const std::list<TileDescription> &getTiles();
+        const std::vector<TileDescription> &getTiles();
 
-        const std::list<TileDescription> &getMetaTiles();
+        const std::vector<TileDescription> &getMetaTiles();
 
 #ifdef __EMSCRIPTEN__
         void update(intptr_t camera_projection_matrix_addr,

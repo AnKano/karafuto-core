@@ -72,19 +72,20 @@ namespace KCore {
 
         TileCardinals mCardinal;
 
-        const TileDescription *mParent{};
-        TileChilds mChilds{};
+//        const TileDescription *mParent{};
+//        TileChilds mChilds{};
 
         // variable data related to tile
-        std::map<std::string, void*> mDataStash;
+        std::map<std::string, void *> mDataStash;
 
     public:
+        TileDescription();
 
-        explicit TileDescription(const std::string &quadcode);
+        TileDescription(const std::string &quadcode);
 
         ~TileDescription() = default;
 
-        void setParent(const TileDescription *parent_ptr);
+//        void setParent(const TileDescription *parent_ptr);
 
         void setQuadcode(const std::string &quadcode);
 
@@ -101,7 +102,6 @@ namespace KCore {
         void setCenterLatLon(const glm::vec2 &centerLatLon);
 
         void setSideLength(float sideLength);
-
 
         void setType(TileType type);
 
@@ -120,7 +120,6 @@ namespace KCore {
         [[nodiscard]]
         const glm::vec2 &getCenter() const;
 
-
         [[nodiscard]]
         TileVisibility getVisibility() const;
 
@@ -133,8 +132,8 @@ namespace KCore {
         [[nodiscard]]
         TileType getType() const;
 
-        [[nodiscard]]
-        const TileChilds &getChilds() const;
+//        [[nodiscard]]
+//        const TileChilds &getChilds() const;
 
     private:
         TileCardinals calculateCardinalFromQuadcode();

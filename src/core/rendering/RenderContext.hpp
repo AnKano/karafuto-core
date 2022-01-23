@@ -21,54 +21,45 @@ namespace KCore {
         GLFWwindow *mWindowContext_ptr;
         BaseQueue mQueue;
 
+        std::unique_ptr<std::thread> mRenderThread;
+
         std::chrono::milliseconds mCheckInterval = 1ms;
         bool mShouldClose = false;
         bool mReadyToBeDead = false;
 
     public:
         RenderContext() {
-            if (!glfwInit())
-                throw std::runtime_error("Can't instantiate glfw module!");
+            mRenderThread = std::make_unique<std::thread>([this]() {
+                if (!glfwInit())
+                    throw std::runtime_error("Can't instantiate glfw module!");
 
-            // invisible window actually not create any context. it is needed
-            // as a root object for OpenGL processes
+                // invisible window actually not create any context. it is needed
+                // as a root object for OpenGL processes
 
-            glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-            mWindowContext_ptr = glfwCreateWindow(1, 1, "Karafuto Core", nullptr, nullptr);
-            if (!mWindowContext_ptr)
-                throw std::runtime_error("Can't instantiate glfw window!");
-            glfwMakeContextCurrent(mWindowContext_ptr);
+                glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
+                mWindowContext_ptr = glfwCreateWindow(1, 1, "Karafuto Core", nullptr, nullptr);
+                if (!mWindowContext_ptr)
+                    throw std::runtime_error("Can't instantiate glfw window!");
+                glfwMakeContextCurrent(mWindowContext_ptr);
 
-//#ifdef WIN32
-            gladLoadGL();
-//#endif
+#ifdef WIN32
+                gladLoadGL();
+#endif
 
-            glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
-            glEnable(GL_BLEND);
-            glEnable(GL_STENCIL_TEST);
-            glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+                glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
+                glEnable(GL_BLEND);
+                glEnable(GL_STENCIL_TEST);
+                glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+                runRenderLoop();
+            });
+            mRenderThread->detach();
         }
 
         ~RenderContext() {
             setShouldClose(true);
-
-            glfwDestroyWindow(mWindowContext_ptr);
-            glfwTerminate();
-        }
-
-        void runRenderLoop() {
-            while (!mShouldClose) {
-                //!TODO: perform queue actions here
-                auto task = mQueue.popTask();
-                while (task) {
-                    task->invoke();
-                    task = mQueue.popTask();
-                }
-
-                std::this_thread::sleep_for(mCheckInterval);
-            }
-
-            mReadyToBeDead = true;
+            // await to thread stop working
+            while (getWorkingStatus());
         }
 
         void setCheckInterval(const uint64_t &value) {
@@ -90,6 +81,28 @@ namespace KCore {
 
         BaseQueue *getQueue() {
             return &mQueue;
+        }
+
+    private:
+        void runRenderLoop() {
+            while (!mShouldClose) {
+                //!TODO: perform queue actions here
+                auto task = mQueue.popTask();
+                while (task) {
+                    task->invoke();
+                    task = mQueue.popTask();
+                }
+
+                std::this_thread::sleep_for(mCheckInterval);
+            }
+
+            dispose();
+            mReadyToBeDead = true;
+        }
+
+        void dispose() {
+            glfwDestroyWindow(mWindowContext_ptr);
+            glfwTerminate();
         }
     };
 }

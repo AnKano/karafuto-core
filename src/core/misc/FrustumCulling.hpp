@@ -56,7 +56,7 @@ namespace KCore {
         }
 
         [[nodiscard]]
-        bool test_box(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) const {
+        bool testAABB(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) const {
             return nxX * (nxX < 0 ? minX : maxX) +
                    nxY * (nxY < 0 ? minY : maxY) +
                    nxZ * (nxZ < 0 ? minZ : maxZ) >= -nxW &&

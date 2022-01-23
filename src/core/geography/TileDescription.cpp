@@ -3,6 +3,8 @@
 #include <iostream>
 
 namespace KCore {
+    TileDescription::TileDescription() {}
+
     TileDescription::TileDescription(const std::string &quadcode) {
         if (quadcode.empty())
             throw std::invalid_argument("Provided empty quadcode");
@@ -11,14 +13,14 @@ namespace KCore {
         mCardinal = calculateCardinalFromQuadcode();
     }
 
-    void TileDescription::setQuadcode(const std::string& quadcode) {
+    void TileDescription::setQuadcode(const std::string &quadcode) {
         TileDescription::mQuadcode = quadcode;
     }
 
-    void TileDescription::setParent(const TileDescription *parent_ptr) {
-        TileDescription::mParent = parent_ptr;
-        setType((parent_ptr == nullptr) ? TileType::Root : TileType::Leaf);
-    }
+//    void TileDescription::setParent(const TileDescription *parent_ptr) {
+//        TileDescription::mParent = parent_ptr;
+//        setType((parent_ptr == nullptr) ? TileType::Root : TileType::Leaf);
+//    }
 
     void TileDescription::setTilecode(const glm::ivec3 &tilecode) {
         TileDescription::mPayload.Tilecode.x = static_cast<int32_t>(tilecode.x);
@@ -96,16 +98,20 @@ namespace KCore {
         return mVisibility;
     }
 
-    const TileChilds& TileDescription::getChilds() const {
-        return mChilds;
-    }
+//    const TileChilds &TileDescription::getChilds() const {
+//        return mChilds;
+//    }
 
     enum TileCardinals TileDescription::calculateCardinalFromQuadcode() {
         switch (mQuadcode.back()) {
-            case '0': return NorthWest;
-            case '1': return NorthEast;
-            case '2': return SouthWest;
-            case '3': return SouthEast;
+            case '0':
+                return NorthWest;
+            case '1':
+                return NorthEast;
+            case '2':
+                return SouthWest;
+            case '3':
+                return SouthEast;
             default:
                 throw std::runtime_error("Unexpected tile mCardinal");
         }

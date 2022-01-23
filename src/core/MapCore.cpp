@@ -23,19 +23,23 @@ namespace KCore {
 
         RasterRemoteSource source("https://tile.openstreetmap.org/", ".png");
 
-        mRendererThread = std::make_unique<std::thread>([this]() {
-            mRenderingContext = std::make_unique<RenderContext>();
-            mRenderingContext->runRenderLoop();
-        });
-        mRendererThread->detach();
-
         // !TODO: resolve this shit!
         std::this_thread::sleep_for(1000ms);
 
-        auto queue = mRenderingContext->getQueue();
+        auto queue = mRenderingContext.getQueue();
         for (int i = 0; i < 100; i++) {
             auto task = new CallbackTask([i]() {
-                std::cout << "quack " << i << std::endl;
+                std::cout << "first quack " << i << std::endl;
+            });
+
+            queue->pushTask(task);
+        }
+
+        std::this_thread::sleep_for(1000ms);
+
+        for (int i = 101; i < 201; i++) {
+            auto task = new CallbackTask([i]() {
+                std::cout << "second quack " << i << std::endl;
             });
 
             queue->pushTask(task);
@@ -67,24 +71,38 @@ namespace KCore {
     }
 
     void MapCore::performUpdate() {
+        if (!mWorld) return;
+
         mWorld->updateFrustum(this->mCameraProjectionMatrix, this->mCameraViewMatrix);
         mWorld->setPosition(this->mCameraPosition);
 
         mWorld->update();
     }
 
-    const std::list<TileDescription> &MapCore::getTiles() {
-        return mWorld->getTiles();
+    const std::vector<TileDescription> &MapCore::getTiles() {
+        if (!mWorld) return mCommonTiles;
+
+//        auto tiles = mWorld->getTiles();
+//        for (const auto &item: tiles)
+//            mCommonTiles.emplace_back(TileDescription(*item));
+
+        return mCommonTiles;
     }
 
-    const std::list<TileDescription> &MapCore::getMetaTiles() {
-        return ((TerrainedWorld *) mWorld)->getMetaTiles();
+    const std::vector<TileDescription> &MapCore::getMetaTiles() {
+        if (!mWorld) return mMetaTiles;
+
+//        auto tiles = ((TerrainedWorld *) mWorld)->getMetaTiles();
+//        for (const auto &item: tiles)
+//            mMetaTiles.emplace_back(TileDescription(*item));
+
+        return mMetaTiles;
     }
 
     void MapCore::disposeThreads() {
         // dispose rendering context thread
-        mRenderingContext->setShouldClose(true);
-        while (mRenderingContext->getWorkingStatus());
+        mRenderingContext.setShouldClose(true);
+        while (mRenderingContext.getWorkingStatus());
     }
 
 

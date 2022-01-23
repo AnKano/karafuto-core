@@ -93,13 +93,12 @@ int main() {
             cameraOpenGlSpaceUp
     );
 
-    const uint16_t iteration = 1000;
+    const uint16_t iteration = 100;
 
     std::vector<TileDescription> descriptions{};
 
-    // 46.9181f, 142.7189f is latitude and longitude of
-    // the surroundings of the city of Yuzhno-Sakhalinsk
-
+//     46.9181f, 142.7189f is latitude and longitude of
+//     the surroundings of the city of Yuzhno-Sakhalinsk
     KCore::MapCore core{46.9181f, 142.7189f};
     auto start = std::chrono::system_clock::now();
     for (uint16_t i = 0; i < iteration; i++) {
@@ -116,7 +115,7 @@ int main() {
             description.sideLength = item.getSideLength();
             description.type = item.getType();
             description.visibility = item.getVisibility();
-            
+
             descriptions.push_back(description);
         }
     }
@@ -124,6 +123,15 @@ int main() {
 
     auto elapsed = stop - start;
     std::cout << (elapsed / std::chrono::microseconds(1)) / iteration << " microseconds per iteration" << std::endl;
+
+//    KCore::MapCore core{46.9181f, 142.7189f};
+//    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
+//
+    std::this_thread::sleep_for(10s);
+//
+//    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
+//
+//    std::this_thread::sleep_for(10s);
 
     return 0;
 }

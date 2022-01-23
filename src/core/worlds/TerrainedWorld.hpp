@@ -6,13 +6,16 @@
 
 #include "glm/glm.hpp"
 
+#include "BaseWorld.hpp"
+
 #include "../geography/TileDescription.hpp"
 #include "../misc/FrustumCulling.hpp"
-#include "BaseWorld.hpp"
+#include "../cache/TimeoutCache.hpp"
 
 namespace KCore {
     class TerrainedWorld : public BaseWorld {
-        std::list<TileDescription> mMetaTiles{};
+        TimeoutCache<TileDescription> mTilesCache;
+        std::vector<TileDescription> mMetaTiles{};
 
     public:
         TerrainedWorld(const glm::vec2 &originLatLon, const glm::vec2 &originPoint, const struct WorldConfig &config);
@@ -20,7 +23,7 @@ namespace KCore {
         void update() override;
 
         [[nodiscard]]
-        const std::list<TileDescription> &getMetaTiles();
+        const std::vector<TileDescription> &getMetaTiles();
 
     private:
         void calculateTiles() override;
@@ -29,7 +32,7 @@ namespace KCore {
 
         bool targetedScreenSpaceError(TileDescription &tile, const uint8_t &depth);
 
-        uint8_t calculateMaximalDepth();
+        uint8_t maximalCommonTilesDepth();
     };
 }
 
