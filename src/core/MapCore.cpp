@@ -1,10 +1,12 @@
 #include <glm/gtc/type_ptr.hpp>
+#include <glm/gtx/string_cast.hpp>
 
 #include "MapCore.hpp"
-#include "sources/local/TerrainFileSource.hpp"
-#include "sources/remote/RasterRemoteSource.hpp"
-#include "worlds/PlainWorld.hpp"
 
+#include "sources/local/SRTMFileSource.hpp"
+#include "sources/remote/RasterRemoteSource.hpp"
+
+#include "worlds/PlainWorld.hpp"
 #include "queue/tasks/CallbackTask.hpp"
 #include "queue/tasks/NetworkTask.hpp"
 
@@ -26,19 +28,9 @@ namespace KCore {
         mesh.createMesh();
 
         RasterRemoteSource source("https://tile.openstreetmap.org/", ".png");
+        SRTMFileSource hgt("assets/sources/N48E142.hgt");
 
-        // !TODO: resolve this shit!
-        std::this_thread::sleep_for(1000ms);
-
-        for (int i = 0; i < 100; i++) {
-            auto task = new CallbackTask([i]() {
-                std::cout << "first quack " << i << std::endl;
-            });
-
-            mRenderingContext.pushTaskToQueue(task);
-        }
-
-        mRenderingContext.pushTaskToQueue(new NetworkTask("a"));
+        mTilesData.setStayAliveInterval(25000);
     }
 
     MapCore::~MapCore() {
@@ -70,8 +62,30 @@ namespace KCore {
 
         mWorld->updateFrustum(this->mCameraProjectionMatrix, this->mCameraViewMatrix);
         mWorld->setPosition(this->mCameraPosition);
-
         mWorld->update();
+
+        auto tiles = mWorld->getTiles();
+        for (const auto &item: tiles) {
+            if (item.getVisibility() != Visible) continue;
+
+            auto quadcode = item.getQuadcode();
+            auto url = item.tileURL();
+
+            auto inCache = mTilesData.keyInCache(quadcode, true);
+            if (!inCache) {
+                mTilesData.setOrReplace(quadcode, {});
+                mRenderingContext.pushTaskToQueue(new NetworkTask(&mTilesData, quadcode, url));
+            }
+
+//            auto tilecode = item.getTilecode();
+//            if (tilecode.x == 0 && tilecode.y == 0 && tilecode.z == 1) {
+//                auto task = new CallbackTask([item]() {
+//                    std::cout << "invoked by " << glm::to_string(item.getTilecode()) << std::endl;
+//                });
+//                mRenderingContext.pushTaskToQueue(task);
+//
+//            }
+        }
     }
 
     const std::vector<TileDescription> &MapCore::getTiles() {

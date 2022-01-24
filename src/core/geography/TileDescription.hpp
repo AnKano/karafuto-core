@@ -26,13 +26,6 @@ namespace KCore {
         SouthEast = 3
     };
 
-    enum TileSides {
-        North = 0,
-        South = 1,
-        West = 2,
-        East = 3
-    };
-
     enum TileVisibility {
         Hide = 0,
         Visible = 1
@@ -44,11 +37,6 @@ namespace KCore {
         float SideLength{};                        /* 20..24         bytes */
         TileType Type{Leaf};                       /* 24..28         bytes */
         TileVisibility Visibility{Visible};        /* 28..32         bytes */
-    };
-
-    struct TileChilds {
-        std::array<TileDescription *, 4> InQuad{};
-        std::array<std::array<TileDescription *, 2>, 4> Sides{};
     };
 
     class TileDescription {
@@ -72,9 +60,6 @@ namespace KCore {
 
         TileCardinals mCardinal;
 
-//        const TileDescription *mParent{};
-//        TileChilds mChilds{};
-
         // variable data related to tile
         std::map<std::string, void *> mDataStash;
 
@@ -85,7 +70,8 @@ namespace KCore {
 
         ~TileDescription() = default;
 
-//        void setParent(const TileDescription *parent_ptr);
+        [[nodiscard]]
+        std::string tileURL() const;
 
         void setQuadcode(const std::string &quadcode);
 
@@ -131,9 +117,6 @@ namespace KCore {
 
         [[nodiscard]]
         TileType getType() const;
-
-//        [[nodiscard]]
-//        const TileChilds &getChilds() const;
 
     private:
         TileCardinals calculateCardinalFromQuadcode();

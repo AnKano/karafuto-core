@@ -13,14 +13,15 @@ namespace KCore {
         mCardinal = calculateCardinalFromQuadcode();
     }
 
+    std::string TileDescription::tileURL() const {
+        return {std::to_string(mTilecode.z) + "/" +
+                std::to_string(mTilecode.x) + "/" +
+                std::to_string(mTilecode.y)};
+    }
+
     void TileDescription::setQuadcode(const std::string &quadcode) {
         TileDescription::mQuadcode = quadcode;
     }
-
-//    void TileDescription::setParent(const TileDescription *parent_ptr) {
-//        TileDescription::mParent = parent_ptr;
-//        setType((parent_ptr == nullptr) ? TileType::Root : TileType::Leaf);
-//    }
 
     void TileDescription::setTilecode(const glm::ivec3 &tilecode) {
         TileDescription::mPayload.Tilecode.x = static_cast<int32_t>(tilecode.x);
@@ -97,10 +98,6 @@ namespace KCore {
     TileVisibility TileDescription::getVisibility() const {
         return mVisibility;
     }
-
-//    const TileChilds &TileDescription::getChilds() const {
-//        return mChilds;
-//    }
 
     enum TileCardinals TileDescription::calculateCardinalFromQuadcode() {
         switch (mQuadcode.back()) {

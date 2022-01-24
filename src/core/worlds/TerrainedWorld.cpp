@@ -4,7 +4,8 @@
 
 namespace KCore {
     TerrainedWorld::TerrainedWorld(const glm::vec2 &originLatLon, const glm::vec2 &originPoint,
-                                   const struct WorldConfig &config) : BaseWorld(originLatLon, originPoint, config) {}
+                                   const struct WorldConfig &config) :
+            BaseWorld(originLatLon, originPoint, config) {}
 
     void TerrainedWorld::calculateTiles() {
         // previous meta tile now not actual, so remove it
@@ -19,8 +20,8 @@ namespace KCore {
         // create height nodes
         for (const auto &item: std::vector{"0", "1", "2", "3"}) {
             auto founded = mTilesCache[item];
-            if (founded != std::nullopt) {
-                mMetaTiles.emplace_back(founded.value());
+            if (founded) {
+                mMetaTiles.emplace_back(*founded);
                 continue;
             }
 
@@ -41,8 +42,8 @@ namespace KCore {
 
                 for (const auto &item: std::vector{"0", "1", "2", "3"}) {
                     auto founded = mTilesCache[quadcode + item];
-                    if (founded != std::nullopt) {
-                        mMetaTiles.push_back(founded.value());
+                    if (founded) {
+                        mMetaTiles.emplace_back(*founded);
                     } else {
                         auto child = createTile(quadcode + item);
                         auto tileDescription = mTilesCache.setOrReplace(quadcode + item, child);

@@ -5,16 +5,19 @@
 
 #include "../misc/FrustumCulling.hpp"
 #include "../geography/TileDescription.hpp"
-
 #include "../cache/TimeoutCache.hpp"
 
 namespace KCore {
+    class MapCore;
+
     struct WorldConfig {
         bool GenerateMeta;
     };
 
     class BaseWorld {
     protected:
+        MapCore *core;
+
         WorldConfig mConfig;
 
         KCore::FrustumCulling mCullingFilter{};
@@ -26,7 +29,8 @@ namespace KCore {
         glm::vec3 mOriginPositionWebMercator{};
 
     public:
-        BaseWorld(const glm::vec2 &originLatLon, const glm::vec2 &originPoint, const struct WorldConfig &config)
+        BaseWorld(const glm::vec2 &originLatLon, const glm::vec2 &originPoint,
+                  const struct WorldConfig &config)
                 : mOriginPositionReal(originPoint), mConfig(config) {}
 
         void setConfig(const WorldConfig &config) {
@@ -73,8 +77,8 @@ namespace KCore {
             // create tiles
             for (const auto &item: std::vector{"0", "1", "2", "3"}) {
                 auto founded = mTilesCache[item];
-                if (founded != std::nullopt) {
-                    mCommonTiles.push_back(founded.value());
+                if (founded) {
+                    mCommonTiles.emplace_back(*founded);
                     continue;
                 }
 
@@ -85,18 +89,18 @@ namespace KCore {
 
             std::size_t count{0};
             while (count != mCommonTiles.size()) {
-                auto tile = mCommonTiles[count];
-                auto quadcode = tile.getQuadcode();
+                auto tile = &mCommonTiles[count];
+                auto quadcode = tile->getQuadcode();
 
-                if (screenSpaceError(tile, 3.0)) {
-                    if (tile.getType() != TileType::Root)
-                        tile.setType(TileType::Separated);
-                    tile.setVisibility(TileVisibility::Hide);
+                if (screenSpaceError(*tile, 3.0)) {
+                    if (tile->getType() != TileType::Root)
+                        tile->setType(TileType::Separated);
+                    tile->setVisibility(TileVisibility::Hide);
 
                     for (const auto &item: std::vector{"0", "1", "2", "3"}) {
                         auto founded = mTilesCache[quadcode + item];
-                        if (founded != std::nullopt) {
-                            mCommonTiles.push_back(founded.value());
+                        if (founded) {
+                            mCommonTiles.emplace_back(*founded);
                         } else {
                             auto child = createTile(quadcode + item);
                             auto tileDescription = mTilesCache.setOrReplace(quadcode + item, child);

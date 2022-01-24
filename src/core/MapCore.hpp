@@ -7,7 +7,6 @@
 
 #include "geography/TileDescription.hpp"
 #include "worlds/TerrainedWorld.hpp"
-#include "rendering/_TileRenderer.hpp"
 #include "meshes/GridMesh.hpp"
 #include "rendering/RenderContext.hpp"
 
@@ -16,6 +15,8 @@ namespace KCore {
     private:
         glm::mat4 mCameraViewMatrix{}, mCameraProjectionMatrix{};
         glm::vec3 mCameraPosition{};
+
+        TimeoutCache<std::map<std::string, uint8_t *>> mTilesData;
 
         BaseWorld* mWorld{};
         std::vector<TileDescription> mCommonTiles;

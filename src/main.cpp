@@ -124,13 +124,9 @@ int main() {
     std::cout << (elapsed / std::chrono::microseconds(1)) / iteration << " microseconds per iteration" << std::endl;
 
 //    KCore::MapCore core{46.9181f, 142.7189f};
-//    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-//
-//    std::this_thread::sleep_for(10s);
-//
-//    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-//
-//    std::this_thread::sleep_for(10s);
+    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
+
+    std::this_thread::sleep_for(100s);
 
     return 0;
 }

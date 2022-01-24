@@ -15,10 +15,11 @@
 namespace KCore {
     class TerrainedWorld : public BaseWorld {
         TimeoutCache<TileDescription> mTilesCache;
-        std::vector<TileDescription> mMetaTiles{};
+        std::vector<TileDescription> mMetaTiles;
 
     public:
-        TerrainedWorld(const glm::vec2 &originLatLon, const glm::vec2 &originPoint, const struct WorldConfig &config);
+        TerrainedWorld(const glm::vec2 &originLatLon, const glm::vec2 &originPoint,
+                       const struct WorldConfig &config);
 
         void update() override;
 

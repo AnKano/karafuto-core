@@ -9,11 +9,27 @@
 namespace KCore {
     class BaseFileSource {
     protected:
-        std::string mFilename;
+        std::string mPath;
+
+        std::string mFolderPath;
+
+        std::string mFileName;
+        std::string mFileNameBase;
+        std::string mFileNameExtension;
+
         std::vector<uint8_t> mData{};
+        bool mFileCorrupted{false};
 
     public:
-        BaseFileSource(std::string filename) : mFilename(std::move(filename)) {
+        BaseFileSource(std::string path) : mPath(std::move(path)) {
+            auto lastSlashPos = mPath.find_last_of("/\\") + 1;
+            mFolderPath = mPath.substr(0, lastSlashPos);
+            mFileName = mPath.substr(lastSlashPos);
+
+            auto dotPos = mFileName.find('.');
+            mFileNameBase = mFileName.substr(0, dotPos);
+            mFileNameExtension = mFileName.substr(dotPos + 1);
+
             loadFile();
         }
 
@@ -24,7 +40,7 @@ namespace KCore {
     private:
         void loadFile() {
             std::streampos fileSize;
-            std::ifstream file(mFilename, std::ios::binary);
+            std::ifstream file(mPath, std::ios::binary);
 
             file.seekg(0, std::ios::end);
             fileSize = file.tellg();

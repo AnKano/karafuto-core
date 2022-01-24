@@ -33,7 +33,7 @@ namespace KCore {
         std::shared_ptr<std::thread> mCacheThread;
 
     public:
-        std::optional<T> operator[](const std::string& key) {
+        T* operator[](const std::string &key) {
             std::lock_guard<std::mutex> lock{mCacheLock};
             return getByKey(key);
         }
@@ -49,6 +49,22 @@ namespace KCore {
             setShouldClose(true);
             // await to thread stop working
             while (getWorkingStatus());
+        }
+
+        bool keyInCache(const std::string &key, const bool &actualize = false) {
+            std::lock_guard<std::mutex> lock{mCacheLock};
+
+            auto inCache = mCachedElements.find(key);
+            if (inCache == mCachedElements.end())
+                return false;
+
+            if (actualize)
+                mCachedElements[key] = {
+                        mCachedElements[key].element,
+                        std::chrono::system_clock::now()
+                };
+
+            return true;
         }
 
         const T &setOrReplace(const std::string &key, const T &&element) {
@@ -73,13 +89,13 @@ namespace KCore {
             return mCachedElements[key].element;
         }
 
-        std::optional<T> getByKey(const std::string &key) {
+        T* getByKey(const std::string &key) {
             if (mCachedElements.find(key) == mCachedElements.end())
-                return std::nullopt;
+                return nullptr;
 
             // update time if it's exists
             mCachedElements[key].time = std::chrono::system_clock::now();
-            return std::optional<T>(mCachedElements[key].element);
+            return &mCachedElements[key].element;
         }
 
         void runCacheLoop() {
@@ -109,22 +125,23 @@ namespace KCore {
             mReadyToBeDead = true;
         }
 
-        void setCheckInterval(const uint64_t &value) {
-            mCheckInterval = std::chrono::milliseconds(value);
+        void setCheckInterval(const uint64_t &seconds) {
+            mCheckInterval = std::chrono::seconds(seconds);
         }
 
-        void setCheckInterval(const std::chrono::milliseconds &value) {
+        void setCheckInterval(const std::chrono::seconds &value) {
             mCheckInterval = value;
         }
 
-        void setStayAliveInterval(const uint64_t &value) {
-            mStayAliveInterval = std::chrono::milliseconds(value);
+        void setStayAliveInterval(const uint64_t &seconds) {
+            mStayAliveInterval = std::chrono::seconds(seconds);
         }
 
-        void setStayAliveInterval(const std::chrono::milliseconds &value) {
+        void setStayAliveInterval(const std::chrono::seconds &value) {
             mStayAliveInterval = value;
         }
 
+    private:
         void setShouldClose(const bool &value) {
             mShouldClose = value;
         }
@@ -133,8 +150,5 @@ namespace KCore {
         bool getWorkingStatus() const {
             return mReadyToBeDead;
         }
-
-    private:
-
     };
 }
