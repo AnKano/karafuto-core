@@ -11,7 +11,8 @@
 namespace KCore {
     class NetworkTask : public BaseTask {
     private:
-        TimeoutCache <std::map<std::string, uint8_t *>> *mTarget;
+        BaseCache<std::map<std::string, std::shared_ptr<void>>> *mTarget;
+        std::map<std::string, std::shared_ptr<void>> mCacheCopy;
 
         std::string mQuadcode;
         std::string mPayload;
@@ -20,16 +21,25 @@ namespace KCore {
         CURLcode mCurlResult;
 
     public:
-        NetworkTask(TimeoutCache <std::map<std::string, uint8_t *>> *cache,
+        NetworkTask(BaseCache<std::map<std::string, std::shared_ptr<void>>> *dataCache,
                     std::string quadcode,
                     std::string payload) :
-                mTarget(cache),
+                mTarget(dataCache),
                 mQuadcode(std::move(quadcode)),
-                mPayload(std::move(payload)) {}
+                mPayload(std::move(payload)) {
+            auto cache = mTarget->getByKey(mQuadcode);
+            if (!cache) {
+                // check dataCache existence
+                mTarget->setOrReplace(mQuadcode, {});
+                cache = mTarget->getByKey(mQuadcode);
+            }
+
+            mCacheCopy = std::map<std::string, std::shared_ptr<void>>(*cache);
+        }
 
         void performTask() override {
             std::string url{"http://tile.openstreetmap.org/" + mPayload + ".png"};
-            const char *c_url = url.c_str();
+            const char *cUrl = url.c_str();
             char curlErrorBuffer[CURL_ERROR_SIZE];
 
             CURL *curl = curl_easy_init();
@@ -37,7 +47,7 @@ namespace KCore {
 
             curl_easy_setopt(curl, CURLOPT_USERAGENT, "KarafutoMapCore/0.0");
             curl_easy_setopt(curl, CURLOPT_ERRORBUFFER, curlErrorBuffer);
-            curl_easy_setopt(curl, CURLOPT_URL, c_url);
+            curl_easy_setopt(curl, CURLOPT_URL, cUrl);
             curl_easy_setopt(curl, CURLOPT_FOLLOWLOCATION, true);
             curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, false);
 
@@ -50,12 +60,15 @@ namespace KCore {
         }
 
         void onTaskComplete() override {
-            auto cache = (*mTarget)[mQuadcode];
-
             // copy buffer to cache
-            auto* buffer = new uint8_t[mCurlBuffer.size()];
-            memcpy(buffer, mCurlBuffer.data(), mCurlBuffer.size());
-            (*cache)["height"] = buffer;
+            auto buffer = std::make_shared<std::vector<uint8_t>>();
+            buffer->resize(mCurlBuffer.size());
+            memcpy(buffer->data(), mCurlBuffer.data(), mCurlBuffer.size());
+
+            // restore cache state
+            mCacheCopy["terrain"] = std::static_pointer_cast<void>(buffer);
+
+            mTarget->setOrReplace(mQuadcode, mCacheCopy);
 
             std::cout << "Load complete! " << mCurlBuffer.size() << " bytes" << std::endl;
         }

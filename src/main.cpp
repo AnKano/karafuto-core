@@ -60,15 +60,6 @@ EMSCRIPTEN_BINDINGS(karafuto) {
 #include <iostream>
 #include <chrono>
 
-struct TileDescription {
-    std::string quadcode;
-    glm::vec3 tileCode;
-    glm::vec2 center;
-    float sideLength;
-    uint32_t type;
-    uint32_t visibility;
-};
-
 int main() {
     const uint16_t viewportWidth{3000};
     const uint16_t viewportHeight{1800};
@@ -92,31 +83,15 @@ int main() {
             cameraOpenGlSpaceUp
     );
 
-    const uint16_t iteration = 100;
-
-    std::vector<TileDescription> descriptions{};
+    const uint16_t iteration = 1000;
 
 //     46.9181f, 142.7189f is latitude and longitude of
 //     the surroundings of the city of Yuzhno-Sakhalinsk
     KCore::MapCore core{46.9181f, 142.7189f};
     auto start = std::chrono::system_clock::now();
     for (uint16_t i = 0; i < iteration; i++) {
-        descriptions.clear();
-
         core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-
-        auto tiles = core.getTiles();
-        for (const auto &item: tiles) {
-            TileDescription description;
-            description.quadcode = item.getQuadcode();
-            description.tileCode = {item.getTilecode().x, item.getTilecode().y, item.getTilecode().z };
-            description.center = {item.getCenter().x, item.getCenter().y };
-            description.sideLength = item.getSideLength();
-            description.type = item.getType();
-            description.visibility = item.getVisibility();
-
-            descriptions.push_back(description);
-        }
+        auto val = core.getTiles();
     }
     auto stop = std::chrono::system_clock::now();
 
@@ -124,6 +99,11 @@ int main() {
     std::cout << (elapsed / std::chrono::microseconds(1)) / iteration << " microseconds per iteration" << std::endl;
 
 //    KCore::MapCore core{46.9181f, 142.7189f};
+    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
+
+    std::this_thread::sleep_for(4s);
+
+    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
     core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
 
     std::this_thread::sleep_for(100s);

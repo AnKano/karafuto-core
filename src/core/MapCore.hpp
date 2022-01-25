@@ -10,19 +10,22 @@
 #include "meshes/GridMesh.hpp"
 #include "rendering/RenderContext.hpp"
 
+#include "cache/LimitedCache.hpp"
+#include "geography/tiles/CommonTile.hpp"
+#include "geography/tiles/MetaTile.hpp"
+#include "geography/plain/PlainCommonTile.hpp"
+
 namespace KCore {
     class MapCore {
     private:
         glm::mat4 mCameraViewMatrix{}, mCameraProjectionMatrix{};
         glm::vec3 mCameraPosition{};
 
-        TimeoutCache<std::map<std::string, uint8_t *>> mTilesData;
-
         BaseWorld* mWorld{};
-        std::vector<TileDescription> mCommonTiles;
-        std::vector<TileDescription> mMetaTiles;
 
-        KCore::BaseMesh* mMesh{};
+        LimitedCache<std::map<std::string, std::shared_ptr<void>>> mTilesData;
+        TimeoutCache<CommonTile> mCommonTiles;
+//        TimeoutCache<MetaTile> mMetaTiles;
 
         RenderContext mRenderingContext;
 
@@ -39,7 +42,7 @@ namespace KCore {
                     const float *cameraViewMatrix_ptr,
                     const float *cameraPosition_ptr);
 
-        const std::vector<TileDescription> &getTiles();
+        std::vector<PlainCommonTile> getTiles();
 
         const std::vector<TileDescription> &getMetaTiles();
 
@@ -52,7 +55,6 @@ namespace KCore {
 
         const std::vector<TileDescription>& emscripten_get_meta_tiles();
 #endif
-
 
     private:
         void dispose();

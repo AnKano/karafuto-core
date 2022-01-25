@@ -1,15 +1,10 @@
 #include <glm/gtc/type_ptr.hpp>
-#include <glm/gtx/string_cast.hpp>
 
 #include "MapCore.hpp"
 
-#include "sources/local/SRTMFileSource.hpp"
 #include "sources/remote/RasterRemoteSource.hpp"
-
 #include "worlds/PlainWorld.hpp"
 #include "queue/tasks/CallbackTask.hpp"
-#include "queue/tasks/NetworkTask.hpp"
-
 #include "meshes/PolygonMesh.hpp"
 
 namespace KCore {
@@ -24,13 +19,9 @@ namespace KCore {
         mWorld->updateFrustum(this->mCameraProjectionMatrix, this->mCameraViewMatrix);
         mWorld->setPosition(this->mCameraPosition);
 
-        PolygonMesh mesh;
-        mesh.createMesh();
-
-        RasterRemoteSource source("https://tile.openstreetmap.org/", ".png");
-        SRTMFileSource hgt("assets/sources/N48E142.hgt");
-
-        mTilesData.setStayAliveInterval(25000);
+        mTilesData.setMaximalCount(5000);
+        mTilesData.setCheckInterval(10);
+        mTilesData.setStayAliveInterval(20);
     }
 
     MapCore::~MapCore() {
@@ -65,32 +56,42 @@ namespace KCore {
         mWorld->update();
 
         auto tiles = mWorld->getTiles();
+        // request data for each tile not presented in cache
         for (const auto &item: tiles) {
+            // process only visible tiles
             if (item.getVisibility() != Visible) continue;
 
             auto quadcode = item.getQuadcode();
             auto url = item.tileURL();
 
             auto inCache = mTilesData.keyInCache(quadcode, true);
-            if (!inCache) {
+            auto inSecondCache = mCommonTiles.keyInCache(quadcode, true);
+            if (!inCache && !inSecondCache) {
                 mTilesData.setOrReplace(quadcode, {});
-                mRenderingContext.pushTaskToQueue(new NetworkTask(&mTilesData, quadcode, url));
+                mCommonTiles.setOrReplace(quadcode, CommonTile{&mTilesData, &mRenderingContext, item});
+            } else {
+                mCommonTiles.getByKey(quadcode)->updateRelatedFields();
             }
-
-//            auto tilecode = item.getTilecode();
-//            if (tilecode.x == 0 && tilecode.y == 0 && tilecode.z == 1) {
-//                auto task = new CallbackTask([item]() {
-//                    std::cout << "invoked by " << glm::to_string(item.getTilecode()) << std::endl;
-//                });
-//                mRenderingContext.pushTaskToQueue(task);
-//
-//            }
         }
     }
 
-    const std::vector<TileDescription> &MapCore::getTiles() {
+    std::vector<PlainCommonTile> MapCore::getTiles() {
         if (!mWorld) throw std::runtime_error("world not initialized");
-        return mWorld->getTiles();
+
+        std::vector<PlainCommonTile> commonTiles;
+
+        auto tiles = mWorld->getTiles();
+        for (const auto &item: tiles) {
+            auto quadcode = item.getQuadcode();
+
+            auto cachedTile = mCommonTiles.getByKey(quadcode);
+            if (!cachedTile) continue;
+            if (!cachedTile->isReady()) continue;
+
+            commonTiles.emplace_back(mCommonTiles.getByKey(item.getQuadcode()));
+        }
+
+        return commonTiles;
     }
 
     const std::vector<TileDescription> &MapCore::getMetaTiles() {

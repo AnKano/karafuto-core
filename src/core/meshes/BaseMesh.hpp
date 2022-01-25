@@ -12,9 +12,11 @@ namespace KCore {
         std::vector<uint32_t> mIndices;
 
     protected:
-        virtual void createMesh() = 0;
+        virtual void createMesh() {};
 
     public:
+        BaseMesh() = default;
+
         [[nodiscard]]
         const std::vector<glm::vec3> &getVertices() const {
             return mVertices;
