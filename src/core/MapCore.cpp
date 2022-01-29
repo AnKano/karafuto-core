@@ -5,7 +5,6 @@
 #include "sources/remote/RasterRemoteSource.hpp"
 #include "worlds/PlainWorld.hpp"
 #include "queue/tasks/CallbackTask.hpp"
-#include "meshes/PolygonMesh.hpp"
 
 namespace KCore {
     MapCore::MapCore(float latitude, float longitude) {
@@ -132,4 +131,23 @@ namespace KCore {
         return std::move(mMetaTiles);
     }
 #endif
+
+    DllExport KCore::MapCore *InstantiateMapCore(float latitude, float longitude) {
+        return new KCore::MapCore(latitude, longitude);
+    }
+
+    DllExport void UpdateMapCore(KCore::MapCore *mapCore,
+                                 float *cameraProjectionMatrix,
+                                 float *cameraViewMatrix,
+                                 float *cameraPosition) {
+        mapCore->update(cameraProjectionMatrix,
+                        cameraViewMatrix,
+                        cameraPosition);
+    }
+
+    DllExport KCore::PlainCommonTile *GetTiles(KCore::MapCore *mapCore, int &length) {
+        auto *tiles = new std::vector<KCore::PlainCommonTile>(mapCore->getTiles());
+        length = tiles->size();
+        return tiles->data();
+    }
 }

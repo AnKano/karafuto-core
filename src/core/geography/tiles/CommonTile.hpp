@@ -17,10 +17,11 @@ namespace KCore {
     private:
         LimitedCache<std::map<std::string, std::shared_ptr<void>>> *mTarget{};
         RenderContext *mQueueContext{};
+
         TileDescription mDescription;
 
         std::shared_ptr<BaseMesh> mMesh{};
-        std::shared_ptr<std::vector<uint8_t>> mImage;
+        std::shared_ptr<std::vector<uint8_t>> mImage{};
 
         bool mReady = false;
 
@@ -28,7 +29,8 @@ namespace KCore {
         CommonTile() = default;
 
         CommonTile(LimitedCache<std::map<std::string, std::shared_ptr<void>>> *cache,
-                   RenderContext *context, const TileDescription &description) :
+                   RenderContext *context,
+                   const TileDescription &description) :
                 mTarget(cache), mDescription(description), mQueueContext(context) {
             produceTasks();
         };
@@ -41,7 +43,7 @@ namespace KCore {
                     mDescription.tileURL())
             );
 
-            mMesh = std::make_shared<GridMesh>(1.0, 1.0, 1);
+            mMesh = std::make_shared<GridMesh>(1.0, 1.0, 64);
         }
 
         void updateRelatedFields() {
@@ -54,7 +56,7 @@ namespace KCore {
             if (!terrain) return;
 
             mImage = terrain;
-            std::cout << "tile " << mDescription.getQuadcode() << " ready" << std::endl;
+//            std::cout << "tile " << mDescription.getQuadcode() << " ready" << std::endl;
             mReady = true;
         }
 
@@ -66,6 +68,11 @@ namespace KCore {
         [[nodiscard]]
         const std::shared_ptr<std::vector<uint8_t>> &getImage() const {
             return mImage;
+        }
+
+        [[nodiscard]]
+        const TileDescription &getDescription() const {
+            return mDescription;
         }
 
         [[nodiscard]]

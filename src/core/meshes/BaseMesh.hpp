@@ -1,7 +1,10 @@
 #pragma once
 
-#include "glm/glm.hpp"
+#include "../../bindings.hpp"
+
 #include <vector>
+#include <glm/glm.hpp>
+#include <glm/gtc/type_ptr.hpp>
 
 namespace KCore {
     class BaseMesh {
@@ -12,30 +15,22 @@ namespace KCore {
         std::vector<uint32_t> mIndices;
 
     protected:
-        virtual void createMesh() {};
+        virtual void createMesh();
 
     public:
         BaseMesh() = default;
 
         [[nodiscard]]
-        const std::vector<glm::vec3> &getVertices() const {
-            return mVertices;
-        }
+        const std::vector<glm::vec3> &getVertices() const;
 
         [[nodiscard]]
-        const std::vector<glm::vec3> &getNormals() const {
-            return mNormals;
-        }
+        const std::vector<glm::vec3> &getNormals() const;
 
         [[nodiscard]]
-        const std::vector<glm::vec2> &getUVs() const {
-            return mUVs;
-        }
+        const std::vector<glm::vec2> &getUVs() const;
 
         [[nodiscard]]
-        const std::vector<uint32_t> &getIndices() const {
-            return mIndices;
-        }
+        const std::vector<uint32_t> &getIndices() const;
 
 #ifdef __EMSCRIPTEN__
         intptr_t getIndices_ptr_emscripten() {
@@ -71,4 +66,14 @@ namespace KCore {
         }
 #endif
     };
+
+    extern "C" {
+    DllExport float *GetMeshVertices(KCore::BaseMesh *mesh, int &length);
+
+    DllExport float *GetMeshNormals(KCore::BaseMesh *mesh, int &length);
+
+    DllExport float *GetMeshUVs(KCore::BaseMesh *mesh, int &length);
+
+    DllExport unsigned int *GetMeshIndices(KCore::BaseMesh *mesh, int &length);
+    }
 }

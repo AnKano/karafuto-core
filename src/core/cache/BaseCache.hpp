@@ -23,6 +23,8 @@ namespace KCore {
 
         std::map<std::string, CacheElement> mCachedElements;
 
+        std::chrono::time_point<system_clock> mLastAccessPoint;
+
         std::mutex mCacheLock;
         std::shared_ptr<std::thread> mCacheThread;
         std::chrono::milliseconds mCheckInterval = 1s;
@@ -36,6 +38,8 @@ namespace KCore {
                 runCacheLoop();
             });
             mCacheThread->detach();
+
+            mLastAccessPoint = system_clock::now();
         }
 
         ~BaseCache() {
@@ -45,12 +49,13 @@ namespace KCore {
         }
 
         T *operator[](const std::string &key) {
-            std::lock_guard<std::mutex> lock{mCacheLock};
             return getByKey(key);
         }
 
         bool keyInCache(const std::string &key, const bool &actualize = false) {
             std::lock_guard<std::mutex> lock{mCacheLock};
+
+            mLastAccessPoint = system_clock::now();
 
             auto inCache = mCachedElements.find(key);
             if (inCache == mCachedElements.end())
@@ -68,6 +73,8 @@ namespace KCore {
         virtual const T &setOrReplace(const std::string &key, const T &&element) {
             std::lock_guard<std::mutex> lock{mCacheLock};
 
+            mLastAccessPoint = system_clock::now();
+
             mCachedElements[key] = {
                     element,
                     std::chrono::system_clock::now()
@@ -79,6 +86,8 @@ namespace KCore {
         virtual const T &setOrReplace(const std::string &key, const T &element) {
             std::lock_guard<std::mutex> lock{mCacheLock};
 
+            mLastAccessPoint = system_clock::now();
+
             mCachedElements[key] = {
                     element,
                     std::chrono::system_clock::now()
@@ -88,8 +97,12 @@ namespace KCore {
         }
 
         T *getByKey(const std::string &key) {
+            std::lock_guard<std::mutex> lock{mCacheLock};
+
             if (mCachedElements.find(key) == mCachedElements.end())
                 return nullptr;
+
+            mLastAccessPoint = system_clock::now();
 
             // update time if it's exists
             mCachedElements[key].time = std::chrono::system_clock::now();

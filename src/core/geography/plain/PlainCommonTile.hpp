@@ -1,14 +1,24 @@
 #pragma once
 
+#include "../../../bindings.hpp"
+
 #include "../../meshes/BaseMesh.hpp"
 #include "../tiles/CommonTile.hpp"
 
 namespace KCore {
-    class PlainCommonTile {
+    struct PlainCommonTile {
     public:
-        BaseMesh mMesh;
-        std::vector<uint8_t> mImage;
+        TilePayload mDescription;
 
-        explicit PlainCommonTile(CommonTile *common) : mMesh(*common->getMesh()), mImage(*common->getImage()) {}
+        BaseMesh *mMesh;
+        std::vector<uint8_t> *mImage;
+
+        explicit PlainCommonTile(CommonTile *common);
+
+        void dispose() const;
     };
+
+    extern "C" {
+    DllExport uint8_t *GetImageBytes(std::vector<uint8_t> *image, int &length);
+    }
 }

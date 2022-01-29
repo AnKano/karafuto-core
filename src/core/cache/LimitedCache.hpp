@@ -32,8 +32,6 @@ namespace KCore {
         void inLoopCheck() {
             if (this->mCachedElements.size() < mMaximalCount) return;
 
-            auto timePoint = system_clock::now();
-
             for (auto it = this->mCachedElements.begin(); it != this->mCachedElements.end();) {
                 if (this->mCachedElements.size() <= mMaximalCount)
                     break;
@@ -41,7 +39,7 @@ namespace KCore {
                 auto key = it->first;
                 auto element = it->second;
 
-                auto timeDelta = duration_cast<milliseconds>(timePoint - element.time);
+                auto timeDelta = duration_cast<milliseconds>(this->mLastAccessPoint - element.time);
                 auto stayAliveInMilliseconds = duration_cast<milliseconds>(mStayAliveInterval);
                 if (timeDelta >= stayAliveInMilliseconds) {
                     std::cout << "element with tag \"" + key + "\" expired" << std::endl;

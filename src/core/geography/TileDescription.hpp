@@ -37,6 +37,8 @@ namespace KCore {
         float SideLength{};                        /* 20..24         bytes */
         TileType Type{Leaf};                       /* 24..28         bytes */
         TileVisibility Visibility{Visible};        /* 28..32         bytes */
+
+        char Quadcode[32];                        /* 32..64         bytes */
     };
 
     class TileDescription {
@@ -59,9 +61,6 @@ namespace KCore {
         float mSideLength{};
 
         TileCardinals mCardinal;
-
-        // variable data related to tile
-        std::map<std::string, void *> mDataStash;
 
     public:
         TileDescription();

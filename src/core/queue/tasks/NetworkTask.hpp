@@ -4,14 +4,19 @@
 #include <utility>
 #include <iostream>
 
-#include "curl/curl.h"
+#include <curl/curl.h>
+
+#define STB_IMAGE_IMPLEMENTATION
+#define STB_IMAGE_STATIC
+
+#include <stb_image.h>
 
 #include "BaseTask.hpp"
 
 namespace KCore {
     class NetworkTask : public BaseTask {
     private:
-        BaseCache<std::map<std::string, std::shared_ptr<void>>> *mTarget;
+        BaseCache <std::map<std::string, std::shared_ptr<void>>> *mTarget;
         std::map<std::string, std::shared_ptr<void>> mCacheCopy;
 
         std::string mQuadcode;
@@ -21,7 +26,7 @@ namespace KCore {
         CURLcode mCurlResult;
 
     public:
-        NetworkTask(BaseCache<std::map<std::string, std::shared_ptr<void>>> *dataCache,
+        NetworkTask(BaseCache <std::map<std::string, std::shared_ptr<void>>> *dataCache,
                     std::string quadcode,
                     std::string payload) :
                 mTarget(dataCache),
@@ -60,17 +65,23 @@ namespace KCore {
         }
 
         void onTaskComplete() override {
+            int x, y, n;
+            unsigned char *data = stbi_load_from_memory((const stbi_uc *) mCurlBuffer.data(),
+                                                        (int) mCurlBuffer.size(),
+                                                        &x, &y, &n, 3);
+
+            auto rawSize = x * y * n; // width*height*channels
             // copy buffer to cache
             auto buffer = std::make_shared<std::vector<uint8_t>>();
-            buffer->resize(mCurlBuffer.size());
-            memcpy(buffer->data(), mCurlBuffer.data(), mCurlBuffer.size());
+            buffer->resize(rawSize);
+            memcpy(buffer->data(), data, rawSize);
 
             // restore cache state
             mCacheCopy["terrain"] = std::static_pointer_cast<void>(buffer);
 
             mTarget->setOrReplace(mQuadcode, mCacheCopy);
 
-            std::cout << "Load complete! " << mCurlBuffer.size() << " bytes" << std::endl;
+//            std::cout << "Load complete! " << buffer->size() << " bytes" << std::endl;
         }
 
     private:

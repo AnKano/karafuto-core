@@ -31,9 +31,6 @@ namespace KCore {
     }
 
     void GridMesh::createGeneralSurface(float width, float length, int segmentsX, int segmentsY) {
-        segmentsY *= 2;
-        segmentsX *= 2;
-
         const float widthHalf = width / 2.0f;
         const float heightHalf = length / 2.0f;
 
@@ -58,21 +55,16 @@ namespace KCore {
             }
         }
 
-        for (int iy = 0; iy < segmentsY; iy += 2) {
-            for (int ix = 0; ix < segmentsX; ix += 2) {
+        for (int iy = 0; iy < segmentsY; iy++) {
+            for (int ix = 0; ix < segmentsX; ix++) {
                 const uint32_t a = ix + gridX * iy;
-                const uint32_t b = ix + gridX * (iy + 2);
+                const uint32_t b = ix + gridX * (iy + 1);
 
-                // index of mCenter of each segment
-                const uint32_t x = (ix + 1) + gridX * (iy + 1);
+                const uint32_t c = (ix + 1) + gridX * (iy + 1);
+                const uint32_t d = (ix + 1) + gridX * iy;
 
-                const uint32_t c = (ix + 2) + gridX * (iy + 2);
-                const uint32_t d = (ix + 2) + gridX * iy;
-
-                mIndices.insert(mIndices.end(), {a, b, x});
-                mIndices.insert(mIndices.end(), {b, c, x});
-                mIndices.insert(mIndices.end(), {c, d, x});
-                mIndices.insert(mIndices.end(), {d, a, x});
+                mIndices.insert(mIndices.end(), {a, b, c});
+                mIndices.insert(mIndices.end(), {a, c, d});
             }
         }
     }

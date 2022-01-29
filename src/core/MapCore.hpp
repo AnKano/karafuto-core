@@ -1,5 +1,6 @@
 #pragma once
 
+
 #include <vector>
 #include <thread>
 
@@ -21,7 +22,7 @@ namespace KCore {
         glm::mat4 mCameraViewMatrix{}, mCameraProjectionMatrix{};
         glm::vec3 mCameraPosition{};
 
-        BaseWorld* mWorld{};
+        BaseWorld *mWorld{};
 
         LimitedCache<std::map<std::string, std::shared_ptr<void>>> mTilesData;
         TimeoutCache<CommonTile> mCommonTiles;
@@ -61,4 +62,16 @@ namespace KCore {
 
         void performUpdate();
     };
+
+    extern "C" {
+    DllExport KCore::MapCore *InstantiateMapCore(float latitude, float longitude);
+
+    DllExport void UpdateMapCore(KCore::MapCore *mapCore,
+                                 float *cameraProjectionMatrix,
+                                 float *cameraViewMatrix,
+                                 float *cameraPosition);
+
+    DllExport KCore::PlainCommonTile *GetTiles(KCore::MapCore *mapCore, int &length);
+    }
+
 }

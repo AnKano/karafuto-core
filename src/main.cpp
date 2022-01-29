@@ -2,8 +2,8 @@
 // Created by Anton Shubin on 1/18/2021.
 //
 
+
 #include "core/MapCore.hpp"
-#include "core/meshes/GridMesh.hpp"
 
 #ifdef __EMSCRIPTEN__
 
@@ -55,22 +55,24 @@ EMSCRIPTEN_BINDINGS(karafuto) {
 
 #endif
 
+
 #include "glm/glm.hpp"
+#include <glm/gtx/string_cast.hpp>
 
 #include <iostream>
 #include <chrono>
 
 int main() {
-    const uint16_t viewportWidth{3000};
-    const uint16_t viewportHeight{1800};
+    const uint16_t viewportWidth{2560};
+    const uint16_t viewportHeight{1259};
 
-    const float aspectRatio{viewportWidth / viewportHeight};
+    const float aspectRatio{(float) viewportWidth / viewportHeight};
 
     // create camera that reproduce equivalent point of view and matrix
 
     glm::mat4 cameraProjectionMatrix = glm::perspective(
             glm::radians(60.0f), aspectRatio,
-            100.0f, 2500000.0f
+            0.1f, 2500000.0f
     );
 
     glm::vec3 cameraOpenGlSpacePosition{1000.0f, 10000.0f, 10000.0f};
@@ -92,6 +94,9 @@ int main() {
     for (uint16_t i = 0; i < iteration; i++) {
         core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
         auto val = core.getTiles();
+        for (const auto &item: val) {
+            auto a = std::to_string(item.mDescription.Center[0]) + "/" + std::to_string(item.mDescription.Center[1]);
+        }
     }
     auto stop = std::chrono::system_clock::now();
 

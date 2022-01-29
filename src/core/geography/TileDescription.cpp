@@ -3,7 +3,7 @@
 #include <iostream>
 
 namespace KCore {
-    TileDescription::TileDescription() {}
+    TileDescription::TileDescription() = default;
 
     TileDescription::TileDescription(const std::string &quadcode) {
         if (quadcode.empty())
@@ -20,6 +20,7 @@ namespace KCore {
     }
 
     void TileDescription::setQuadcode(const std::string &quadcode) {
+        strcpy_s(TileDescription::mPayload.Quadcode, 32, quadcode.c_str());
         TileDescription::mQuadcode = quadcode;
     }
 
