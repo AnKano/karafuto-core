@@ -1,6 +1,8 @@
 #pragma once
 
-#include "glad/glad.h"
+#include <glad/glad.h>
+
+#include <optional>
 
 #include "Shader.hpp"
 
@@ -58,7 +60,7 @@ namespace KCore::opengl {
 
     class Mesh {
     private:
-        std::string Tag{"KRen mMesh"};
+        std::string Tag{"KRen Mesh"};
 
         uint32_t VAOId{0};
         std::unordered_map<uint16_t, AttributeDescription *> DescribedAttrib_ptrs{};
@@ -76,18 +78,9 @@ namespace KCore::opengl {
             VBOIndices = createIndexBuffer(mesh);
             IndicesCount = (uint32_t) mesh.get_indices().size();
 
-            //kren::engine::log(Tag, "Initial mMesh buffers successfully declared", info);
-
             combineBuffers();
-
-            //kren::engine::log(Tag, "Initial mMesh buffers successfully instantiated", info);
         }
 
-        ~Mesh() {
-            for (const auto&[attribId, describedAttrib_ptr]: DescribedAttrib_ptrs)
-                glDeleteBuffers(1, &describedAttrib_ptr->AttributeVBO);
-            glDeleteBuffers(1, &VBOIndices);
-        }
 
         void draw() const {
             glBindVertexArray(VAOId);
@@ -96,11 +89,9 @@ namespace KCore::opengl {
         }
 
     private:
+
         void combineBuffers() {
-            if (VAOId) {
-                //kren::engine::log(Tag, "Attempt to declare already declared mMesh!", info);
-                return;
-            }
+            if (VAOId) return;
 
             uint32_t vaoId;
             glGenVertexArrays(1, &vaoId);
@@ -119,7 +110,6 @@ namespace KCore::opengl {
             }
 
             VAOId = vaoId;
-            //kren::engine::log(Tag, "Successfully declared ", info);
         }
 
         static std::unordered_map<uint16_t, AttributeDescription *> createVertexBuffers(MeshDescription &mesh) {
@@ -132,10 +122,8 @@ namespace KCore::opengl {
                     idx = attribDesc.AttributeIdx.value();
                 else if (attribDesc.AttributeName != std::nullopt)
                     idx = glGetAttribLocation(mesh.getShader()->id(), attribDesc.AttributeName->c_str());
-                if (idx < 0) {
-                    //kren::engine::log(Tag, "Skip wrongly described attribute", fail);
+                if (idx < 0)
                     continue;
-                }
 
                 attribDesc.AttributeIdx = idx;
 
@@ -146,7 +134,6 @@ namespace KCore::opengl {
                              attribDesc.AttributeData.data(), GL_STATIC_DRAW);
 
                 std::string additional = "| buffer id: " + std::to_string(bufferId);
-                //kren::engine::log(Tag, "mVertices buffer declared " + additional, info);
 
                 // set declared index as key. key is attrib index
                 attribDesc.AttributeVBO = bufferId;
@@ -164,7 +151,6 @@ namespace KCore::opengl {
                          mesh.get_indices().data(), GL_STATIC_DRAW);
 
             std::string additional = "| buffer id: " + std::to_string(bufferId);
-            //kren::engine::log(Tag, "mIndices buffer declared " + additional, info);
 
             return bufferId;
         }

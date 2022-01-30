@@ -26,7 +26,7 @@ namespace KCore {
         CURLcode mCurlResult;
 
     public:
-        NetworkTask(BaseCache <std::map<std::string, std::shared_ptr<void>>> *dataCache,
+        NetworkTask(BaseCache<std::map<std::string, std::shared_ptr<void>>> *dataCache,
                     std::string quadcode,
                     std::string payload) :
                 mTarget(dataCache),

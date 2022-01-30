@@ -11,14 +11,17 @@ namespace KCore {
     public:
         TimeoutCache() : BaseCache<T>() {}
 
+        [[maybe_unused]]
         void setInfiniteStayAliveInterval() {
             mStayAliveInterval = std::chrono::milliseconds::max();
         }
 
+        [[maybe_unused]]
         void setStayAliveInterval(const uint64_t &seconds) {
             mStayAliveInterval = std::chrono::seconds(seconds);
         }
 
+        [[maybe_unused]]
         void setStayAliveInterval(const std::chrono::seconds &value) {
             mStayAliveInterval = value;
         }
@@ -29,7 +32,7 @@ namespace KCore {
                 auto key = it->first;
                 auto element = it->second;
 
-                auto timeDelta = duration_cast<milliseconds>(this->mLastAccessPoint - element.time);
+                auto timeDelta = duration_cast<milliseconds>(this->mLastAccessTimePoint - element.time);
                 auto stayAliveInMilliseconds = duration_cast<milliseconds>(mStayAliveInterval);
                 if (timeDelta >= stayAliveInMilliseconds) {
                     std::cout << "element with tag \"" + key + "\" expired" << std::endl;

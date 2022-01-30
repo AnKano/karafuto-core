@@ -14,7 +14,11 @@ namespace KCore {
 		constexpr static float R = 6378137.0f;
 		constexpr static float MAX_LATITUDE = 85.0511287798f;
 
-		constexpr static double MULTIPLIER = 1.0f;
+        constexpr static float ECC = 6378137.0f;
+        constexpr static float ECC_2 = 6378137.0f * 6378137.0f;
+
+        constexpr static float MULTIPLIER = 1.0f;
+
 	public:
 		static glm::vec2 project(const glm::vec2& latLon) {
 			auto max = MAX_LATITUDE;
@@ -36,11 +40,16 @@ namespace KCore {
 		static glm::vec2 latLonToPoint(const glm::vec2& latLon) {
 			auto projected = GeographyConverter::project(latLon);
 			projected.y *= -1.0f;
+
+            projected.x *= MULTIPLIER;
+            projected.y *= MULTIPLIER;
+
 			return projected;
 		}
 
 		static glm::vec2 pointToLatLon(const glm::vec2& point) {
 			auto _point = glm::vec2(point.x, point.y);
+            _point.y *= -1.0f;
 
 			_point.x /= MULTIPLIER;
 			_point.y /= MULTIPLIER;

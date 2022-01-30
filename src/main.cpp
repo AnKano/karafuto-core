@@ -57,7 +57,6 @@ EMSCRIPTEN_BINDINGS(karafuto) {
 
 
 #include "glm/glm.hpp"
-#include <glm/gtx/string_cast.hpp>
 
 #include <iostream>
 #include <chrono>
@@ -76,7 +75,7 @@ int main() {
     );
 
     glm::vec3 cameraOpenGlSpacePosition{1000.0f, 10000.0f, 10000.0f};
-    glm::vec3 cameraOpenGlSpaceTarget{0.0f, 0.0f, 0.0f};
+    glm::vec3 cameraOpenGlSpaceTarget{0.0f, 10000.0f, 0.0f};
     glm::vec3 cameraOpenGlSpaceUp{0.0f, 1.0f, 0.0f};
 
     glm::mat4 cameraViewMatrix = glm::lookAt(
@@ -93,25 +92,30 @@ int main() {
     auto start = std::chrono::system_clock::now();
     for (uint16_t i = 0; i < iteration; i++) {
         core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-        auto val = core.getTiles();
-        for (const auto &item: val) {
-            auto a = std::to_string(item.mDescription.Center[0]) + "/" + std::to_string(item.mDescription.Center[1]);
+        auto a = core.getCommonFrameEvents();
+        auto b = core.getMetaFrameEvents();
+        auto c = core.getContentFrameEvents();
+        for (const auto &item: a) {
+            auto *payload = (KCore::TilePayload *) item.OptionalPayload;
+            switch (item.Type) {
+                case KCore::InFrustum:
+                    std::cout << item.Quadcode << " in frustum" << std::endl;
+                    break;
+                case KCore::NotInFrustum:
+                    std::cout << item.Quadcode << " disposed" << std::endl;
+                    break;
+                default:
+                    std::cout << item.Quadcode << " undefined" << std::endl;
+            }
         }
     }
     auto stop = std::chrono::system_clock::now();
 
     auto elapsed = stop - start;
     std::cout << (elapsed / std::chrono::microseconds(1)) / iteration << " microseconds per iteration" << std::endl;
-
-//    KCore::MapCore core{46.9181f, 142.7189f};
     core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
 
     std::this_thread::sleep_for(4s);
-
-    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-
-    std::this_thread::sleep_for(100s);
 
     return 0;
 }

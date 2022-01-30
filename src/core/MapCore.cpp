@@ -5,6 +5,7 @@
 #include "sources/remote/RasterRemoteSource.hpp"
 #include "worlds/PlainWorld.hpp"
 #include "queue/tasks/CallbackTask.hpp"
+#include "misc/Utils.hpp"
 
 namespace KCore {
     MapCore::MapCore(float latitude, float longitude) {
@@ -18,13 +19,9 @@ namespace KCore {
         mWorld->updateFrustum(this->mCameraProjectionMatrix, this->mCameraViewMatrix);
         mWorld->setPosition(this->mCameraPosition);
 
-        mTilesData.setMaximalCount(5000);
-        mTilesData.setCheckInterval(10);
-        mTilesData.setStayAliveInterval(20);
-    }
-
-    MapCore::~MapCore() {
-        dispose();
+        mDataStash.setMaximalCount(5000);
+        mDataStash.setCheckInterval(10);
+        mDataStash.setStayAliveInterval(20);
     }
 
     void MapCore::update(const float *cameraProjectionMatrix_ptr,
@@ -53,55 +50,113 @@ namespace KCore {
         mWorld->updateFrustum(this->mCameraProjectionMatrix, this->mCameraViewMatrix);
         mWorld->setPosition(this->mCameraPosition);
         mWorld->update();
+    }
+
+    std::vector<MapEvent> MapCore::getCommonFrameEvents() {
+        if (!mWorld) throw std::runtime_error("world not initialized");
+
+        auto previousFrameTilesCopy = mCurrentCommonTiles;
 
         auto tiles = mWorld->getTiles();
-        // request data for each tile not presented in cache
-        for (const auto &item: tiles) {
-            // process only visible tiles
-            if (item.getVisibility() != Visible) continue;
+        std::map<std::string, TileDescription> currentFrameTiles;
+        for (const auto &item: tiles)
+            currentFrameTiles[item.getQuadcode()] = item;
 
-            auto quadcode = item.getQuadcode();
-            auto url = item.tileURL();
+        mCurrentCommonTiles = currentFrameTiles;
 
-            auto inCache = mTilesData.keyInCache(quadcode, true);
-            auto inSecondCache = mCommonTiles.keyInCache(quadcode, true);
-            if (!inCache && !inSecondCache) {
-                mTilesData.setOrReplace(quadcode, {});
-                mCommonTiles.setOrReplace(quadcode, CommonTile{&mTilesData, &mRenderingContext, item});
-            } else {
-                mCommonTiles.getByKey(quadcode)->updateRelatedFields();
+        auto diff = mapKeysDifference<std::string>(previousFrameTilesCopy, currentFrameTiles);
+        auto inter = mapKeysIntersection<std::string>(previousFrameTilesCopy, currentFrameTiles);
+
+        auto events = std::vector<MapEvent>();
+        for (const auto &item: diff) {
+            if (previousFrameTilesCopy.find(item) != std::end(previousFrameTilesCopy)) {
+                MapEvent event{};
+                event.Type = NotInFrustum;
+                strcpy_s(event.Quadcode, previousFrameTilesCopy[item].getQuadcode().c_str());
+                event.OptionalPayload = nullptr;
+                events.push_back(event);
+                continue;
+            }
+
+            if (currentFrameTiles.find(item) != std::end(currentFrameTiles)) {
+                MapEvent event{};
+                event.Type = InFrustum;
+                strcpy_s(event.Quadcode, mCurrentCommonTiles[item].getQuadcode().c_str());
+                event.OptionalPayload = (void *) &mCurrentCommonTiles[item].mPayload;
+                events.push_back(event);
+                continue;
             }
         }
+
+        mStoredCommonEvents = events;
+
+        return mStoredCommonEvents;
     }
 
-    std::vector<PlainCommonTile> MapCore::getTiles() {
+    std::vector<MapEvent> MapCore::getMetaFrameEvents() {
         if (!mWorld) throw std::runtime_error("world not initialized");
 
-        std::vector<PlainCommonTile> commonTiles;
+        auto previousFrameTilesCopy = mCurrentMetaTiles;
 
-        auto tiles = mWorld->getTiles();
-        for (const auto &item: tiles) {
-            auto quadcode = item.getQuadcode();
+        auto tiles = ((TerrainedWorld *) mWorld)->getMetaTiles();
+        std::map<std::string, TileDescription> currentFrameTiles;
+        for (const auto &item: tiles)
+            currentFrameTiles[item.getQuadcode()] = item;
 
-            auto cachedTile = mCommonTiles.getByKey(quadcode);
-            if (!cachedTile) continue;
-            if (!cachedTile->isReady()) continue;
+        mCurrentMetaTiles = currentFrameTiles;
 
-            commonTiles.emplace_back(mCommonTiles.getByKey(item.getQuadcode()));
+        auto diff = mapKeysDifference<std::string>(previousFrameTilesCopy, currentFrameTiles);
+        auto inter = mapKeysIntersection<std::string>(previousFrameTilesCopy, currentFrameTiles);
+
+        auto events = std::vector<MapEvent>();
+        for (const auto &item: diff) {
+            if (previousFrameTilesCopy.find(item) != std::end(previousFrameTilesCopy)) {
+                MapEvent event{};
+                event.Type = NotInFrustum;
+                strcpy_s(event.Quadcode, previousFrameTilesCopy[item].getQuadcode().c_str());
+                event.OptionalPayload = nullptr;
+                events.push_back(event);
+                continue;
+            }
+
+            if (currentFrameTiles.find(item) != std::end(currentFrameTiles)) {
+                MapEvent event{};
+                event.Type = InFrustum;
+                strcpy_s(event.Quadcode, mCurrentMetaTiles[item].getQuadcode().c_str());
+                event.OptionalPayload = (void *) &mCurrentMetaTiles[item].mPayload;
+                events.push_back(event);
+                continue;
+            }
         }
 
-        return commonTiles;
+        mStoredMetaEvents = events;
+
+        populateRenderingQueue();
+
+        return events;
     }
 
-    const std::vector<TileDescription> &MapCore::getMetaTiles() {
-        if (!mWorld) throw std::runtime_error("world not initialized");
-        return ((TerrainedWorld *) mWorld)->getMetaTiles();
+    std::vector<MapEvent> MapCore::getContentFrameEvents() {
+        std::lock_guard lock{mEventsLock};
+
+        auto events = mStoredContentEvents;
+        mStoredContentEvents.clear();
+
+        return events;
     }
 
-    void MapCore::dispose() {
-        // dispose rendering context thread
-        mRenderingContext.setShouldClose(true);
-        while (mRenderingContext.getWorkingStatus());
+    void MapCore::pushEventToContentEvent(const MapEvent &event) {
+        std::lock_guard lock{mEventsLock};
+        mStoredContentEvents.push_back(event);
+    };
+
+    void MapCore::populateRenderingQueue() {
+        auto tiles = ((TerrainedWorld *) mWorld)->getMetaTiles();
+
+        for (const auto &item: mStoredMetaEvents)
+            mRenderingContext.pushTaskToQueue(new RenderingTask{
+                    this, &mDataStash, std::string{item.Quadcode}
+            });
     }
 
 #ifdef __EMSCRIPTEN__
@@ -145,9 +200,20 @@ namespace KCore {
                         cameraPosition);
     }
 
-    DllExport KCore::PlainCommonTile *GetTiles(KCore::MapCore *mapCore, int &length) {
-        auto *tiles = new std::vector<KCore::PlainCommonTile>(mapCore->getTiles());
-        length = tiles->size();
-        return tiles->data();
+    DllExport KCore::MapEvent *GetCommonFrameEvents(KCore::MapCore *mapCore, int &length) {
+        mapCore->mStoredCommonEvents = mapCore->getCommonFrameEvents();
+        length = (int) mapCore->mStoredCommonEvents.size();
+        return mapCore->mStoredCommonEvents.data();
+    }
+
+    DllExport KCore::MapEvent *GetMetaFrameEvents(KCore::MapCore *mapCore, int &length) {
+        mapCore->mStoredMetaEvents = mapCore->getMetaFrameEvents();
+        length = (int) mapCore->mStoredMetaEvents.size();
+        return mapCore->mStoredMetaEvents.data();
+    }
+
+    DllExport KCore::MapEvent *GetContentFrameEvents(KCore::MapCore *mapCore, int &length) {
+        length = (int) mapCore->mStoredContentEvents.size();
+        return mapCore->mStoredContentEvents.data();
     }
 }

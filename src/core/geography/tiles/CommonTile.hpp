@@ -5,9 +5,9 @@
 #include <memory>
 
 #include "../../cache/BaseCache.hpp"
-#include "../../cache/LimitedCache.hpp"
+#include "../../cache/LimitedSpaceCache.hpp"
 #include "../TileDescription.hpp"
-#include "../../rendering/RenderContext.hpp"
+#include "../../contexts/rendering/RenderContext.hpp"
 #include "../../meshes/BaseMesh.hpp"
 #include "../../queue/tasks/NetworkTask.hpp"
 #include "../../meshes/GridMesh.hpp"
@@ -15,7 +15,7 @@
 namespace KCore {
     class CommonTile {
     private:
-        LimitedCache<std::map<std::string, std::shared_ptr<void>>> *mTarget{};
+        LimitedSpaceCache<std::map<std::string, std::shared_ptr<void>>> *mTarget{};
         RenderContext *mQueueContext{};
 
         TileDescription mDescription;
@@ -28,22 +28,24 @@ namespace KCore {
     public:
         CommonTile() = default;
 
-        CommonTile(LimitedCache<std::map<std::string, std::shared_ptr<void>>> *cache,
-                   RenderContext *context,
-                   const TileDescription &description) :
-                mTarget(cache), mDescription(description), mQueueContext(context) {
-            produceTasks();
-        };
+        CommonTile(const TileDescription &description) : mDescription(description) {}
+
+//        CommonTile(LimitedSpaceCache<std::map<std::string, std::shared_ptr<void>>> *cache,
+//                   RenderContext *context,
+//                   const TileDescription &description) :
+//                mTarget(cache), mDescription(description), mQueueContext(context) {
+//            produceTasks();
+//        };
 
         void produceTasks() {
             // create
-            mQueueContext->pushTaskToQueue(new NetworkTask(
-                    mTarget,
-                    mDescription.getQuadcode(),
-                    mDescription.tileURL())
-            );
+//            mQueueContext->pushTaskToQueue(new NetworkTask(
+//                    mTarget,
+//                    mDescription.getQuadcode(),
+//                    mDescription.tileURL())
+//            );
 
-            mMesh = std::make_shared<GridMesh>(1.0, 1.0, 64);
+//            mMesh = std::make_shared<GridMesh>(1.0, 1.0, 64);
         }
 
         void updateRelatedFields() {
@@ -52,10 +54,10 @@ namespace KCore {
             auto inCache = mTarget->getByKey(mDescription.getQuadcode());
             if (!inCache) return;
 
-            auto terrain = std::static_pointer_cast<std::vector<uint8_t>>((*inCache)["terrain"]);
-            if (!terrain) return;
-
-            mImage = terrain;
+//            auto terrain = std::static_pointer_cast<std::vector<uint8_t>>((*inCache)["terrain"]);
+//            if (!terrain) return;
+//
+//            mImage = terrain;
 //            std::cout << "tile " << mDescription.getQuadcode() << " ready" << std::endl;
             mReady = true;
         }

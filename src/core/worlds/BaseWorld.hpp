@@ -31,7 +31,9 @@ namespace KCore {
     public:
         BaseWorld(const glm::vec2 &originLatLon, const glm::vec2 &originPoint,
                   const struct WorldConfig &config)
-                : mOriginPositionReal(originPoint), mConfig(config) {}
+                : mOriginPositionReal(originPoint),
+                  mOriginPositionWebMercator(originPoint.x, 0.0f, originPoint.y),
+                  mConfig(config) {}
 
         void setConfig(const WorldConfig &config) {
             mConfig = config;
@@ -74,22 +76,24 @@ namespace KCore {
             // clear up all mCommonTiles
             mCommonTiles.clear();
 
+            std::vector<TileDescription> tiles{};
+
             // create tiles
             for (const auto &item: std::vector{"0", "1", "2", "3"}) {
                 auto founded = mTilesCache[item];
                 if (founded) {
-                    mCommonTiles.emplace_back(*founded);
+                    tiles.emplace_back(*founded);
                     continue;
                 }
 
                 auto tile = createTile(item);
                 auto element = mTilesCache.setOrReplace(item, tile);
-                mCommonTiles.push_back(element);
+                tiles.push_back(element);
             }
 
             std::size_t count{0};
-            while (count != mCommonTiles.size()) {
-                auto tile = &mCommonTiles[count];
+            while (count != tiles.size()) {
+                auto tile = &tiles[count];
                 auto quadcode = tile->getQuadcode();
 
                 if (screenSpaceError(*tile, 3.0)) {
@@ -100,17 +104,26 @@ namespace KCore {
                     for (const auto &item: std::vector{"0", "1", "2", "3"}) {
                         auto founded = mTilesCache[quadcode + item];
                         if (founded) {
-                            mCommonTiles.emplace_back(*founded);
+                            tiles.emplace_back(*founded);
                         } else {
                             auto child = createTile(quadcode + item);
                             auto tileDescription = mTilesCache.setOrReplace(quadcode + item, child);
-                            mCommonTiles.push_back(tileDescription);
+                            tiles.push_back(tileDescription);
                         }
                     }
                 }
 
                 count++;
             }
+
+            auto condition = [this](const TileDescription &tile) {
+                if (tile.getVisibility() != Visible) return false;
+                const auto center = tile.getCenter();
+                auto distance = glm::length(glm::vec3(center.x, 0, center.y) - mOriginPositionWebMercator);
+                return distance <= 80000.0f;
+            };
+
+            std::copy_if(tiles.begin(), tiles.end(), std::back_inserter(mCommonTiles), condition);
         }
 
         bool screenSpaceError(TileDescription &tile, float quality) {

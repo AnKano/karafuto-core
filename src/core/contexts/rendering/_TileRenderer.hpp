@@ -1,21 +1,21 @@
 #pragma once
 
-#include <glad/glad.h>
+#include "glad/glad.h"
 
 #define GLFW_INCLUDE_NONE
 
-#include <GLFW/glfw3.h>
+#include "GLFW/glfw3.h"
 
 #include <iostream>
 #include <chrono>
 
-#include <glm/glm.hpp>
-#include <glm/gtc/type_ptr.hpp>
+#include "glm/glm.hpp"
+#include "glm/gtc/type_ptr.hpp"
 #include "glm/gtx/transform.hpp"
 
 #include "opengl/Shader.hpp"
 #include "opengl/Mesh.hpp"
-#include "../misc/Utils.hpp"
+#include "../../misc/Utils.hpp"
 
 namespace KCore {
     class TileRenderer {
@@ -104,27 +104,6 @@ namespace KCore {
                              glm::value_ptr(glm::vec4{135.0f / 255.0f, 206.0f / 255.0f, 250.0f / 255.0f, 1.0f}));
 
                 mMesh->draw();
-
-                translation = glm::translate(glm::vec3{0.0f});
-                scale = glm::scale(glm::vec3{0.5f});
-
-                glUniformMatrix4fv(uScaleMatrixPos, 1, GL_FALSE, glm::value_ptr(scale));
-                glUniformMatrix4fv(uTranslationMatrixPos, 1, GL_FALSE, glm::value_ptr(translation));
-                glUniform4fv(uColorPos, 1,
-                             glm::value_ptr(glm::vec4{255.0f / 255.0f, 105.0f / 255.0f, 180.0f / 255.0f, 1.0f}));
-
-                mMesh->draw();
-
-                translation = glm::translate(glm::vec3{0.0f});
-                scale = glm::scale(glm::vec3{0.45f});
-
-                glUniformMatrix4fv(uScaleMatrixPos, 1, GL_FALSE, glm::value_ptr(scale));
-                glUniformMatrix4fv(uTranslationMatrixPos, 1, GL_FALSE, glm::value_ptr(translation));
-                glUniform4fv(uColorPos, 1,
-                             glm::value_ptr(glm::vec4{255.0f / 255.0f, 182.0f / 255.0f, 193.0f / 255.0f, 1.0f}));
-
-                mMesh->draw();
-
 
                 glfwSwapBuffers(mOffscreenContext);
                 glfwPollEvents();

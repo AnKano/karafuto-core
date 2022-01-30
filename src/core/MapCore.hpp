@@ -9,12 +9,13 @@
 #include "geography/TileDescription.hpp"
 #include "worlds/TerrainedWorld.hpp"
 #include "meshes/GridMesh.hpp"
-#include "rendering/RenderContext.hpp"
-
-#include "cache/LimitedCache.hpp"
+#include "contexts/rendering/RenderContext.hpp"
+#include "contexts/networking/NetworkContext.hpp"
+#include "cache/LimitedSpaceCache.hpp"
 #include "geography/tiles/CommonTile.hpp"
 #include "geography/tiles/MetaTile.hpp"
 #include "geography/plain/PlainCommonTile.hpp"
+#include "events/MapEvent.hpp"
 
 namespace KCore {
     class MapCore {
@@ -24,16 +25,23 @@ namespace KCore {
 
         BaseWorld *mWorld{};
 
-        LimitedCache<std::map<std::string, std::shared_ptr<void>>> mTilesData;
-        TimeoutCache<CommonTile> mCommonTiles;
-//        TimeoutCache<MetaTile> mMetaTiles;
+        LimitedSpaceCache<std::shared_ptr<void>> mDataStash;
+
+        std::map<std::string, TileDescription> mCurrentCommonTiles;
+        std::map<std::string, TileDescription> mCurrentMetaTiles;
 
         RenderContext mRenderingContext;
+        NetworkContext mNetworkingContext;
+
+        std::mutex mEventsLock;
+
+    public:
+        std::vector<KCore::MapEvent> mStoredCommonEvents;
+        std::vector<KCore::MapEvent> mStoredMetaEvents;
+        std::vector<KCore::MapEvent> mStoredContentEvents;
 
     public:
         MapCore(float latitude, float longitude);
-
-        ~MapCore();
 
         void update(const glm::mat4 &cameraProjectionMatrix,
                     const glm::mat4 &cameraViewMatrix,
@@ -43,9 +51,13 @@ namespace KCore {
                     const float *cameraViewMatrix_ptr,
                     const float *cameraPosition_ptr);
 
-        std::vector<PlainCommonTile> getTiles();
+        std::vector<MapEvent> getCommonFrameEvents();
 
-        const std::vector<TileDescription> &getMetaTiles();
+        std::vector<MapEvent> getMetaFrameEvents();
+
+        std::vector<MapEvent> getContentFrameEvents();
+
+        void pushEventToContentEvent(const MapEvent &event);
 
 #ifdef __EMSCRIPTEN__
         void update(intptr_t camera_projection_matrix_addr,
@@ -58,9 +70,10 @@ namespace KCore {
 #endif
 
     private:
-        void dispose();
 
         void performUpdate();
+
+        void populateRenderingQueue();
     };
 
     extern "C" {
@@ -71,7 +84,11 @@ namespace KCore {
                                  float *cameraViewMatrix,
                                  float *cameraPosition);
 
-    DllExport KCore::PlainCommonTile *GetTiles(KCore::MapCore *mapCore, int &length);
+    DllExport KCore::MapEvent *GetCommonFrameEvents(KCore::MapCore *mapCore, int &length);
+
+    DllExport KCore::MapEvent *GetMetaFrameEvents(KCore::MapCore *mapCore, int &length);
+
+    DllExport KCore::MapEvent *GetContentFrameEvents(KCore::MapCore *mapCore, int &length);
     }
 
 }
