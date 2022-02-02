@@ -96,8 +96,10 @@ namespace KCore {
                     pushEventToContentQueue(event);
                 }
 
-                std::string mUrl{"http://api.mapbox.com/v4/mapbox.satellite/" + mCurrentCommonTiles[item].tileURL() +
-                                 ".png?access_token=pk.eyJ1IjoiYW5rYW5vIiwiYSI6ImNqeWVocmNnYTAxaWIzaGxoeGd4ejExN3MifQ.8QQWwjxjyoIH8ma0McKeNA"};
+//                std::string mUrl{"http://api.mapbox.com/v4/mapbox.satellite/" + mCurrentCommonTiles[item].tileURL() +
+//                                 ".png?access_token=pk.eyJ1IjoiYW5rYW5vIiwiYSI6ImNqeWVocmNnYTAxaWIzaGxoeGd4ejExN3MifQ.8QQWwjxjyoIH8ma0McKeNA"};
+
+                std::string mUrl{"http://tile.openstreetmap.org/" + mCurrentCommonTiles[item].tileURL() + ".png"};
                 std::string mQuadcode{mCurrentCommonTiles[item].getQuadcode()};
                 std::string mTag{"common.image"};
                 mNetworkingContext.pushTaskToQueue(new NetworkTask{mUrl, mQuadcode, mTag});
@@ -166,7 +168,8 @@ namespace KCore {
 //                bool inCurr = currentFrameTiles.find(quadcode) != std::end(currentFrameTiles);
 //                if (inDiff && inCurr)
                 mRenderingContext.pushTaskToQueue(new RenderingTask{
-                        this, item.description.getQuadcode(), item.childQuadcodes
+                        this, item.description.getQuadcode(),
+                        item.childQuadcodes, item.parentQuadcodes
                 });
             }
         }

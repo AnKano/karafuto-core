@@ -111,16 +111,14 @@ namespace KCore {
 
                 // check child existence
                 auto pass = true;
-
-                for (const auto &item: task->mChilds) {
+                for (const auto &item: task->mChilds)
                     if (mTextures.find(item + ".common.image") == std::end(mTextures))
                         pass = false;
-                }
+                for (const auto &item: task->mParents)
+                    if (mTextures.find(item + ".common.image") == std::end(mTextures))
+                        pass = false;
 
-                if (pass == false) {
-
-                    continue;
-                }
+                if (pass == false) continue;
 
                 auto quadcode = task->mQuadcode;
                 for (const auto &item: task->mChilds) {
@@ -147,6 +145,55 @@ namespace KCore {
                             position.y -= step;
                         }
                         step /= 2.0f;
+                    }
+
+                    auto translation_matrix = glm::translate(glm::vec3{position.x, -position.y, 0.0f});
+
+                    int32_t u_scale_matrix_position = mShader->uniform_position("u_scale_matrix");
+                    int32_t u_translation_matrix_position = mShader->uniform_position("u_translation_matrix");
+                    int32_t u_color = mShader->uniform_position("u_color");
+                    int32_t u_diffuse = mShader->uniform_position("u_diffuse");
+
+                    glUniformMatrix4fv(u_scale_matrix_position, 1, GL_FALSE, glm::value_ptr(scale_matrix));
+                    glUniformMatrix4fv(u_translation_matrix_position, 1, GL_FALSE, glm::value_ptr(translation_matrix));
+
+                    auto r = ((float) rand() / (RAND_MAX));
+                    auto g = ((float) rand() / (RAND_MAX));
+                    auto b = ((float) rand() / (RAND_MAX));
+
+                    glUniform4fv(u_color, 1, glm::value_ptr(glm::vec4{r, g, b, 1.0f}));
+
+                    glActiveTexture(GL_TEXTURE0);
+                    glBindTexture(GL_TEXTURE_2D, mTextures[item + ".common.image"]);
+                    glUniform1i(u_diffuse, 0);
+
+                    mMesh->draw();
+                }
+
+                for (const auto &item: task->mParents) {
+                    auto reverseFormulae = quadcode.substr(item.length(), quadcode.length() - item.length());
+
+                    auto difference = (float) reverseFormulae.size();
+                    float scale = 1.0f * powf(2.0f, difference);
+                    auto scale_matrix = glm::scale(glm::vec3{scale});
+
+                    float step = 0.5f;
+                    glm::vec3 position{0.0f};
+                    for (const auto &in: reverseFormulae) {
+                        if (in == '0') {
+                            position.x -= step;
+                            position.y += step;
+                        } else if (in == '1') {
+                            position.x += step;
+                            position.y += step;
+                        } else if (in == '2') {
+                            position.x -= step;
+                            position.y -= step;
+                        } else if (in == '3') {
+                            position.x += step;
+                            position.y -= step;
+                        }
+                        step *= 2.0f;
                     }
 
                     auto translation_matrix = glm::translate(glm::vec3{position.x, -position.y, 0.0f});

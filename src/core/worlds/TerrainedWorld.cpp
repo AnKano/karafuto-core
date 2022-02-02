@@ -44,14 +44,16 @@ namespace KCore {
 
                 auto parents = separateTileToDepth(item, preferDepth);
                 for (const auto &_item: parents) {
-                    collector[_item.getQuadcode()] = _item;
-                    childCollector[_item.getQuadcode()] = {};
+                    auto internalQuadcode = _item.getQuadcode();
+                    collector[internalQuadcode] = _item;
+                    childCollector[internalQuadcode] = {};
+                    parentCollector[internalQuadcode] = {item.getQuadcode()};
                 }
             }
         }
 
         for (const auto &[key, value]: collector)
-            mMetaTiles.push_back({value, childCollector[key]});
+            mMetaTiles.push_back({value, childCollector[key], parentCollector[key]});
     }
 
 
