@@ -39,6 +39,7 @@ namespace KCore {
 
 		static glm::vec2 latLonToPoint(const glm::vec2& latLon) {
 			auto projected = GeographyConverter::project(latLon);
+			projected.x *= -1.0f;
 			projected.y *= -1.0f;
 
             projected.x *= MULTIPLIER;
@@ -49,6 +50,7 @@ namespace KCore {
 
 		static glm::vec2 pointToLatLon(const glm::vec2& point) {
 			auto _point = glm::vec2(point.x, point.y);
+            _point.x *= -1.0f;
             _point.y *= -1.0f;
 
 			_point.x /= MULTIPLIER;
@@ -79,11 +81,11 @@ namespace KCore {
 			return { x, y, z };
 		}
 
-		static float tileToLon(float x, float z) {
+		static float tileToLon(uint16_t x, uint16_t z) {
 			return x / powf(2.0f, z) * 360.0f - 180.0f;
 		}
 
-		static float tileToLat(float y, float z) {
+		static float tileToLat(uint16_t y, uint16_t z) {
 			float n = M_PI - 2.0f * M_PI * y / powf(2.0f, z);
 			return 180.0f / (float)M_PI * (float)atan(0.5f * (expf(n) - expf(-n)));
 		}

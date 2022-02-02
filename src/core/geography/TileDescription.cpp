@@ -29,6 +29,7 @@ namespace KCore {
         TileDescription::mPayload.Tilecode.y = static_cast<int32_t>(tilecode.y);
         TileDescription::mPayload.Tilecode.z = static_cast<int32_t>(tilecode.z);
         TileDescription::mTilecode = tilecode;
+        TileDescription::mTilecodeStr = tileURL();
     }
 
     void TileDescription::setBoundsLatLon(const glm::vec4 &boundsLatLon) {

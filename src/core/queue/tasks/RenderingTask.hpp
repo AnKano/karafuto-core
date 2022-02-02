@@ -13,15 +13,14 @@ namespace KCore {
     class MapCore;
 
     class RenderingTask : public BaseTask {
-    private:
+    public:
         MapCore *mCore_ptr;
-        BaseCache<std::shared_ptr<void>> *mStash_ptr;
         std::string mQuadcode;
+        std::vector<std::string> mChilds;
 
     public:
-        RenderingTask(MapCore *mCore, BaseCache<std::shared_ptr<void>> *stash,
-                      std::string relQuadcode) : mCore_ptr(mCore), mStash_ptr(stash),
-                                                 mQuadcode(std::move(relQuadcode)) {}
+        RenderingTask(MapCore *mCore, std::string quadcode, std::vector<std::string> childs) :
+                mCore_ptr(mCore), mQuadcode(std::move(quadcode)), mChilds(std::move(childs)) {}
 
         void performTask() override;
 

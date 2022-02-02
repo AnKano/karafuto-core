@@ -1,7 +1,11 @@
 #pragma once
 
-namespace KCore {
-    class MetaTile {
+#include "../TileDescription.hpp"
 
+namespace KCore {
+    struct MetaTile {
+        TileDescription description;
+        std::vector<std::string> childQuadcodes;
+        std::vector<std::string> parentQuadcodes;
     };
 }

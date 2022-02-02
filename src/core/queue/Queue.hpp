@@ -32,5 +32,10 @@ namespace KCore {
 
             return task;
         }
+
+        void clear() {
+            std::lock_guard<std::mutex> lock{mQueueLock};
+            std::swap(mQueue, std::queue<std::shared_ptr<T>>());
+        }
     };
 }

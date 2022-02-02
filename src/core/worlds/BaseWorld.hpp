@@ -120,7 +120,7 @@ namespace KCore {
                 if (tile.getVisibility() != Visible) return false;
                 const auto center = tile.getCenter();
                 auto distance = glm::length(glm::vec3(center.x, 0, center.y) - mOriginPositionWebMercator);
-                return distance <= 80000.0f;
+                return distance <= 500000.0f;
             };
 
             std::copy_if(tiles.begin(), tiles.end(), std::back_inserter(mCommonTiles), condition);

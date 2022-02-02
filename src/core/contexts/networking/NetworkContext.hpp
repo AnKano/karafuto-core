@@ -4,81 +4,83 @@
 #include <thread>
 #include <chrono>
 #include <iostream>
+#include <map>
+
+#include <curl/curl.h>
 
 #include "../../queue/Queue.hpp"
+#include "../../geography/TileDescription.hpp"
+#include "../../queue/tasks/NetworkTask.hpp"
+#include "../../cache/BaseCache.hpp"
+#include "../rendering/RenderContext.hpp"
 
 using namespace std::chrono_literals;
 
 namespace KCore {
+    class MapCore;
+
+    typedef std::string TransmissionKey;
+    typedef std::vector<uint8_t> TransmissionBuffer;
+
     class NetworkContext {
+        /*
+         * CURL library need to send anything that described destination
+         * for loaded bytes. The best way is creating struct that contain
+         * map to each one result (for easily appending) and description
+         * for certain handler to describe key
+         * */
+        struct TransmissionPayload {
+            std::map<TransmissionKey, TransmissionBuffer> *resultsStash_ptr;
+            std::string url;
+            std::string quadcode;
+            std::string tag;
+        };
+
     private:
-        Queue<BaseTask> mQueue;
+        MapCore *mCore_ptr;
+        RenderContext* mRenderCtx_ptr;
+
+        CURLM *mCurlMultiContext;
+
+        std::map<TransmissionKey, TransmissionBuffer> mLoadingResults;
+
+        BaseCache<std::shared_ptr<void>> *mStash_ptr;
+        Queue<NetworkTask> mQueue;
 
         std::unique_ptr<std::thread> mRenderThread;
-
-        std::chrono::milliseconds mCheckInterval = 1ms;
+        std::chrono::milliseconds mWaitInterval = 1s;
         bool mShouldClose = false;
         bool mReadyToBeDead = false;
 
     public:
-        NetworkContext() {
-            mRenderThread = std::make_unique<std::thread>([this]() {
-                runRenderLoop();
-            });
-            mRenderThread->detach();
-        }
+        NetworkContext(MapCore *core, BaseCache<std::shared_ptr<void>> *stash, RenderContext* renderContext);
 
-        ~NetworkContext() {
-            dispose();
-        }
+        ~NetworkContext();
 
-        void setCheckInterval(const uint64_t &value) {
-            mCheckInterval = std::chrono::milliseconds(value);
-        }
+        [[maybe_unused]]
+        void setWaitInterval(const uint64_t &value);
 
-        void setCheckInterval(const std::chrono::milliseconds &value) {
-            mCheckInterval = value;
-        }
+        [[maybe_unused]]
+        void setWaitInterval(const std::chrono::milliseconds &value);
 
-        void setShouldClose(const bool &value) {
-            mShouldClose = value;
-        }
+        void setShouldClose(const bool &value);
 
         [[nodiscard]]
-        bool getWorkingStatus() const {
-            return mReadyToBeDead;
-        }
+        bool getWorkingStatus() const;
 
-        void pushTaskToQueue(BaseTask *task) {
-            mQueue.pushTask(task);
-        }
+        void pushTaskToQueue(NetworkTask *task);
 
     private:
-        Queue<BaseTask> *getQueue() {
-            return &mQueue;
-        }
+        void runRenderLoop();
 
-        void runRenderLoop() {
-            while (!mShouldClose) {
-                auto task = mQueue.popTask();
-                while (task) {
-                    task->invoke();
+        void disposeContext();
 
-                    // get next task or nullptr
-                    task = mQueue.popTask();
-                }
+        void initCURL();
 
-                std::this_thread::sleep_for(mCheckInterval);
-            }
+        void putTaskToCURL(const std::shared_ptr<NetworkTask> &task);
 
-            dispose();
-            mReadyToBeDead = true;
-        }
+        void disposeCURL();
 
-        void dispose() {
-            setShouldClose(true);
-            // await to thread stop working
-            while (getWorkingStatus());
-        }
+        static size_t writeCallbackCURL(char *data, size_t size, size_t nmemb, TransmissionPayload *payloadPtr);
     };
 }

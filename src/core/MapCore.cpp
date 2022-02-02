@@ -84,6 +84,23 @@ namespace KCore {
                 strcpy_s(event.Quadcode, mCurrentCommonTiles[item].getQuadcode().c_str());
                 event.OptionalPayload = (void *) &mCurrentCommonTiles[item].mPayload;
                 events.push_back(event);
+
+                // ... so, download resource for appeared element
+                auto test = mDataStash.getByKey(std::string{event.Quadcode} + ".common.image");
+                if (test) {
+                    MapEvent event{};
+                    event.Type = ContentLoadedImage;
+                    strcpy_s(event.Quadcode, mCurrentCommonTiles[item].getQuadcode().c_str());
+                    event.OptionalPayload = test->get();
+
+                    pushEventToContentQueue(event);
+                }
+
+                std::string mUrl{"http://api.mapbox.com/v4/mapbox.satellite/" + mCurrentCommonTiles[item].tileURL() +
+                                 ".png?access_token=pk.eyJ1IjoiYW5rYW5vIiwiYSI6ImNqeWVocmNnYTAxaWIzaGxoeGd4ejExN3MifQ.8QQWwjxjyoIH8ma0McKeNA"};
+                std::string mQuadcode{mCurrentCommonTiles[item].getQuadcode()};
+                std::string mTag{"common.image"};
+                mNetworkingContext.pushTaskToQueue(new NetworkTask{mUrl, mQuadcode, mTag});
                 continue;
             }
         }
@@ -101,7 +118,7 @@ namespace KCore {
         auto tiles = ((TerrainedWorld *) mWorld)->getMetaTiles();
         std::map<std::string, TileDescription> currentFrameTiles;
         for (const auto &item: tiles)
-            currentFrameTiles[item.getQuadcode()] = item;
+            currentFrameTiles[item.description.getQuadcode()] = item.description;
 
         mCurrentMetaTiles = currentFrameTiles;
 
@@ -110,28 +127,49 @@ namespace KCore {
 
         auto events = std::vector<MapEvent>();
         for (const auto &item: diff) {
-            if (previousFrameTilesCopy.find(item) != std::end(previousFrameTilesCopy)) {
+            bool inPrev = previousFrameTilesCopy.find(item) != std::end(previousFrameTilesCopy);
+            bool inNew = currentFrameTiles.find(item) != std::end(currentFrameTiles);
+
+            if (inPrev) {
                 MapEvent event{};
                 event.Type = NotInFrustum;
                 strcpy_s(event.Quadcode, previousFrameTilesCopy[item].getQuadcode().c_str());
                 event.OptionalPayload = nullptr;
                 events.push_back(event);
-                continue;
-            }
 
-            if (currentFrameTiles.find(item) != std::end(currentFrameTiles)) {
+                continue;
+            } else if (currentFrameTiles.find(item) != std::end(currentFrameTiles)) {
+                // emit about new object in frustum
                 MapEvent event{};
                 event.Type = InFrustum;
                 strcpy_s(event.Quadcode, mCurrentMetaTiles[item].getQuadcode().c_str());
                 event.OptionalPayload = (void *) &mCurrentMetaTiles[item].mPayload;
                 events.push_back(event);
+
                 continue;
             }
         }
 
         mStoredMetaEvents = events;
 
-        populateRenderingQueue();
+        if (!diff.empty()) {
+            mRenderingContext.clearQueue();
+            for (const auto &item: tiles) {
+                // check rerendering
+
+                // check tile appear in first time
+//                auto quadcode = item.description.getQuadcode();
+//                // is appear or disappear
+//                bool inDiff = std::find(diff.begin(), diff.end(), quadcode) != std::end(diff);
+//                // in disappeared
+//                bool inPrev = previousFrameTilesCopy.find(quadcode) != std::end(previousFrameTilesCopy);
+//                bool inCurr = currentFrameTiles.find(quadcode) != std::end(currentFrameTiles);
+//                if (inDiff && inCurr)
+                mRenderingContext.pushTaskToQueue(new RenderingTask{
+                        this, item.description.getQuadcode(), item.childQuadcodes
+                });
+            }
+        }
 
         return events;
     }
@@ -139,25 +177,16 @@ namespace KCore {
     std::vector<MapEvent> MapCore::getContentFrameEvents() {
         std::lock_guard lock{mEventsLock};
 
-        auto events = mStoredContentEvents;
-        mStoredContentEvents.clear();
+        auto events = mActualContentEvents;
+        mActualContentEvents.clear();
 
         return events;
     }
 
-    void MapCore::pushEventToContentEvent(const MapEvent &event) {
+    void MapCore::pushEventToContentQueue(const MapEvent &event) {
         std::lock_guard lock{mEventsLock};
-        mStoredContentEvents.push_back(event);
+        mActualContentEvents.push_back(event);
     };
-
-    void MapCore::populateRenderingQueue() {
-        auto tiles = ((TerrainedWorld *) mWorld)->getMetaTiles();
-
-        for (const auto &item: mStoredMetaEvents)
-            mRenderingContext.pushTaskToQueue(new RenderingTask{
-                    this, &mDataStash, std::string{item.Quadcode}
-            });
-    }
 
 #ifdef __EMSCRIPTEN__
     void map_core::update(intptr_t camera_projection_matrix_addr,
@@ -213,7 +242,17 @@ namespace KCore {
     }
 
     DllExport KCore::MapEvent *GetContentFrameEvents(KCore::MapCore *mapCore, int &length) {
+        mapCore->mStoredContentEvents = mapCore->getContentFrameEvents();
         length = (int) mapCore->mStoredContentEvents.size();
         return mapCore->mStoredContentEvents.data();
+    }
+
+    DllExport void *GetBufferPtrFromTag(KCore::MapCore *mapCore, const char *tag, int &length) {
+        auto stash = &mapCore->mDataStash;
+
+        auto buffer = (std::shared_ptr<std::vector<uint8_t>> *) stash->getByKey(tag);
+        auto &buffer_ref = *buffer;
+        length = (int) buffer_ref->size();
+        return buffer_ref->data();
     }
 }

@@ -12,9 +12,6 @@
 #include "contexts/rendering/RenderContext.hpp"
 #include "contexts/networking/NetworkContext.hpp"
 #include "cache/LimitedSpaceCache.hpp"
-#include "geography/tiles/CommonTile.hpp"
-#include "geography/tiles/MetaTile.hpp"
-#include "geography/plain/PlainCommonTile.hpp"
 #include "events/MapEvent.hpp"
 
 namespace KCore {
@@ -25,21 +22,22 @@ namespace KCore {
 
         BaseWorld *mWorld{};
 
-        LimitedSpaceCache<std::shared_ptr<void>> mDataStash;
-
         std::map<std::string, TileDescription> mCurrentCommonTiles;
         std::map<std::string, TileDescription> mCurrentMetaTiles;
 
-        RenderContext mRenderingContext;
-        NetworkContext mNetworkingContext;
+        RenderContext mRenderingContext{this, &mDataStash};
+        NetworkContext mNetworkingContext{this, &mDataStash, &mRenderingContext};
 
         std::mutex mEventsLock;
 
     public:
+        LimitedSpaceCache<std::shared_ptr<void>> mDataStash;
+
         std::vector<KCore::MapEvent> mStoredCommonEvents;
         std::vector<KCore::MapEvent> mStoredMetaEvents;
         std::vector<KCore::MapEvent> mStoredContentEvents;
 
+        std::vector<KCore::MapEvent> mActualContentEvents;
     public:
         MapCore(float latitude, float longitude);
 
@@ -57,7 +55,7 @@ namespace KCore {
 
         std::vector<MapEvent> getContentFrameEvents();
 
-        void pushEventToContentEvent(const MapEvent &event);
+        void pushEventToContentQueue(const MapEvent &event);
 
 #ifdef __EMSCRIPTEN__
         void update(intptr_t camera_projection_matrix_addr,
@@ -70,10 +68,7 @@ namespace KCore {
 #endif
 
     private:
-
         void performUpdate();
-
-        void populateRenderingQueue();
     };
 
     extern "C" {
@@ -89,6 +84,7 @@ namespace KCore {
     DllExport KCore::MapEvent *GetMetaFrameEvents(KCore::MapCore *mapCore, int &length);
 
     DllExport KCore::MapEvent *GetContentFrameEvents(KCore::MapCore *mapCore, int &length);
-    }
 
+    DllExport void *GetBufferPtrFromTag(KCore::MapCore *mapCore, const char *tag, int &length);
+    }
 }

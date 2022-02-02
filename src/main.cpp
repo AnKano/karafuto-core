@@ -1,6 +1,6 @@
-//
-// Created by Anton Shubin on 1/18/2021.
-//
+////
+//// Created by Anton Shubin on 1/18/2021.
+////
 
 
 #include "core/MapCore.hpp"
@@ -55,7 +55,6 @@ EMSCRIPTEN_BINDINGS(karafuto) {
 
 #endif
 
-
 #include "glm/glm.hpp"
 
 #include <iostream>
@@ -75,7 +74,7 @@ int main() {
     );
 
     glm::vec3 cameraOpenGlSpacePosition{1000.0f, 10000.0f, 10000.0f};
-    glm::vec3 cameraOpenGlSpaceTarget{0.0f, 10000.0f, 0.0f};
+    glm::vec3 cameraOpenGlSpaceTarget{0.0f, 0.0f, 0.0f};
     glm::vec3 cameraOpenGlSpaceUp{0.0f, 1.0f, 0.0f};
 
     glm::mat4 cameraViewMatrix = glm::lookAt(
@@ -111,11 +110,42 @@ int main() {
     }
     auto stop = std::chrono::system_clock::now();
 
+    cameraOpenGlSpacePosition = {1500.0f, 15000.0f, 15000.0f};
+    cameraOpenGlSpaceTarget = {0.0f, 10000.0f, 0.0f};
+
+    cameraViewMatrix = glm::lookAt(
+            cameraOpenGlSpacePosition,
+            cameraOpenGlSpaceTarget,
+            cameraOpenGlSpaceUp
+    );
+
+    start = std::chrono::system_clock::now();
+    for (uint16_t i = 0; i < iteration; i++) {
+        core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
+        auto a = core.getCommonFrameEvents();
+        auto b = core.getMetaFrameEvents();
+        auto c = core.getContentFrameEvents();
+        for (const auto &item: a) {
+            auto *payload = (KCore::TilePayload *) item.OptionalPayload;
+            switch (item.Type) {
+                case KCore::InFrustum:
+                    std::cout << item.Quadcode << " in frustum" << std::endl;
+                    break;
+                case KCore::NotInFrustum:
+                    std::cout << item.Quadcode << " disposed" << std::endl;
+                    break;
+                default:
+                    std::cout << item.Quadcode << " undefined" << std::endl;
+            }
+        }
+    }
+    stop = std::chrono::system_clock::now();
+
     auto elapsed = stop - start;
     std::cout << (elapsed / std::chrono::microseconds(1)) / iteration << " microseconds per iteration" << std::endl;
     core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
 
-    std::this_thread::sleep_for(4s);
+    std::this_thread::sleep_for(20s);
 
     return 0;
 }

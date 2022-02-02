@@ -11,10 +11,11 @@
 #include "../geography/TileDescription.hpp"
 #include "../misc/FrustumCulling.hpp"
 #include "../cache/TimeoutCache.hpp"
+#include "../geography/tiles/MetaTile.hpp"
 
 namespace KCore {
     class TerrainedWorld : public BaseWorld {
-        std::vector<TileDescription> mMetaTiles{};
+        std::vector<MetaTile> mMetaTiles{};
 
     public:
         TerrainedWorld(const glm::vec2 &originLatLon, const glm::vec2 &originPoint,
@@ -23,14 +24,14 @@ namespace KCore {
         void update() override;
 
         [[nodiscard]]
-        const std::vector<TileDescription> &getMetaTiles();
+        const std::vector<MetaTile> &getMetaTiles();
 
     private:
+        std::vector<TileDescription> separateTileToDepth(const TileDescription& tile, uint8_t depth);
+
         void calculateTiles() override;
 
         void calculateMetaTiles();
-
-        bool targetedScreenSpaceError(TileDescription &tile, const uint8_t &depth);
 
         uint8_t maximalCommonTilesDepth();
     };

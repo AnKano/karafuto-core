@@ -2,6 +2,8 @@
 
 #include "BaseCache.hpp"
 
+#include <limits>
+
 namespace KCore {
     template<class T>
     class LimitedSpaceCache : public BaseCache<T> {
@@ -15,11 +17,6 @@ namespace KCore {
         [[maybe_unused]]
         void setMaximalCount(const uint64_t &count) {
             mMaximalCount = count;
-        }
-
-        [[maybe_unused]]
-        void setInfiniteStayAliveInterval() {
-            mStayAliveInterval = std::chrono::milliseconds::max();
         }
 
         [[maybe_unused]]

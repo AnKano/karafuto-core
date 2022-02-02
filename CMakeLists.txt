@@ -12,11 +12,8 @@ file(GLOB_RECURSE CPP_HEADERS
 file(GLOB_RECURSE CPP_SOURCES
         ${MAIN_SOURCE_DIR}/*.cpp)
 
-#remote it after
-list(REMOVE_ITEM CPP_HEADERS C:/Users/anshu/source/repos/karafuto-core/src/core/rendering/_TileRenderer.hpp)
-
 if (NOT EMSCRIPTEN)
-    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
+#    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
 
     set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)

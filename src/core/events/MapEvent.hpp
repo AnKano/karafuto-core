@@ -6,20 +6,15 @@ namespace KCore {
     enum EventType {
         // common tiles event
         InFrustum = 0,
-        NotInFrustum = 1,
+        NotInFrustum,
 
-        ContentLoaded = 2,
-        ContentRefreshed = 3,
-
-        CompletelyDissolved = 4
-
-        // meta tiles event
-        // ???
+        ContentLoadedRender,
+        ContentLoadedImage,
     };
 
     struct MapEvent {
         EventType Type;
         char Quadcode[32];
-        void* OptionalPayload;
+        void *OptionalPayload;
     };
 }
