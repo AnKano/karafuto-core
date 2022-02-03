@@ -69,7 +69,7 @@ namespace KCore {
                     } catch (std::exception &e) {
                         std::cerr << e.what() << std::endl;
                         mQueue.pushTask(new NetworkTask{
-                            payload->url, payload->quadcode, payload->tag
+                                payload->url, payload->quadcode, payload->tag
                         });
                     }
 
@@ -114,6 +114,9 @@ namespace KCore {
 
         out->resize(width * height * channels);
         out->insert(out->begin(), data, data + (width * height * channels));
+
+        // release stbi image data
+        delete[] data;
 
         return out;
     }

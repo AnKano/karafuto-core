@@ -1,6 +1,7 @@
 #include "TileDescription.hpp"
 
 #include <iostream>
+#include <cstring>
 
 namespace KCore {
     TileDescription::TileDescription() = default;
@@ -20,7 +21,12 @@ namespace KCore {
     }
 
     void TileDescription::setQuadcode(const std::string &quadcode) {
-        strcpy_s(TileDescription::mPayload.Quadcode, 32, quadcode.c_str());
+#if defined(_MSC_VER)
+        strcpy_s(TileDescription::mPayload.Quadcode, quadcode.c_str());
+#endif
+#if defined(__GNUC__)
+        strcpy(TileDescription::mPayload.Quadcode, quadcode.c_str());
+#endif
         TileDescription::mQuadcode = quadcode;
     }
 

@@ -1,8 +1,9 @@
 #pragma once
 
-#include <queue>
+#include <deque>
 #include <mutex>
 #include <optional>
+#include <memory>
 
 #include "tasks/BaseTask.hpp"
 
@@ -10,7 +11,7 @@ namespace KCore {
     template<class T>
     class Queue {
     public:
-        std::queue<std::shared_ptr<T>> mQueue;
+        std::deque<std::shared_ptr<T>> mQueue;
     private:
         std::mutex mQueueLock;
 
@@ -19,7 +20,7 @@ namespace KCore {
             std::lock_guard<std::mutex> lock{mQueueLock};
 
             std::shared_ptr<T> task_ptr(task);
-            mQueue.push(task_ptr);
+            mQueue.push_back(task_ptr);
         }
 
         std::shared_ptr<T> popTask() {
@@ -29,14 +30,14 @@ namespace KCore {
                 return nullptr;
 
             auto task = mQueue.front();
-            mQueue.pop();
+            mQueue.pop_front();
 
             return task;
         }
 
         void clear() {
             std::lock_guard<std::mutex> lock{mQueueLock};
-            std::swap(mQueue, std::queue<std::shared_ptr<T>>());
+            mQueue.clear();
         }
     };
 }

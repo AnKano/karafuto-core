@@ -1,6 +1,7 @@
 #pragma once
 
 #include "../geography/TileDescription.hpp"
+#include <cstring>
 
 namespace KCore {
     enum EventType {
@@ -20,7 +21,12 @@ namespace KCore {
             MapEvent event{};
             event.type = InFrustum;
             event.payload = payloadPtr;
+#if defined(_MSC_VER)
             strcpy_s(event.quadcode, quadcode.c_str());
+#endif
+#if defined(__GNUC__)
+            strcpy(event.quadcode, quadcode.c_str());
+#endif
 
             return event;
         }
@@ -29,7 +35,12 @@ namespace KCore {
             MapEvent event{};
             event.type = NotInFrustum;
             event.payload = nullptr;
+#if defined(_MSC_VER)
             strcpy_s(event.quadcode, quadcode.c_str());
+#endif
+#if defined(__GNUC__)
+            strcpy(event.quadcode, quadcode.c_str());
+#endif
 
             return event;
         }
@@ -38,7 +49,12 @@ namespace KCore {
             MapEvent event{};
             event.type = ContentLoadedRender;
             event.payload = nullptr;
+#if defined(_MSC_VER)
             strcpy_s(event.quadcode, quadcode.c_str());
+#endif
+#if defined(__GNUC__)
+            strcpy(event.quadcode, quadcode.c_str());
+#endif
 
             return event;
         }
@@ -46,8 +62,13 @@ namespace KCore {
         static MapEvent MakeImageLoadedEvent(const std::string &quadcode, void* payloadPtr) {
             MapEvent event{};
             event.type = ContentLoadedImage;
-            strcpy_s(event.quadcode, quadcode.c_str());
             event.payload = payloadPtr;
+#if defined(_MSC_VER)
+            strcpy_s(event.quadcode, quadcode.c_str());
+#endif
+#if defined(__GNUC__)
+            strcpy(event.quadcode, quadcode.c_str());
+#endif
 
             return event;
         }

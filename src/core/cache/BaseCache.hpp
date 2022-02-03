@@ -5,6 +5,7 @@
 #include <chrono>
 #include <thread>
 #include <mutex>
+#include <memory>
 #include <iostream>
 #include <algorithm>
 #include <optional>
