@@ -66,8 +66,11 @@ namespace KCore {
                         auto decodedBuffer = decodeImage(mLoadingResults[stringTag]);
                         mCore_ptr->mDataStash.setOrReplace(stringTag, decodedBuffer);
                         mRenderCtx_ptr->pushTextureDataToGPUQueue(stringTag, decodedBuffer);
-                    } catch (std::exception& e) {
+                    } catch (std::exception &e) {
                         std::cerr << e.what() << std::endl;
+                        mQueue.pushTask(new NetworkTask{
+                            payload->url, payload->quadcode, payload->tag
+                        });
                     }
 
                     curl_multi_remove_handle(mCurlMultiContext, handler);
@@ -99,16 +102,16 @@ namespace KCore {
     }
 
     std::shared_ptr<TransmissionBuffer> NetworkContext::decodeImage(const TransmissionBuffer &buffer) {
-        int width, height, channels;
+        int width = 0, height = 0, channels = 0;
         unsigned char *data = stbi_load_from_memory(
                 (const stbi_uc *) buffer.data(), (int) buffer.size(),
                 &width, &height, &channels, 3
         );
 
-        if (width < 0 || height < 0 || channels < 0)
+        auto out = std::make_shared<std::vector<uint8_t>>();
+        if (width * height < 0 || channels < 0 || width * height * channels > out->max_size())
             throw std::runtime_error("can't decode image");
 
-        auto out = std::make_shared<std::vector<uint8_t>>();
         out->resize(width * height * channels);
         out->insert(out->begin(), data, data + (width * height * channels));
 

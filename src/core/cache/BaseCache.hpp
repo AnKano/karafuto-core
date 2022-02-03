@@ -106,16 +106,12 @@ namespace KCore {
             return &mCachedElements[key].element;
         }
 
-        void* getCopyByKey(const std::string &key) {
-            std::lock_guard<std::mutex> lock{mCacheLock};
-            mLastAccessTimePoint = system_clock::now();
+        void globalLock() {
+            mCacheLock.lock();
+        }
 
-            if (mCachedElements.find(key) == mCachedElements.end())
-                return nullptr;
-
-            // update time if it's exists
-            mCachedElements[key].time = std::chrono::system_clock::now();
-            return new T(&mCachedElements[key].element);
+        void globalUnlock() {
+            mCacheLock.unlock();
         }
 
         [[maybe_unused]]

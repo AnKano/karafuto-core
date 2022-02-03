@@ -19,11 +19,8 @@ namespace KCore {
         mWorld->updateFrustum(this->mCameraProjectionMatrix, this->mCameraViewMatrix);
         mWorld->setPosition(this->mCameraPosition);
 
-        mDataStash.setMaximalCount(5000000);
-//        mDataStash.setCheckInterval(10);
-//        mDataStash.setStayAliveInterval(20);
-        mDataStash.setCheckInterval(10);
-        mDataStash.setStayAliveInterval(1000);
+        mDataStash.setMaximalCount(1000);
+        mDataStash.setStayAliveInterval(3);
     }
 
     void MapCore::update(const float *cameraProjectionMatrix_ptr,
@@ -231,10 +228,17 @@ namespace KCore {
         auto buffer = (std::shared_ptr<std::vector<uint8_t>> *) stash->getByKey(tag);
         auto &buffer_ref = *buffer;
         length = (int) buffer_ref->size();
+        return buffer_ref->data();
 
-        auto copy = new uint8_t[length];
-        memcpy_s(copy, length, buffer_ref->data(), length);
-        return copy;
+//        auto buffer = (std::shared_ptr<std::vector<uint8_t>> *) stash->getByKey(tag);
+//        auto &buffer_ref = *buffer;
+//        length = (int) buffer_ref->size();
+//
+////        stash->globalLock();
+////        auto copy = new uint8_t[length];
+////        memcpy_s(copy, length, buffer_ref->data(), length);
+////        stash->globalUnlock();
+//        return buffer_ref->data();
     }
 
     DllExport void ReleaseCopy(const uint8_t* ptr) {

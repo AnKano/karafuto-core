@@ -90,7 +90,7 @@ int main() {
     KCore::MapCore core{46.9181f, 142.7189f};
     auto start = std::chrono::system_clock::now();
     for (uint16_t i = 0; i < iteration; i++) {
-        cameraOpenGlSpacePosition.z -= 10000.0f;
+        cameraOpenGlSpacePosition.z -= 1000.0f;
         core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
         auto a = core.getCommonFrameEvents();
         auto b = core.getMetaFrameEvents();
@@ -108,6 +108,7 @@ int main() {
                     std::cout << item.quadcode << " undefined" << std::endl;
             }
         }
+        std::this_thread::sleep_for(0.75s);
     }
     auto stop = std::chrono::system_clock::now();
 
@@ -122,7 +123,7 @@ int main() {
 
     start = std::chrono::system_clock::now();
     for (uint16_t i = 0; i < iteration; i++) {
-        cameraOpenGlSpacePosition.x -= 10000.0f;
+        cameraOpenGlSpacePosition.x -= 1000.0f;
         core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
         auto a = core.getCommonFrameEvents();
         auto b = core.getMetaFrameEvents();
@@ -140,6 +141,7 @@ int main() {
                     std::cout << item.quadcode << " undefined" << std::endl;
             }
         }
+        std::this_thread::sleep_for(0.75s);
     }
     stop = std::chrono::system_clock::now();
 

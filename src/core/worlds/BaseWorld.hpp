@@ -34,7 +34,7 @@ namespace KCore {
                 : mOriginPositionReal(originPoint),
                   mOriginPositionWebMercator(originPoint.x, 0.0f, originPoint.y),
                   mConfig(config) {
-            mTilesCache.setStayAliveInterval(100000);
+            mTilesCache.setStayAliveInterval(3);
         }
 
         void setConfig(const WorldConfig &config) {
