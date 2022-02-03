@@ -2,9 +2,10 @@
 
 #include <string>
 
-namespace TextureRenderingBuiltin {
-    [[maybe_unused]]
-    const std::string fragmentShader = R"(
+namespace KCore::OpenGL::BuiltIn {
+    namespace TextureRenderer {
+        [[maybe_unused]]
+        const std::string fs = R"(
 #version 430 core
 
 in vec2 p_uv;
@@ -20,8 +21,8 @@ void main() {
 }
 )";
 
-    [[maybe_unused]]
-    const std::string vertexShader = R"(
+        [[maybe_unused]]
+        const std::string vs = R"(
 #version 430 core
 
 layout(location = 0) in vec3 a_position;
@@ -39,4 +40,5 @@ void main() {
     gl_Position = v_combined_matrix * vec4(a_position, 1.0f);
 }
 )";
+    }
 }

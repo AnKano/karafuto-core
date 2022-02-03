@@ -2,13 +2,13 @@
 // Created by anshu on 1/31/2022.
 //
 
-#include "RenderingTask.hpp"
+#include "RenderTask.hpp"
 #include "glad/glad.h"
 
 #include "../../MapCore.hpp"
 
 namespace KCore {
-    void RenderingTask::onTaskComplete() {
+    void RenderTask::onTaskComplete() {
         BaseTask::onTaskComplete();
 
 //        auto textureBytesCount = 256 * 256 * 3;
@@ -30,7 +30,7 @@ namespace KCore {
 //        }
     }
 
-    void RenderingTask::performTask() {
+    void RenderTask::performTask() {
 
     }
 }

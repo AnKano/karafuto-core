@@ -9,8 +9,9 @@
 namespace KCore {
     template<class T>
     class Queue {
-    private:
+    public:
         std::queue<std::shared_ptr<T>> mQueue;
+    private:
         std::mutex mQueueLock;
 
     public:

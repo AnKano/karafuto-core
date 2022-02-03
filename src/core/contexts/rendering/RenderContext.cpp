@@ -6,7 +6,7 @@
 #include "../../MapCore.hpp"
 
 namespace KCore {
-    RenderContext::RenderContext(MapCore *core, BaseCache<std::shared_ptr<void>> *stash) : mCore_ptr(core) {
+    RenderContext::RenderContext(MapCore *core) : mCore_ptr(core) {
         mRenderThread = std::make_unique<std::thread>([this]() {
             if (!glfwInit())
                 throw std::runtime_error("Can't instantiate glfw module!");
@@ -58,14 +58,9 @@ namespace KCore {
         return mReadyToBeDead;
     }
 
-    void RenderContext::pushTaskToQueue(RenderingTask *task) {
+    void RenderContext::pushTaskToQueue(RenderTask *task) {
         mQueue.pushTask(task);
     }
-
-    Queue<RenderingTask> *RenderContext::getQueue() {
-        return &mQueue;
-    }
-
 
     void RenderContext::clearQueue() {
         mQueue.clear();
@@ -73,26 +68,22 @@ namespace KCore {
 
     void RenderContext::pushTextureDataToGPUQueue(const std::string &basicString,
                                                   const std::shared_ptr<std::vector<uint8_t>> &sharedPtr) {
-        std::lock_guard<std::mutex> lock{mQueueLock};
+        std::lock_guard<std::mutex> lock{mTextureQueueLock};
         mTexturesQueue.emplace_back(basicString, sharedPtr);
     }
 
-    void RenderContext::LoadEverythingToGPU() {
-        std::lock_guard<std::mutex> lock{mQueueLock};
+    void RenderContext::loadEverythingToGPU() {
+        std::lock_guard<std::mutex> lock{mTextureQueueLock};
 
-        for (const auto &[key, value]: mTexturesQueue) {
-            unsigned int textureId;
-            glGenTextures(1, &textureId);
-            glBindTexture(GL_TEXTURE_2D, textureId);
+        for (auto &[key, value]: mTexturesQueue) {
+            auto buffer = value.get();
+            auto texture = std::make_shared<KCore::OpenGL::Texture>();
+            texture->setData(256, 256,
+                             GL_RGB, GL_RGB, GL_UNSIGNED_BYTE,
+                             buffer->data());
+            mGPUTextures[key] = texture;
 
-            mTextures[key] = textureId;
-
-            auto data = value.get();
-            glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 256, 256, 0, GL_RGB, GL_UNSIGNED_BYTE, data->data());
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-            glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-
-            glBindTexture(GL_TEXTURE_2D, 0);
+            value.reset();
         }
 
         mTexturesQueue.clear();
@@ -102,153 +93,35 @@ namespace KCore {
         while (!mShouldClose) {
             auto task = mQueue.popTask();
             while (task) {
-                LoadEverythingToGPU();
+                loadEverythingToGPU();
 
                 // clear canvas and bind shader
-                glClear(GL_COLOR_BUFFER_BIT);
-                glViewport(0, 0, 2048, 2048);
+                mFramebuffer->bindAndClear();
                 mShader->bind();
 
-                // check child existence
-                auto pass = true;
-                for (const auto &item: task->mChilds)
-                    if (mTextures.find(item + ".common.image") == std::end(mTextures))
-                        pass = false;
-                for (const auto &item: task->mParents)
-                    if (mTextures.find(item + ".common.image") == std::end(mTextures))
-                        pass = false;
+                if (!relatedTexturesAvailable(task)) continue;
 
-                if (pass == false) continue;
-
-                auto quadcode = task->mQuadcode;
+                auto rootQuadcode = task->mQuadcode;
+                glm::mat4 scaleMatrix, translationMatrix;
                 for (const auto &item: task->mChilds) {
-                    auto formulae = item.substr(quadcode.length());
-
-                    auto difference = (float) formulae.size();
-                    float scale = 1.0f / powf(2.0f, difference);
-                    auto scale_matrix = glm::scale(glm::vec3{scale});
-
-                    float step = 0.5f;
-                    glm::vec3 position{0.0f};
-                    for (const auto &in: formulae) {
-                        if (in == '0') {
-                            position.x -= step;
-                            position.y += step;
-                        } else if (in == '1') {
-                            position.x += step;
-                            position.y += step;
-                        } else if (in == '2') {
-                            position.x -= step;
-                            position.y -= step;
-                        } else if (in == '3') {
-                            position.x += step;
-                            position.y -= step;
-                        }
-                        step /= 2.0f;
-                    }
-
-                    auto translation_matrix = glm::translate(glm::vec3{position.x, -position.y, 0.0f});
-
-                    int32_t u_scale_matrix_position = mShader->uniform_position("u_scale_matrix");
-                    int32_t u_translation_matrix_position = mShader->uniform_position("u_translation_matrix");
-                    int32_t u_color = mShader->uniform_position("u_color");
-                    int32_t u_diffuse = mShader->uniform_position("u_diffuse");
-
-                    glUniformMatrix4fv(u_scale_matrix_position, 1, GL_FALSE, glm::value_ptr(scale_matrix));
-                    glUniformMatrix4fv(u_translation_matrix_position, 1, GL_FALSE, glm::value_ptr(translation_matrix));
-
-                    auto r = ((float) rand() / (RAND_MAX));
-                    auto g = ((float) rand() / (RAND_MAX));
-                    auto b = ((float) rand() / (RAND_MAX));
-
-                    glUniform4fv(u_color, 1, glm::value_ptr(glm::vec4{r, g, b, 1.0f}));
-
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, mTextures[item + ".common.image"]);
-                    glUniform1i(u_diffuse, 0);
-
-                    mMesh->draw();
+                    prepareTransformForChild(rootQuadcode, item, scaleMatrix, translationMatrix);
+                    drawTileToTexture(item, scaleMatrix, translationMatrix);
                 }
-
                 for (const auto &item: task->mParents) {
-                    auto reverseFormulae = quadcode.substr(item.length(), quadcode.length() - item.length());
-
-                    auto difference = (float) reverseFormulae.size();
-                    float scale = 1.0f * powf(2.0f, difference);
-                    auto scale_matrix = glm::scale(glm::vec3{scale});
-
-                    float step = 0.5f;
-                    glm::vec3 position{0.0f};
-                    for (const auto &in: reverseFormulae) {
-                        if (in == '0') {
-                            position.x -= step;
-                            position.y += step;
-                        } else if (in == '1') {
-                            position.x += step;
-                            position.y += step;
-                        } else if (in == '2') {
-                            position.x -= step;
-                            position.y -= step;
-                        } else if (in == '3') {
-                            position.x += step;
-                            position.y -= step;
-                        }
-                        step *= 2.0f;
-                    }
-
-                    auto translation_matrix = glm::translate(glm::vec3{position.x, -position.y, 0.0f});
-
-                    int32_t u_scale_matrix_position = mShader->uniform_position("u_scale_matrix");
-                    int32_t u_translation_matrix_position = mShader->uniform_position("u_translation_matrix");
-                    int32_t u_color = mShader->uniform_position("u_color");
-                    int32_t u_diffuse = mShader->uniform_position("u_diffuse");
-
-                    glUniformMatrix4fv(u_scale_matrix_position, 1, GL_FALSE, glm::value_ptr(scale_matrix));
-                    glUniformMatrix4fv(u_translation_matrix_position, 1, GL_FALSE, glm::value_ptr(translation_matrix));
-
-                    auto r = ((float) rand() / (RAND_MAX));
-                    auto g = ((float) rand() / (RAND_MAX));
-                    auto b = ((float) rand() / (RAND_MAX));
-
-                    glUniform4fv(u_color, 1, glm::value_ptr(glm::vec4{r, g, b, 1.0f}));
-
-                    glActiveTexture(GL_TEXTURE0);
-                    glBindTexture(GL_TEXTURE_2D, mTextures[item + ".common.image"]);
-                    glUniform1i(u_diffuse, 0);
-
-                    mMesh->draw();
+                    prepareTransformForParent(rootQuadcode, item, scaleMatrix, translationMatrix);
+                    drawTileToTexture(item, scaleMatrix, translationMatrix);
                 }
 
-                // render image related to task
-//                task->invoke();
+                auto buffer = mFramebuffer->getColorAttachTexture()->getTextureData();
+                auto buffer_ptr = std::make_shared<std::vector<uint8_t>>(buffer);
+                mCore_ptr->mDataStash.setOrReplace(task->mQuadcode + ".meta.image", buffer_ptr);
 
-                auto textureBytesCount = 2048 * 2048 * 3;
-                auto buffer = std::make_shared<std::vector<uint8_t>>();
-                buffer->resize(textureBytesCount);
-
-                glActiveTexture(GL_TEXTURE0);
-                glBindTexture(GL_TEXTURE_2D, mTexture);
-                glGetTexImage(GL_TEXTURE_2D, 0, GL_RGB, GL_UNSIGNED_BYTE, buffer->data());
-//                if (!mCore_ptr->mDataStash.getByKey(task->mQuadcode + ".meta.image")) {
-                mCore_ptr->mDataStash.setOrReplace(task->mQuadcode + ".meta.image",
-                                                   std::static_pointer_cast<void>(buffer));
-
-                MapEvent event{};
-                event.Type = ContentLoadedRender;
-                strcpy_s(event.Quadcode, task->mQuadcode.c_str());
-                event.OptionalPayload = nullptr;
-
-                mCore_ptr->pushEventToContentQueue(event);
-
-                std::cout << task->mQuadcode << " loading from renderer complete" << std::endl;
-//                }
-
-                // swap framebuffer and get events
-                glfwSwapBuffers(mWindowContext_ptr);
-                glfwPollEvents();
+                mCore_ptr->pushEventToContentQueue(MapEvent::MakeRenderLoadedEvent(task->mQuadcode));
 
                 // get next task or nullptr
                 task = mQueue.popTask();
+
+                glfwPollEvents();
             }
 
             std::this_thread::sleep_for(mCheckInterval);
@@ -259,14 +132,14 @@ namespace KCore {
     }
 
     void RenderContext::initShader() {
-        mShader = std::make_shared<KCore::opengl::Shader>("Canvas");
-        mShader->addFragmentShader(TextureRenderingBuiltin::fragmentShader, opengl::Shader::Text);
-        mShader->addVertexShader(TextureRenderingBuiltin::vertexShader, opengl::Shader::Text);
+        mShader = std::make_shared<KCore::OpenGL::Shader>();
+        mShader->addFragmentShader(KCore::OpenGL::BuiltIn::TextureRenderer::fs, OpenGL::Shader::Text);
+        mShader->addVertexShader(KCore::OpenGL::BuiltIn::TextureRenderer::vs, OpenGL::Shader::Text);
         mShader->build();
     }
 
     void RenderContext::initSquareMesh() {
-        opengl::MeshDescription meshDescription;
+        OpenGL::MeshDescription meshDescription;
 
         std::vector<glm::vec3> posData = {{-1.0f, 1.0f,  0.0f},
                                           {1.0f,  1.0f,  0.0f},
@@ -291,42 +164,130 @@ namespace KCore {
 
         meshDescription.setIndicesBuffer(idxData);
         meshDescription.setShader(mShader.get());
-        meshDescription.addAttribDescription({"a_position",
-                                              std::nullopt,
-                                              converted_position_data,
-                                              GL_FLOAT,
-                                              3,
-                                              sizeof(float)});
-        meshDescription.addAttribDescription({"a_uv",
-                                              std::nullopt,
-                                              converted_uvs_data,
-                                              GL_FLOAT,
-                                              2,
-                                              sizeof(float)});
+        auto positionsDescriptor = OpenGL::AttributeDescription{
+                "a_position", std::nullopt,
+                converted_position_data, GL_FLOAT,
+                3, sizeof(float)
+        };
+        auto uvsDescriptor = OpenGL::AttributeDescription{
+                "a_uv", std::nullopt,
+                converted_uvs_data, GL_FLOAT,
+                2, sizeof(float)
+        };
 
-        mMesh = std::make_shared<opengl::Mesh>(meshDescription);
+        meshDescription.addAttribDescription(positionsDescriptor);
+        meshDescription.addAttribDescription(uvsDescriptor);
+
+        mMesh = std::make_shared<OpenGL::Mesh>(meshDescription);
     }
 
     void RenderContext::initCanvasFramebuffer() {
-        glGenTextures(1, &mTexture);
-        glBindTexture(GL_TEXTURE_2D, mTexture);
-
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGB, 2048, 2048, 0, GL_RGB, GL_UNSIGNED_BYTE, nullptr);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glBindTexture(GL_TEXTURE_2D, 0);
-
-        glGenFramebuffers(1, &mFramebuffer);
-        glBindFramebuffer(GL_FRAMEBUFFER, mFramebuffer);
-        glFramebufferTexture2D(GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0, GL_TEXTURE_2D, mTexture, 0);
-
-        glEnable(GL_BLEND);
-        glEnable(GL_STENCIL_TEST);
-        glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+        //!TODO: remove to parameter
+        mFramebuffer = std::make_shared<KCore::OpenGL::ColorFramebuffer>(2048, 2048);
     }
 
     void RenderContext::dispose() {
         glfwDestroyWindow(mWindowContext_ptr);
         glfwTerminate();
+    }
+
+    glm::vec4 RenderContext::getRandomGreyscale() {
+        auto r = ((float) rand() / (RAND_MAX));
+        auto g = ((float) rand() / (RAND_MAX));
+        auto b = ((float) rand() / (RAND_MAX));
+
+        return {r, g, b, 1.0f};
+    }
+
+    bool RenderContext::relatedTexturesAvailable(const std::shared_ptr<RenderTask> &task) {
+        // check child nodes
+        for (const auto &item: task->mChilds)
+            if (mGPUTextures.find(item + ".common.image") == std::end(mGPUTextures))
+                return false;
+
+        // check parent nodes
+        for (const auto &item: task->mParents)
+            if (mGPUTextures.find(item + ".common.image") == std::end(mGPUTextures))
+                return false;
+
+        return true;
+    }
+
+    void RenderContext::prepareTransformForChild(const std::string &rootQuadcode, const std::string &childQuadcode,
+                                                 glm::mat4 &scaleMatrix, glm::mat4 &translationMatrix) {
+        auto formulae = childQuadcode.substr(rootQuadcode.length());
+
+        auto difference = (float) formulae.size();
+        float scale = 1.0f / powf(2.0f, difference);
+
+        float step = 0.5f;
+        glm::vec3 position{0.0f};
+        for (const auto &in: formulae) {
+            if (in == '0') {
+                position.x -= step;
+                position.y -= step;
+            } else if (in == '1') {
+                position.x += step;
+                position.y -= step;
+            } else if (in == '2') {
+                position.x -= step;
+                position.y += step;
+            } else if (in == '3') {
+                position.x += step;
+                position.y += step;
+            }
+            step /= 2.0f;
+        }
+
+        scaleMatrix = glm::scale(glm::vec3{scale});
+        translationMatrix = glm::translate(glm::vec3{position.x, position.y, 0.0f});
+    }
+
+    void RenderContext::prepareTransformForParent(const std::string &rootQuadcode, const std::string &parentQuadcode,
+                                                  glm::mat4 &scaleMatrix, glm::mat4 &translationMatrix) {
+        auto reverseFormulae = rootQuadcode.substr(parentQuadcode.length(),
+                                                   rootQuadcode.length() - parentQuadcode.length());
+
+        auto difference = (float) reverseFormulae.size();
+        float scale = 1.0f * powf(2.0f, difference);
+
+        float step = 0.5f;
+        glm::vec3 position{0.0f};
+        for (const auto &in: reverseFormulae) {
+            if (in == '0') {
+                position.x -= step;
+                position.y -= step;
+            } else if (in == '1') {
+                position.x += step;
+                position.y -= step;
+            } else if (in == '2') {
+                position.x -= step;
+                position.y += step;
+            } else if (in == '3') {
+                position.x += step;
+                position.y += step;
+            }
+            step *= 2.0f;
+        }
+
+        scaleMatrix = glm::scale(glm::vec3{scale});
+        translationMatrix = glm::translate(glm::vec3{position.x, position.y, 0.0f});
+    }
+
+    void RenderContext::drawTileToTexture(const std::string &quadcode,
+                                          const glm::mat4 &scaleMatrix, const glm::mat4 &translationMatrix) {
+        int32_t u_scale_matrix_position = mShader->uniform_position("u_scale_matrix");
+        int32_t u_translation_matrix_position = mShader->uniform_position("u_translation_matrix");
+        int32_t u_color = mShader->uniform_position("u_color");
+        int32_t u_diffuse = mShader->uniform_position("u_diffuse");
+
+        uint8_t slot = 0;
+        mGPUTextures[quadcode + ".common.image"]->bind(slot);
+        glUniform1i(u_diffuse, slot);
+        glUniform4fv(u_color, 1, glm::value_ptr(getRandomGreyscale()));
+        glUniformMatrix4fv(u_scale_matrix_position, 1, GL_FALSE, glm::value_ptr(scaleMatrix));
+        glUniformMatrix4fv(u_translation_matrix_position, 1, GL_FALSE, glm::value_ptr(translationMatrix));
+
+        mMesh->draw();
     }
 }

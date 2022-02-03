@@ -30,7 +30,7 @@ namespace KCore {
          * for certain handler to describe key
          * */
         struct TransmissionPayload {
-            std::map<TransmissionKey, TransmissionBuffer> *resultsStash_ptr;
+            std::map<TransmissionKey, TransmissionBuffer> *transmissionBuffers;
             std::string url;
             std::string quadcode;
             std::string tag;
@@ -40,11 +40,9 @@ namespace KCore {
         MapCore *mCore_ptr;
         RenderContext* mRenderCtx_ptr;
 
-        CURLM *mCurlMultiContext;
-
+        CURLM *mCurlMultiContext{};
         std::map<TransmissionKey, TransmissionBuffer> mLoadingResults;
 
-        BaseCache<std::shared_ptr<void>> *mStash_ptr;
         Queue<NetworkTask> mQueue;
 
         std::unique_ptr<std::thread> mRenderThread;
@@ -53,7 +51,7 @@ namespace KCore {
         bool mReadyToBeDead = false;
 
     public:
-        NetworkContext(MapCore *core, BaseCache<std::shared_ptr<void>> *stash, RenderContext* renderContext);
+        NetworkContext(MapCore *core, RenderContext* renderContext);
 
         ~NetworkContext();
 
@@ -74,6 +72,8 @@ namespace KCore {
         void runRenderLoop();
 
         void disposeContext();
+
+        static std::shared_ptr<TransmissionBuffer> decodeImage(const TransmissionBuffer& buffer);
 
         void initCURL();
 

@@ -25,8 +25,8 @@ namespace KCore {
         std::map<std::string, TileDescription> mCurrentCommonTiles;
         std::map<std::string, TileDescription> mCurrentMetaTiles;
 
-        RenderContext mRenderingContext{this, &mDataStash};
-        NetworkContext mNetworkingContext{this, &mDataStash, &mRenderingContext};
+        RenderContext mRenderingContext{this};
+        NetworkContext mNetworkingContext{this, &mRenderingContext};
 
         std::mutex mEventsLock;
 
@@ -86,5 +86,7 @@ namespace KCore {
     DllExport KCore::MapEvent *GetContentFrameEvents(KCore::MapCore *mapCore, int &length);
 
     DllExport void *GetBufferPtrFromTag(KCore::MapCore *mapCore, const char *tag, int &length);
+
+    DllExport void ReleaseCopy(const uint8_t* ptr);
     }
 }

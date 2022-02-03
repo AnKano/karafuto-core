@@ -19,9 +19,11 @@ namespace KCore {
         mWorld->updateFrustum(this->mCameraProjectionMatrix, this->mCameraViewMatrix);
         mWorld->setPosition(this->mCameraPosition);
 
-        mDataStash.setMaximalCount(5000);
+        mDataStash.setMaximalCount(5000000);
+//        mDataStash.setCheckInterval(10);
+//        mDataStash.setStayAliveInterval(20);
         mDataStash.setCheckInterval(10);
-        mDataStash.setStayAliveInterval(20);
+        mDataStash.setStayAliveInterval(1000);
     }
 
     void MapCore::update(const float *cameraProjectionMatrix_ptr,
@@ -69,40 +71,31 @@ namespace KCore {
 
         auto events = std::vector<MapEvent>();
         for (const auto &item: diff) {
-            if (previousFrameTilesCopy.find(item) != std::end(previousFrameTilesCopy)) {
-                MapEvent event{};
-                event.Type = NotInFrustum;
-                strcpy_s(event.Quadcode, previousFrameTilesCopy[item].getQuadcode().c_str());
-                event.OptionalPayload = nullptr;
-                events.push_back(event);
+            bool inPrev = previousFrameTilesCopy.find(item) != std::end(previousFrameTilesCopy);
+            bool inNew = currentFrameTiles.find(item) != std::end(currentFrameTiles);
+
+            if (inPrev) {
+                events.push_back(MapEvent::MakeNotInFrustumEvent(item));
                 continue;
             }
 
-            if (currentFrameTiles.find(item) != std::end(currentFrameTiles)) {
-                MapEvent event{};
-                event.Type = InFrustum;
-                strcpy_s(event.Quadcode, mCurrentCommonTiles[item].getQuadcode().c_str());
-                event.OptionalPayload = (void *) &mCurrentCommonTiles[item].mPayload;
-                events.push_back(event);
+            if (inNew) {
+                events.push_back(MapEvent::MakeInFrustumEvent(item, &mCurrentCommonTiles[item].mPayload));
 
                 // ... so, download resource for appeared element
-                auto test = mDataStash.getByKey(std::string{event.Quadcode} + ".common.image");
-                if (test) {
-                    MapEvent event{};
-                    event.Type = ContentLoadedImage;
-                    strcpy_s(event.Quadcode, mCurrentCommonTiles[item].getQuadcode().c_str());
-                    event.OptionalPayload = test->get();
+                auto test = mDataStash.getByKey(std::string{item} + ".common.image");
+                auto inStash = test != nullptr;
+                if (inStash)
+                    pushEventToContentQueue(MapEvent::MakeImageLoadedEvent(item, test->get()));
 
-                    pushEventToContentQueue(event);
-                }
+//                std::string token = "pk.eyJ1IjoiYW5rYW5vIiwiYSI6ImNqeWVocmNnYTAxaWIzaGxoeGd4ejExN3MifQ.8QQWwjxjyoIH8ma0McKeNA";
+//                std::string url{"http://api.mapbox.com/v4/mapbox.satellite/" + mCurrentCommonTiles[item].tileURL() +
+//                                 ".png?access_token=" + token};
 
-//                std::string mUrl{"http://api.mapbox.com/v4/mapbox.satellite/" + mCurrentCommonTiles[item].tileURL() +
-//                                 ".png?access_token=pk.eyJ1IjoiYW5rYW5vIiwiYSI6ImNqeWVocmNnYTAxaWIzaGxoeGd4ejExN3MifQ.8QQWwjxjyoIH8ma0McKeNA"};
-
-                std::string mUrl{"http://tile.openstreetmap.org/" + mCurrentCommonTiles[item].tileURL() + ".png"};
-                std::string mQuadcode{mCurrentCommonTiles[item].getQuadcode()};
-                std::string mTag{"common.image"};
-                mNetworkingContext.pushTaskToQueue(new NetworkTask{mUrl, mQuadcode, mTag});
+                std::string url{"http://tile.openstreetmap.org/" + mCurrentCommonTiles[item].tileURL() + ".png"};
+                std::string quadcode{mCurrentCommonTiles[item].getQuadcode()};
+                std::string tag{"common.image"};
+                mNetworkingContext.pushTaskToQueue(new NetworkTask{url, quadcode, tag});
                 continue;
             }
         }
@@ -133,21 +126,12 @@ namespace KCore {
             bool inNew = currentFrameTiles.find(item) != std::end(currentFrameTiles);
 
             if (inPrev) {
-                MapEvent event{};
-                event.Type = NotInFrustum;
-                strcpy_s(event.Quadcode, previousFrameTilesCopy[item].getQuadcode().c_str());
-                event.OptionalPayload = nullptr;
-                events.push_back(event);
-
+                events.push_back(MapEvent::MakeNotInFrustumEvent(item));
                 continue;
-            } else if (currentFrameTiles.find(item) != std::end(currentFrameTiles)) {
-                // emit about new object in frustum
-                MapEvent event{};
-                event.Type = InFrustum;
-                strcpy_s(event.Quadcode, mCurrentMetaTiles[item].getQuadcode().c_str());
-                event.OptionalPayload = (void *) &mCurrentMetaTiles[item].mPayload;
-                events.push_back(event);
+            }
 
+            if (inNew) {
+                events.push_back(MapEvent::MakeInFrustumEvent(item, &mCurrentMetaTiles[item].mPayload));
                 continue;
             }
         }
@@ -155,23 +139,14 @@ namespace KCore {
         mStoredMetaEvents = events;
 
         if (!diff.empty()) {
+            std::cout << mRenderingContext.mQueue.mQueue.size() << std::endl;
             mRenderingContext.clearQueue();
-            for (const auto &item: tiles) {
-                // check rerendering
 
-                // check tile appear in first time
-//                auto quadcode = item.description.getQuadcode();
-//                // is appear or disappear
-//                bool inDiff = std::find(diff.begin(), diff.end(), quadcode) != std::end(diff);
-//                // in disappeared
-//                bool inPrev = previousFrameTilesCopy.find(quadcode) != std::end(previousFrameTilesCopy);
-//                bool inCurr = currentFrameTiles.find(quadcode) != std::end(currentFrameTiles);
-//                if (inDiff && inCurr)
-                mRenderingContext.pushTaskToQueue(new RenderingTask{
+            for (const auto &item: tiles)
+                mRenderingContext.pushTaskToQueue(new RenderTask{
                         this, item.description.getQuadcode(),
                         item.childQuadcodes, item.parentQuadcodes
                 });
-            }
         }
 
         return events;
@@ -256,6 +231,13 @@ namespace KCore {
         auto buffer = (std::shared_ptr<std::vector<uint8_t>> *) stash->getByKey(tag);
         auto &buffer_ref = *buffer;
         length = (int) buffer_ref->size();
-        return buffer_ref->data();
+
+        auto copy = new uint8_t[length];
+        memcpy_s(copy, length, buffer_ref->data(), length);
+        return copy;
+    }
+
+    DllExport void ReleaseCopy(const uint8_t* ptr) {
+        delete ptr;
     }
 }

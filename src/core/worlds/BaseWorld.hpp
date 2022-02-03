@@ -33,7 +33,9 @@ namespace KCore {
                   const struct WorldConfig &config)
                 : mOriginPositionReal(originPoint),
                   mOriginPositionWebMercator(originPoint.x, 0.0f, originPoint.y),
-                  mConfig(config) {}
+                  mConfig(config) {
+            mTilesCache.setStayAliveInterval(100000);
+        }
 
         void setConfig(const WorldConfig &config) {
             mConfig = config;
@@ -148,7 +150,7 @@ namespace KCore {
 
             float minX = (float) pos.x - scale, maxX = (float) pos.x + scale;
             float minZ = (float) pos.y - scale, maxZ = (float) pos.y + scale;
-            float minY = 0.0f, maxY = 0.0f;
+            float minY = -1.0f, maxY = 1.0f;
 
             auto result = mCullingFilter.testAABB(minX, minY, minZ, maxX, maxY, maxZ);
             return result;

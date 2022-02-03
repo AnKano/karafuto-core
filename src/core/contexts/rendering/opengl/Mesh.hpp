@@ -6,7 +6,7 @@
 
 #include "Shader.hpp"
 
-namespace KCore::opengl {
+namespace KCore::OpenGL {
     struct AttributeDescription {
         std::optional<std::string> AttributeName;
         std::optional<uint16_t> AttributeIdx;
@@ -22,15 +22,15 @@ namespace KCore::opengl {
 
     class MeshDescription {
     private:
-        std::vector<opengl::AttributeDescription> DescribedAttribs;
+        std::vector<OpenGL::AttributeDescription> DescribedAttribs;
         std::vector<uint32_t> Indices;
 
-        KCore::opengl::Shader *Shader_ptr{};
+        KCore::OpenGL::Shader *Shader_ptr{};
 
     public:
         MeshDescription() = default;
 
-        void setShader(KCore::opengl::Shader *shader) {
+        void setShader(KCore::OpenGL::Shader *shader) {
             Shader_ptr = shader;
         }
 
@@ -38,12 +38,12 @@ namespace KCore::opengl {
             Indices = indices;
         }
 
-        void addAttribDescription(const opengl::AttributeDescription &data) {
+        void addAttribDescription(const OpenGL::AttributeDescription &data) {
             DescribedAttribs.push_back(data);
         }
 
         [[nodiscard]]
-        KCore::opengl::Shader *getShader() {
+        KCore::OpenGL::Shader *getShader() {
             return Shader_ptr;
         };
 
@@ -53,15 +53,13 @@ namespace KCore::opengl {
         }
 
         [[nodiscard]]
-        std::vector<opengl::AttributeDescription> &getDescribedAttribs() {
+        std::vector<OpenGL::AttributeDescription> &getDescribedAttribs() {
             return DescribedAttribs;
         }
     };
 
     class Mesh {
     private:
-        std::string Tag{"KRen Mesh"};
-
         uint32_t VAOId{0};
         std::unordered_map<uint16_t, AttributeDescription *> DescribedAttrib_ptrs{};
 

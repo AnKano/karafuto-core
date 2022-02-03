@@ -12,7 +12,7 @@
 namespace KCore {
     class MapCore;
 
-    class RenderingTask : public BaseTask {
+    class RenderTask : public BaseTask {
     public:
         MapCore *mCore_ptr;
         std::string mQuadcode;
@@ -20,8 +20,8 @@ namespace KCore {
         std::vector<std::string> mParents;
 
     public:
-        RenderingTask(MapCore *mCore, std::string quadcode,
-                      std::vector<std::string> childs, std::vector<std::string> parents) :
+        RenderTask(MapCore *mCore, std::string quadcode,
+                   std::vector<std::string> childs, std::vector<std::string> parents) :
                 mCore_ptr(mCore), mQuadcode(std::move(quadcode)),
                 mChilds(std::move(childs)), mParents(std::move(parents)) {}
 

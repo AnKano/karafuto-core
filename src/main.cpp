@@ -83,34 +83,35 @@ int main() {
             cameraOpenGlSpaceUp
     );
 
-    const uint16_t iteration = 1000;
+    const uint16_t iteration = 5000;
 
 //     46.9181f, 142.7189f is latitude and longitude of
 //     the surroundings of the city of Yuzhno-Sakhalinsk
     KCore::MapCore core{46.9181f, 142.7189f};
     auto start = std::chrono::system_clock::now();
     for (uint16_t i = 0; i < iteration; i++) {
+        cameraOpenGlSpacePosition.z -= 10000.0f;
         core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
         auto a = core.getCommonFrameEvents();
         auto b = core.getMetaFrameEvents();
         auto c = core.getContentFrameEvents();
         for (const auto &item: a) {
-            auto *payload = (KCore::TilePayload *) item.OptionalPayload;
-            switch (item.Type) {
+            auto *payload = (KCore::TilePayload *) item.payload;
+            switch (item.type) {
                 case KCore::InFrustum:
-                    std::cout << item.Quadcode << " in frustum" << std::endl;
+                    std::cout << item.quadcode << " in frustum" << std::endl;
                     break;
                 case KCore::NotInFrustum:
-                    std::cout << item.Quadcode << " disposed" << std::endl;
+                    std::cout << item.quadcode << " disposed" << std::endl;
                     break;
                 default:
-                    std::cout << item.Quadcode << " undefined" << std::endl;
+                    std::cout << item.quadcode << " undefined" << std::endl;
             }
         }
     }
     auto stop = std::chrono::system_clock::now();
 
-    cameraOpenGlSpacePosition = {1500.0f, 15000.0f, 15000.0f};
+    cameraOpenGlSpacePosition = {1500.0f, 2000.0f, 15000.0f};
     cameraOpenGlSpaceTarget = {0.0f, 10000.0f, 0.0f};
 
     cameraViewMatrix = glm::lookAt(
@@ -121,21 +122,22 @@ int main() {
 
     start = std::chrono::system_clock::now();
     for (uint16_t i = 0; i < iteration; i++) {
+        cameraOpenGlSpacePosition.x -= 10000.0f;
         core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
         auto a = core.getCommonFrameEvents();
         auto b = core.getMetaFrameEvents();
         auto c = core.getContentFrameEvents();
         for (const auto &item: a) {
-            auto *payload = (KCore::TilePayload *) item.OptionalPayload;
-            switch (item.Type) {
+            auto *payload = (KCore::TilePayload *) item.payload;
+            switch (item.type) {
                 case KCore::InFrustum:
-                    std::cout << item.Quadcode << " in frustum" << std::endl;
+                    std::cout << item.quadcode << " in frustum" << std::endl;
                     break;
                 case KCore::NotInFrustum:
-                    std::cout << item.Quadcode << " disposed" << std::endl;
+                    std::cout << item.quadcode << " disposed" << std::endl;
                     break;
                 default:
-                    std::cout << item.Quadcode << " undefined" << std::endl;
+                    std::cout << item.quadcode << " undefined" << std::endl;
             }
         }
     }

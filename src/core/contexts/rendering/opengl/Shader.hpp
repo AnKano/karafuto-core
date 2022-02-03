@@ -6,7 +6,7 @@
 #include <utility>
 #include <unordered_map>
 
-namespace KCore::opengl {
+namespace KCore::OpenGL {
     class Shader {
     public:
         enum ShaderType {
@@ -19,64 +19,47 @@ namespace KCore::opengl {
         };
 
     private:
-        std::unordered_map<ShaderType, uint32_t> Shaders;
-        const std::string Name;
-        std::string Tag;
-
         uint32_t Id{0};
 
-    public:
-        Shader() : Shader("<some mShader>") {}
+        std::unordered_map<ShaderType, uint32_t> Shaders;
 
-        explicit Shader(const std::string &name) : Id(glCreateProgram()), Name(name) {
-            Tag = "KRen - mShader program [" + (name.empty() ? std::to_string(Id) : name) + "]";
-        }
+    public:
+        explicit Shader() : Id(glCreateProgram()) {}
 
         void addShaderPairFromPath(const std::string &path) {
             std::string vsPath = path + "/vs.glsl";
             std::string fsPath = path + "/fs.glsl";
 
-            uint32_t vsId = loadShaderFromFile(Vertex, vsPath);
-            uint32_t fsId = loadShaderFromFile(Fragment, fsPath);
-
-            std::string additional =
-                    "| mShader id: " + std::to_string(vsId) + " and mShader id: " + std::to_string(fsId);
+            loadShaderFromFile(Vertex, vsPath);
+            loadShaderFromFile(Fragment, fsPath);
         }
 
         void addVertexShader(const std::string &source, ShaderSourceType sourceType = Text) {
-            uint32_t id;
-
             switch (sourceType) {
                 case Text:
-                    id = loadShaderAsText(Vertex, source);
+                    loadShaderAsText(Vertex, source);
                     break;
                 case File:
-                    id = loadShaderFromFile(Vertex, source);
+                    loadShaderFromFile(Vertex, source);
                     break;
                 default:
                     //!TODO: throw more wise exception
                     throw std::exception();
             }
-
-            std::string additional = "| mShader id: " + std::to_string(id);
         }
 
         void addFragmentShader(const std::string &source, ShaderSourceType sourceType = Text) {
-            uint32_t id;
-
             switch (sourceType) {
                 case Text:
-                    id = loadShaderAsText(Fragment, source);
+                    loadShaderAsText(Fragment, source);
                     break;
                 case File:
-                    id = loadShaderFromFile(Fragment, source);
+                    loadShaderFromFile(Fragment, source);
                     break;
                 default:
                     //!TODO: throw more wise exception
                     throw std::exception();
             }
-
-            std::string additional = "| mShader id: " + std::to_string(id);
         }
 
         void build() {
@@ -113,17 +96,15 @@ namespace KCore::opengl {
             return src;
         }
 
-        uint32_t loadShaderFromFile(const ShaderType &type, const std::string &path) {
+        void loadShaderFromFile(const ShaderType &type, const std::string &path) {
             Shaders[type] = glCreateShader(type);
             auto content = load(path);
             compileShader(type, content);
-            return Shaders[type];
         }
 
-        uint32_t loadShaderAsText(const ShaderType &type, const std::string &text) {
+        void loadShaderAsText(const ShaderType &type, const std::string &text) {
             Shaders[type] = glCreateShader(type);
             compileShader(type, text);
-            return Shaders[type];
         }
 
         void compileShader(const ShaderType &type, const std::string &source) {
