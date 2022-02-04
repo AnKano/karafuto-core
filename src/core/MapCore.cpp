@@ -6,6 +6,7 @@
 #include "worlds/PlainWorld.hpp"
 #include "queue/tasks/CallbackTask.hpp"
 #include "misc/Utils.hpp"
+#include "misc/STBImageUtils.hpp"
 
 namespace KCore {
     MapCore::MapCore(float latitude, float longitude) {
@@ -80,7 +81,8 @@ namespace KCore {
                 events.push_back(MapEvent::MakeInFrustumEvent(item, &mCurrentCommonTiles[item].mPayload));
 
                 // ... so, download resource for appeared element
-                auto test = mDataStash.getByKey(std::string{item} + ".common.image");
+                auto composite = std::string{item} + ".common.image";
+                auto test = mDataStash.getByKey(composite);
                 auto inStash = test != nullptr;
                 if (inStash)
                     pushEventToContentQueue(MapEvent::MakeImageLoadedEvent(item, test->get()));
@@ -92,7 +94,21 @@ namespace KCore {
                 std::string url{"http://tile.openstreetmap.org/" + mCurrentCommonTiles[item].tileURL() + ".png"};
                 std::string quadcode{mCurrentCommonTiles[item].getQuadcode()};
                 std::string tag{"common.image"};
-                mNetworkingContext.pushTaskToQueue(new NetworkTask{url, quadcode, tag});
+
+                auto request = new NetworkRequest{
+                        url,
+                        [url, tag, this, composite](const std::vector<uint8_t> &data) {
+                            auto raw = std::make_shared<std::vector<uint8_t>>(
+                                    KCore::STBImageUtils::decodeImageBuffer(data));
+                            mDataStash.setOrReplace(composite, raw);
+                            mRenderingContext.pushTextureDataToGPUQueue(composite, raw);
+                            std::cout << url << " finally loaded kek" << std::endl;
+                        },
+                        [url]() {
+                            std::cout << url << " not loaded" << std::endl;
+                        }
+                };
+                mNetworkingContext.pushRequestToQueue(request);
                 continue;
             }
         }
@@ -229,19 +245,9 @@ namespace KCore {
         auto &buffer_ref = *buffer;
         length = (int) buffer_ref->size();
         return buffer_ref->data();
-
-//        auto buffer = (std::shared_ptr<std::vector<uint8_t>> *) stash->getByKey(tag);
-//        auto &buffer_ref = *buffer;
-//        length = (int) buffer_ref->size();
-//
-////        stash->globalLock();
-////        auto copy = new uint8_t[length];
-////        memcpy_s(copy, length, buffer_ref->data(), length);
-////        stash->globalUnlock();
-//        return buffer_ref->data();
     }
 
-    DllExport void ReleaseCopy(const uint8_t* ptr) {
+    DllExport void ReleaseCopy(const uint8_t *ptr) {
         delete ptr;
     }
 }

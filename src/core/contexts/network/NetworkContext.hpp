@@ -13,37 +13,19 @@
 #include "../../queue/tasks/NetworkTask.hpp"
 #include "../../cache/BaseCache.hpp"
 #include "../rendering/RenderContext.hpp"
+#include "NetworkRequest.hpp"
 
 using namespace std::chrono_literals;
 
 namespace KCore {
     class MapCore;
 
-    typedef std::string TransmissionKey;
-    typedef std::vector<uint8_t> TransmissionBuffer;
-
     class NetworkContext {
-        /*
-         * CURL library need to send anything that described destination
-         * for loaded bytes. The best way is creating struct that contain
-         * map to each one result (for easily appending) and description
-         * for certain handler to describe key
-         * */
-        struct TransmissionPayload {
-            std::map<TransmissionKey, TransmissionBuffer> *transmissionBuffers;
-            std::string url;
-            std::string quadcode;
-            std::string tag;
-        };
-
     private:
-        MapCore *mCore_ptr;
-        RenderContext* mRenderCtx_ptr;
-
         CURLM *mCurlMultiContext{};
-        std::map<TransmissionKey, TransmissionBuffer> mLoadingResults;
 
         Queue<NetworkTask> mQueue;
+        std::deque<NetworkRequest *> mRequestQueue;
 
         std::unique_ptr<std::thread> mRenderThread;
         std::chrono::milliseconds mWaitInterval = 1s;
@@ -51,7 +33,7 @@ namespace KCore {
         bool mReadyToBeDead = false;
 
     public:
-        NetworkContext(MapCore *core, RenderContext* renderContext);
+        NetworkContext();
 
         ~NetworkContext();
 
@@ -66,21 +48,19 @@ namespace KCore {
         [[nodiscard]]
         bool getWorkingStatus() const;
 
-        void pushTaskToQueue(NetworkTask *task);
+        void pushRequestToQueue(NetworkRequest *task);
 
     private:
         void runRenderLoop();
 
         void disposeContext();
 
-        static std::shared_ptr<TransmissionBuffer> decodeImage(const TransmissionBuffer& buffer);
-
         void initCURL();
 
-        void putTaskToCURL(const std::shared_ptr<NetworkTask> &task);
+        void putTaskToCURL(NetworkRequest* task);
 
         void disposeCURL();
 
-        static size_t writeCallbackCURL(char *data, size_t size, size_t nmemb, TransmissionPayload *payloadPtr);
+        static size_t writeCallbackCURL(char *data, size_t size, size_t nmemb, void *payloadPtr);
     };
 }

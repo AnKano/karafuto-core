@@ -10,7 +10,7 @@
 #include "worlds/TerrainedWorld.hpp"
 #include "meshes/GridMesh.hpp"
 #include "contexts/rendering/RenderContext.hpp"
-#include "contexts/networking/NetworkContext.hpp"
+#include "contexts/network/NetworkContext.hpp"
 #include "cache/LimitedSpaceCache.hpp"
 #include "events/MapEvent.hpp"
 
@@ -26,7 +26,7 @@ namespace KCore {
         std::map<std::string, TileDescription> mCurrentMetaTiles;
 
         RenderContext mRenderingContext{this};
-        NetworkContext mNetworkingContext{this, &mRenderingContext};
+        NetworkContext mNetworkingContext{};
 
         std::mutex mEventsLock;
 

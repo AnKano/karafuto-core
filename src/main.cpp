@@ -95,20 +95,18 @@ int main() {
         auto a = core.getCommonFrameEvents();
         auto b = core.getMetaFrameEvents();
         auto c = core.getContentFrameEvents();
-        for (const auto &item: a) {
-            auto *payload = (KCore::TilePayload *) item.payload;
-            switch (item.type) {
-                case KCore::InFrustum:
-                    std::cout << item.quadcode << " in frustum" << std::endl;
-                    break;
-                case KCore::NotInFrustum:
-                    std::cout << item.quadcode << " disposed" << std::endl;
-                    break;
-                default:
-                    std::cout << item.quadcode << " undefined" << std::endl;
+        for (const auto &item: c) {
+            if (item.type == KCore::ContentLoadedRender) {
+                auto tag = std::string{item.quadcode} + ".meta.image";
+                int len = 0;
+                auto data = KCore::GetBufferPtrFromTag(&core, tag.c_str(), len);
+
+                auto *buf = new uint8_t[len];
+                memcpy_s(buf, len, data, len);
+                delete[]buf;
             }
         }
-        std::this_thread::sleep_for(0.75s);
+        std::this_thread::sleep_for(0.05ms);
     }
     auto stop = std::chrono::system_clock::now();
 
@@ -128,20 +126,17 @@ int main() {
         auto a = core.getCommonFrameEvents();
         auto b = core.getMetaFrameEvents();
         auto c = core.getContentFrameEvents();
-        for (const auto &item: a) {
-            auto *payload = (KCore::TilePayload *) item.payload;
-            switch (item.type) {
-                case KCore::InFrustum:
-                    std::cout << item.quadcode << " in frustum" << std::endl;
-                    break;
-                case KCore::NotInFrustum:
-                    std::cout << item.quadcode << " disposed" << std::endl;
-                    break;
-                default:
-                    std::cout << item.quadcode << " undefined" << std::endl;
+        for (const auto &item: c) {
+            if (item.type == KCore::ContentLoadedRender) {
+                auto tag = std::string{item.quadcode} + ".meta.image";
+                int len = 0;
+                auto data = KCore::GetBufferPtrFromTag(&core, tag.c_str(), len);
+
+                auto *buf = new uint8_t[len];
+                memcpy_s(buf, len, data, len);
+                delete[]buf;
             }
         }
-        std::this_thread::sleep_for(0.75s);
     }
     stop = std::chrono::system_clock::now();
 

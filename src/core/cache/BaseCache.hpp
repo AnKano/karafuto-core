@@ -145,7 +145,9 @@ namespace KCore {
     private:
         void runCacheLoop() {
             while (!mShouldClose) {
+                this->mCacheAccessLock.lock();
                 inLoopCheck();
+                this->mCacheAccessLock.unlock();
 
                 std::this_thread::sleep_for(mCheckInterval);
             }
