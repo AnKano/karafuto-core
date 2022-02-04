@@ -15,9 +15,11 @@ namespace KCore {
     }
 
     std::string TileDescription::tileURL() const {
-        return {std::to_string(mTilecode.z) + "/" +
+        auto composite =
+                std::to_string(mTilecode.z) + "/" +
                 std::to_string(mTilecode.x) + "/" +
-                std::to_string(mTilecode.y)};
+                std::to_string(mTilecode.y);
+        return composite;
     }
 
     void TileDescription::setQuadcode(const std::string &quadcode) {

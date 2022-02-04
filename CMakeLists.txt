@@ -47,7 +47,7 @@ if (NOT EMSCRIPTEN)
     set(BUILD_SHARED_LIBS OFF)
 
     add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
-    target_link_libraries(libkcore glad glfw libcurl glm thread)
+    target_link_libraries(libkcore glad glfw libcurl glm)
 
     add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
     target_link_libraries(karafuto_core glad glfw libcurl glm)

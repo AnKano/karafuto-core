@@ -4,6 +4,7 @@
 #include <string>
 #include <chrono>
 #include <thread>
+#include <vector>
 #include <mutex>
 #include <memory>
 #include <iostream>
@@ -14,19 +15,21 @@ using namespace std::chrono;
 using namespace std::chrono_literals;
 
 namespace KCore {
+    typedef std::chrono::time_point<high_resolution_clock> TimePoint;
+
     template<class T>
     class BaseCache {
     protected:
         struct CacheElement {
             T element;
-            std::chrono::time_point<system_clock> time;
+            TimePoint time;
         };
 
-        std::map<std::string, CacheElement> mCachedElements;
+        std::map<std::string, std::vector<CacheElement>> mCachedElements;
 
-        std::chrono::time_point<system_clock> mLastAccessTimePoint;
+        TimePoint mLastAccessTimePoint;
 
-        std::mutex mCacheLock;
+        std::mutex mCacheAccessLock;
         std::shared_ptr<std::thread> mCacheThread;
         std::chrono::milliseconds mCheckInterval = 1s;
 
@@ -40,7 +43,7 @@ namespace KCore {
             });
             mCacheThread->detach();
 
-            mLastAccessTimePoint = system_clock::now();
+            mLastAccessTimePoint = high_resolution_clock::now();
         }
 
         ~BaseCache() {
@@ -54,65 +57,71 @@ namespace KCore {
         }
 
         bool keyInCache(const std::string &key, const bool &actualize = false) {
-            std::lock_guard<std::mutex> lock{mCacheLock};
+            std::lock_guard<std::mutex> lock{mCacheAccessLock};
 
-            mLastAccessTimePoint = system_clock::now();
+            mLastAccessTimePoint = high_resolution_clock::now();
 
-            auto inCache = mCachedElements.find(key);
-            if (inCache == mCachedElements.end())
+            auto inCache = mCachedElements.find(key) != mCachedElements.end();
+            if (!inCache)
                 return false;
 
             if (actualize)
-                mCachedElements[key] = {
+                mCachedElements[key].back() = {
                         mCachedElements[key].element,
-                        std::chrono::system_clock::now()
+                        std::chrono::high_resolution_clock::now()
                 };
 
             return true;
         }
 
         virtual const T &setOrReplace(const std::string &key, const T &&element) {
-            std::lock_guard<std::mutex> lock{mCacheLock};
-            mLastAccessTimePoint = system_clock::now();
+            std::lock_guard<std::mutex> lock{mCacheAccessLock};
+            mLastAccessTimePoint = high_resolution_clock::now();
 
-            mCachedElements[key] = {
-                    element,
-                    std::chrono::system_clock::now()
-            };
+            if (mCachedElements.count(key) == 0)
+                mCachedElements[key] = {};
 
-            return mCachedElements[key].element;
+            mCachedElements[key].push_back({
+                element,
+                high_resolution_clock::now()
+            });
+
+            return mCachedElements[key].back().element;
         }
 
         virtual const T &setOrReplace(const std::string &key, const T &element) {
-            std::lock_guard<std::mutex> lock{mCacheLock};
-            mLastAccessTimePoint = system_clock::now();
+            std::lock_guard<std::mutex> lock{mCacheAccessLock};
+            mLastAccessTimePoint = high_resolution_clock::now();
 
-            mCachedElements[key] = {
-                    element,
-                    std::chrono::system_clock::now()
-            };
+            if (mCachedElements.count(key) == 0)
+                mCachedElements[key] = {};
 
-            return mCachedElements[key].element;
+            mCachedElements[key].push_back({
+                element,
+                high_resolution_clock::now()
+            });
+
+            return mCachedElements[key].back().element;
         }
 
         T *getByKey(const std::string &key) {
-            std::lock_guard<std::mutex> lock{mCacheLock};
-            mLastAccessTimePoint = system_clock::now();
+            std::lock_guard<std::mutex> lock{mCacheAccessLock};
+            mLastAccessTimePoint = high_resolution_clock::now();
 
-            if (mCachedElements.find(key) == mCachedElements.end())
+            if (mCachedElements.count(key) == 0)
                 return nullptr;
 
             // update time if it's exists
-            mCachedElements[key].time = std::chrono::system_clock::now();
-            return &mCachedElements[key].element;
+            mCachedElements[key].back().time = high_resolution_clock::now();
+            return &mCachedElements[key].back().element;
         }
 
         void globalLock() {
-            mCacheLock.lock();
+            mCacheAccessLock.lock();
         }
 
         void globalUnlock() {
-            mCacheLock.unlock();
+            mCacheAccessLock.unlock();
         }
 
         [[maybe_unused]]
@@ -126,7 +135,7 @@ namespace KCore {
         }
 
         void forceClear() {
-            std::lock_guard<std::mutex> lock{mCacheLock};
+            std::lock_guard<std::mutex> lock{mCacheAccessLock};
             mCachedElements.clear();
         }
 
@@ -136,9 +145,7 @@ namespace KCore {
     private:
         void runCacheLoop() {
             while (!mShouldClose) {
-                mCacheLock.lock();
                 inLoopCheck();
-                mCacheLock.unlock();
 
                 std::this_thread::sleep_for(mCheckInterval);
             }

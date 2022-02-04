@@ -38,12 +38,15 @@ namespace KCore {
                     break;
 
                 auto key = it->first;
-                auto element = it->second;
+                auto &vecOfElements = it->second;
 
-                auto timeDelta = duration_cast<milliseconds>(this->mLastAccessTimePoint - element.time);
+                it->second = {vecOfElements.back()};
+                auto timeDelta = duration_cast<milliseconds>(this->mLastAccessTimePoint - vecOfElements[0].time);
                 auto stayAliveInMilliseconds = duration_cast<milliseconds>(mStayAliveInterval);
                 if (timeDelta >= stayAliveInMilliseconds) {
+                    this->mCacheAccessLock.lock();
                     std::cout << "element with tag \"" + key + "\" expired" << std::endl;
+                    this->mCacheAccessLock.unlock();
                     it = this->mCachedElements.erase(it);
                 } else
                     ++it;
