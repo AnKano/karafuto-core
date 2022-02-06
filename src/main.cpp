@@ -55,10 +55,10 @@ EMSCRIPTEN_BINDINGS(karafuto) {
 
 #endif
 
-#include "glm/glm.hpp"
-
 #include <iostream>
 #include <chrono>
+
+#include <glm/glm.hpp>
 
 int main() {
     const uint16_t viewportWidth{2560};

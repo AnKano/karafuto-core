@@ -36,9 +36,8 @@ namespace KCore {
         std::shared_ptr<KCore::OpenGL::Mesh> mMesh;
         std::shared_ptr<KCore::OpenGL::ColorFramebuffer> mFramebuffer;
 
-    public:
         Queue<RenderTask> mQueue;
-    private:
+
         std::map<std::string, std::shared_ptr<KCore::OpenGL::Texture>> mGPUTextures;
         std::vector<std::pair<std::string, std::shared_ptr<std::vector<uint8_t>>>> mTexturesQueue;
         std::mutex mTextureQueueLock;

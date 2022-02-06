@@ -2,7 +2,6 @@
 
 #include "MapCore.hpp"
 
-#include "sources/remote/RasterRemoteSource.hpp"
 #include "worlds/PlainWorld.hpp"
 #include "queue/tasks/CallbackTask.hpp"
 #include "misc/Utils.hpp"
@@ -22,6 +21,36 @@ namespace KCore {
 
         mDataStash.setMaximalCount(1000);
         mDataStash.setStayAliveInterval(3);
+
+        // declare sources
+        {
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N45E141.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N45E142.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N46E141.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N46E142.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N46E143.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N47E141.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N47E142.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N47E143.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N48E141.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N48E142.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N48E144.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N49E142.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N49E143.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N49E144.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N50E142.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N50E143.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N51E141.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N51E142.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N51E143.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N52E141.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N52E142.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N52E143.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N53E141.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N53E142.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N53E143.hgt"});
+            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N54E142.hgt"});
+        }
     }
 
     void MapCore::update(const float *cameraProjectionMatrix_ptr,
@@ -149,18 +178,37 @@ namespace KCore {
             }
         }
 
-        mStoredMetaEvents = events;
 
         if (!diff.empty()) {
-            std::cout << mRenderingContext.mQueue.mQueue.size() << std::endl;
             mRenderingContext.clearQueue();
 
-            for (const auto &item: tiles)
+            for (const auto &item: tiles) {
                 mRenderingContext.pushTaskToQueue(new RenderTask{
                         this, item.description.getQuadcode(),
                         item.childQuadcodes, item.parentQuadcodes
                 });
+                mTaskContext.pushTaskToQueue(new CallbackTask{
+                        [item, this]() {
+                            auto tilecode = item.description.getTilecode();
+                            auto zoom = tilecode.z, x = tilecode.x, y = tilecode.y;
+
+                            auto result = source.getDataForTile(zoom, x, y, 32, 32);
+
+                            auto results = std::make_shared<std::vector<uint8_t>>();
+                            results->insert(results->begin(), result, result + (32 * 32 * 2));
+
+                            auto composite = item.description.getQuadcode() + ".meta.heights";
+                            mDataStash.setOrReplace(composite, results);
+
+                            // !TODO: create event
+                            auto event = MapEvent::MakeTerrainEvent(item.description.getQuadcode());
+                            pushEventToContentQueue(event);
+                        }
+                });
+            }
         }
+
+        mStoredMetaEvents = events;
 
         return events;
     }

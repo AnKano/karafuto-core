@@ -11,8 +11,11 @@
 #include "meshes/GridMesh.hpp"
 #include "contexts/rendering/RenderContext.hpp"
 #include "contexts/network/NetworkContext.hpp"
+#include "contexts/task/TaskContext.hpp"
 #include "cache/LimitedSpaceCache.hpp"
 #include "events/MapEvent.hpp"
+#include "sources/local/SRTMLocalSource.hpp"
+#include "sources/local/SRTMFileSourcePiece.hpp"
 
 namespace KCore {
     class MapCore {
@@ -25,7 +28,10 @@ namespace KCore {
         std::map<std::string, TileDescription> mCurrentCommonTiles;
         std::map<std::string, TileDescription> mCurrentMetaTiles;
 
+        SRTMLocalSource source;
+
         RenderContext mRenderingContext{this};
+        TaskContext mTaskContext{this};
         NetworkContext mNetworkingContext{};
 
         std::mutex mEventsLock;
@@ -36,6 +42,9 @@ namespace KCore {
         std::vector<KCore::MapEvent> mStoredCommonEvents;
         std::vector<KCore::MapEvent> mStoredMetaEvents;
         std::vector<KCore::MapEvent> mStoredContentEvents;
+//        std::mutex mCommonEventsLock;
+//        std::mutex mMetaEventsLock;
+//        std::mutex mContentEventsLock;
 
         std::vector<KCore::MapEvent> mActualContentEvents;
     public:
