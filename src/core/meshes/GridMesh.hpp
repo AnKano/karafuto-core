@@ -14,6 +14,8 @@ namespace KCore {
 
         ~GridMesh() = default;
 
+        void applyHeights(uint8_t *heights, const int &segmentsX, const int &segmentsY);
+
     private:
         void createMesh() override;
 
@@ -25,6 +27,7 @@ namespace KCore {
                                   float uvConstant, float uvInterpolatedConstant);
 
         void createBorderSurfaceY(float length, int segmentsY, float constraint,
-                                  float uvConstant, float uvInterpolatedConstant);
+                                  float uvConstant, float uvInterpolatedConstant,
+                                  bool reverseIndexes);
     };
 }

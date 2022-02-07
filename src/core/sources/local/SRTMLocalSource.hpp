@@ -16,20 +16,155 @@ namespace KCore {
             double offsetY = std::abs(maximalY - minimalY) / (double) slicesY;
 
             auto relatedFiles = getRelatedPieces(zoom, x, y);
+            auto relatedToNorthFiles = getRelatedPieces(zoom, x - 1, y);
+            auto relatedToSouthFiles = getRelatedPieces(zoom, x + 1, y);
+            auto relatedToWestFiles = getRelatedPieces(zoom, x, y - 1);
+            auto relatedToEastFiles = getRelatedPieces(zoom, x, y + 1);
 
             auto *package = new uint16_t[slicesX * slicesY];
             memset(package, 0, slicesX * slicesY * sizeof(uint16_t));
 
-            uint16_t counter = 0;
-            uint16_t value = 0;
+            collectTileKernel(relatedFiles, package, minimalX, minimalY, offsetX, offsetY, slicesX, slicesY);
+
+            collectTileRow(relatedToNorthFiles, package,
+                           minimalX, maximalX,
+                           minimalY, maximalY,
+                           offsetX, offsetY,
+                           slicesX, slicesY,
+                           true);
+            collectTileRow(relatedToNorthFiles, package,
+                           minimalX, maximalX,
+                           minimalY, maximalY,
+                           offsetX, offsetY,
+                           slicesX, slicesY,
+                           false);
+
+            collectTileColumn(relatedToNorthFiles, package,
+                              minimalX, maximalX,
+                              minimalY, maximalY,
+                              offsetX, offsetY,
+                              slicesX, slicesY,
+                              true);
+            collectTileColumn(relatedToNorthFiles, package,
+                              minimalX, maximalX,
+                              minimalY, maximalY,
+                              offsetX, offsetY,
+                              slicesX, slicesY,
+                              false);
+
+            return reinterpret_cast<uint8_t *>(package);
+        }
+
+    protected:
+        static void collectTileColumn(const std::vector<std::shared_ptr<BaseSourcePiece>> &related,
+                                      uint16_t *package,
+                                      const float &minimalX, const float &maximalX,
+                                      const float &minimalY, const float &maximalY,
+                                      const double &offsetX, const double &offsetY,
+                                      const uint16_t &slicesX, const uint16_t &slicesY,
+                                      bool isWest) {
+            double pX;
+            int i;
+            if (isWest) {
+                i = 0;
+                pX = minimalX - offsetX;
+            } else {
+                i = slicesY - 1;
+                pX = maximalX;
+            }
+
+            for (int j = 0; j < slicesY; j++) {
+                double pY = minimalY + offsetY * j;
+
+                for (const auto &item: related) {
+                    auto *raster = (SRTMFileSourcePiece *) item.get();
+
+                    double minimalRasterX = raster->mXOrigin;
+                    double maximalRasterY = raster->mYOrigin;
+                    double maximalRasterX = raster->mXOpposite;
+                    double minimalRasterY = raster->mYOpposite;
+
+                    if (minimalRasterX > pX || pX > maximalRasterX ||
+                        minimalRasterY > pY || pY > maximalRasterY)
+                        continue;
+
+                    // select raster that contain point
+                    // hgt-files start from NW corner, but we work in SW-initial
+                    double imx = pX - raster->mXOrigin;
+                    double imy = raster->mYOrigin - pY;
+
+                    uint32_t row = int(imx / raster->mPixelWidth);
+                    uint32_t col = int(imy / raster->mPixelHeight);
+
+                    uint32_t offset = sizeof(uint16_t) * ((col * 3601) + row);
+
+                    uint16_t result = (raster->mData[offset] << 8) | raster->mData[offset + 1];
+                    package[j * slicesX + i] = result;
+                    break;
+                }
+            }
+        }
+
+        static void collectTileRow(const std::vector<std::shared_ptr<BaseSourcePiece>> &related,
+                                   uint16_t *package,
+                                   const float &minimalX, const float &maximalX,
+                                   const float &minimalY, const float &maximalY,
+                                   const double &offsetX, const double &offsetY,
+                                   const uint16_t &slicesX, const uint16_t &slicesY,
+                                   bool isNorth) {
+            double pY;
+            int j;
+            if (isNorth) {
+                j = 0;
+                pY = minimalY;
+            } else {
+                j = slicesX - 1;
+                pY = maximalY;
+            }
+
+            for (int i = 0; i < slicesX; i++) {
+                double pX = minimalX + offsetX * i;
+
+                for (const auto &item: related) {
+                    auto *raster = (SRTMFileSourcePiece *) item.get();
+
+                    double minimalRasterX = raster->mXOrigin;
+                    double maximalRasterY = raster->mYOrigin;
+                    double maximalRasterX = raster->mXOpposite;
+                    double minimalRasterY = raster->mYOpposite;
+
+                    if (minimalRasterX > pX || pX > maximalRasterX ||
+                        minimalRasterY > pY || pY > maximalRasterY)
+                        continue;
+
+                    // select raster that contain point
+                    // hgt-files start from NW corner, but we work in SW-initial
+                    double imx = pX - raster->mXOrigin;
+                    double imy = raster->mYOrigin - pY;
+
+                    uint32_t row = int(imx / raster->mPixelWidth);
+                    uint32_t col = int(imy / raster->mPixelHeight);
+
+                    uint32_t offset = sizeof(uint16_t) * ((col * 3601) + row);
+
+                    uint16_t result = (raster->mData[offset] << 8) | raster->mData[offset + 1];
+                    package[j * slicesX + i] = result;
+                    break;
+                }
+            }
+        }
+
+        static void collectTileKernel(const std::vector<std::shared_ptr<BaseSourcePiece>> &related,
+                                      uint16_t *package,
+                                      const float &minimalX, const float &minimalY,
+                                      const double &offsetX, const double &offsetY,
+                                      const uint16_t &slicesX, const uint16_t &slicesY) {
             for (int j = 0; j < slicesY; j++) {
                 for (int i = 0; i < slicesX; i++) {
                     double pX = minimalX + offsetX * i;
                     double pY = minimalY + offsetY * j;
-                    pX += offsetX / 2.0f;
-                    pY += offsetY / 2.0f;
 
-                    for (const auto &item: relatedFiles) {
+                    for (const auto &item: related) {
                         auto *raster = (SRTMFileSourcePiece *) item.get();
 
                         double minimalRasterX = raster->mXOrigin;
@@ -37,32 +172,28 @@ namespace KCore {
                         double maximalRasterX = raster->mXOpposite;
                         double minimalRasterY = raster->mYOpposite;
 
-                        // select raster that contain point
-                        if ((minimalRasterX <= pX && pX <= maximalRasterX) &&
-                            (minimalRasterY <= pY && pY <= maximalRasterY)) {
-                            // hgt-files start from NW corner, but we work in SW-initial
-                            double imx = pX - raster->mXOrigin;
-                            double imy = raster->mYOrigin - pY;
-
-                            uint32_t row = int(imx / raster->mPixelWidth);
-                            uint32_t col = int(imy / raster->mPixelHeight);
-
-                            uint32_t offset = sizeof(uint16_t) * ((col * 3601) + row);
-
-                            value = (raster->mData[offset] << 8) | raster->mData[offset + 1];
-                            break;
-                        } else
+                        if (minimalRasterX > pX || pX > maximalRasterX ||
+                            minimalRasterY > pY || pY > maximalRasterY)
                             continue;
-                    }
 
-                    package[counter++] = value;
+                        // select raster that contain point
+                        // hgt-files start from NW corner, but we work in SW-initial
+                        double imx = pX - raster->mXOrigin;
+                        double imy = raster->mYOrigin - pY;
+
+                        uint32_t row = int(imx / raster->mPixelWidth);
+                        uint32_t col = int(imy / raster->mPixelHeight);
+
+                        uint32_t offset = sizeof(uint16_t) * ((col * 3601) + row);
+
+                        uint16_t result = (raster->mData[offset] << 8) | raster->mData[offset + 1];
+                        package[j * slicesX + i] = result;
+                        break;
+                    }
                 }
             }
-
-            return reinterpret_cast<uint8_t *>(package);
         }
 
-    protected:
         std::vector<std::shared_ptr<BaseSourcePiece>> getRelatedPieces(uint8_t zoom, uint16_t x, uint16_t y) override {
             auto minimalX = GeographyConverter::tileToLon(x, zoom);
             auto maximalY = GeographyConverter::tileToLat(y, zoom);

@@ -10,6 +10,7 @@ namespace KCore {
 
         ContentLoadedRender,
         ContentLoadedImage,
+
         TerrainLoaded
     };
 
@@ -74,10 +75,10 @@ namespace KCore {
             return event;
         }
 
-        static MapEvent MakeTerrainEvent(const std::string &quadcode) {
+        static MapEvent MakeTerrainEvent(const std::string &quadcode, void* payloadPtr) {
             MapEvent event{};
             event.type = TerrainLoaded;
-            event.payload = nullptr;
+            event.payload = payloadPtr;
 #if defined(_MSC_VER)
             strcpy_s(event.quadcode, quadcode.c_str());
 #endif

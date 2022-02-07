@@ -14,6 +14,41 @@ namespace KCore {
         createMesh(width, length, segmentsX, segmentsY);
     }
 
+    void GridMesh::applyHeights(uint8_t *heights, const int &segmentsX, const int &segmentsY) {
+        auto converted = reinterpret_cast<uint16_t *>(heights);
+
+        for (int i = 0; i < (segmentsX + 1) * (segmentsY + 1); i++)
+            mVertices[i].y = converted[i];
+
+        int offset = (segmentsX + 1) * (segmentsY + 1) + (segmentsX + 1);
+        // update south
+        for (int i = 0; i < segmentsX + 1; i++) {
+            int valueIdx = i;
+            mVertices[offset + i].y = converted[valueIdx];
+        }
+
+        offset += (segmentsX + 1);
+        // update north
+        for (int i = 0; i < segmentsX + 1; i++) {
+            int valueIdx = ((segmentsX + 1) * (segmentsY)) + i;
+            mVertices[offset + i].y = converted[valueIdx];
+        }
+
+        offset += (segmentsX + 1) * 2;
+        // update east
+        for (int i = 0; i < (segmentsY + 1) * 2; i += 2) {
+            int valueIdx = (segmentsX + 1) * (i / 2);
+            mVertices[offset + i].y = converted[valueIdx];
+        }
+
+        offset += (segmentsY + 1) * 2;
+        // update west
+        for (int i = 0; i < (segmentsY + 1) * 2; i += 2) {
+            int valueIdx = (segmentsX + 1) * (i / 2) + segmentsY;
+            mVertices[offset + i].y = converted[valueIdx];
+        }
+    }
+
     void GridMesh::createMesh() {
         createMesh(1.0f, 1.0f, 1, 1);
     }
@@ -22,12 +57,12 @@ namespace KCore {
         createGeneralSurface(width, length, segmentsX, segmentsY);
 
         // North and South borders
-        createBorderSurfaceX(width, segmentsX, -0.5f, 0.0f, -0.1f);
-        createBorderSurfaceX(width, segmentsX, 0.5f, 1.0f, 1.1f);
+        createBorderSurfaceX(width, segmentsX, -0.5f, 0.0f, -1.0f);
+        createBorderSurfaceX(width, segmentsX, 0.5f, 1.0f, 2.0f);
 
-        // East and West borders
-        createBorderSurfaceY(length, segmentsY, -0.5f, 0.0f, -0.1f);
-        createBorderSurfaceY(length, segmentsY, 0.5f, 1.0f, 1.1f);
+//        // East and West borders
+        createBorderSurfaceY(length, segmentsY, -0.5f, 0.0f, -1.0f, false);
+        createBorderSurfaceY(length, segmentsY, 0.5f, 1.0f, 2.0f, true);
     }
 
     void GridMesh::createGeneralSurface(float width, float length, int segmentsX, int segmentsY) {
@@ -45,13 +80,13 @@ namespace KCore {
                 float x = ((float) ix * segmentWidth) - widthHalf;
                 float y = ((float) iy * segmentHeight) - heightHalf;
 
-                mVertices.emplace_back(x, 0.0f, y);
+                mVertices.emplace_back(-1 * x, 0.0f, -1 * y);
                 mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
                 float uvX = (float) ix / ((float) segmentsX);
                 float uvY = (float) iy / ((float) segmentsY);
 
-                mUVs.emplace_back(uvX, 1.0f - uvY);
+                mUVs.emplace_back(uvX, uvY);
             }
         }
 
@@ -87,9 +122,9 @@ namespace KCore {
                 float uvX = (float) ix / ((float) segmentsX);
                 float uvY = (iy == 0) ? uvConstant : uvInterpolatedConstant;
 
-                mVertices.emplace_back(x, z, constraint);
+                mVertices.emplace_back(-1.0f * x, z, -1.0f * constraint);
                 mNormals.emplace_back(0.0f, 1.0f, 0.0f);
-                mUVs.emplace_back(uvX, 1.0f - uvY);
+                mUVs.emplace_back(uvX, uvY);
             }
         }
 
@@ -112,7 +147,8 @@ namespace KCore {
     }
 
     void GridMesh::createBorderSurfaceY(float length, int segmentsY, float constraint,
-                                        float uvConstant, float uvInterpolatedConstant) {
+                                        float uvConstant, float uvInterpolatedConstant,
+                                        bool reverseIndexes) {
         uint32_t verticesCount = mVertices.size();
 
         int segmentsX = 1;
@@ -124,14 +160,14 @@ namespace KCore {
         for (int iy = 0; iy < gridY; iy++) {
             for (int ix = 0; ix < 2; ix++) {
                 float y = ((float) iy * segmentHeight) - heightHalf;
-                float z = (ix == 0) ? 0.0f : -1.0f;
+                float z = (ix == 0) ? -1.0f : 0.0f;
 
                 float uvX = (iy == 0) ? uvConstant : uvInterpolatedConstant;
                 float uvY = (float) iy / ((float) segmentsY);
 
-                mVertices.emplace_back(constraint, z, y);
+                mVertices.emplace_back(-1.0f * constraint, z, -1.0f * y);
                 mNormals.emplace_back(0.0f, 1.0f, 0.0f);
-                mUVs.emplace_back(uvX, 1.0f - uvY);
+                mUVs.emplace_back(uvX, uvY);
             }
         }
 
@@ -147,8 +183,13 @@ namespace KCore {
                 c += verticesCount;
                 d += verticesCount;
 
-                mIndices.insert(mIndices.end(), {a, b, d});
-                mIndices.insert(mIndices.end(), {b, c, d});
+                if (!reverseIndexes) {
+                    mIndices.insert(mIndices.end(), {d, b, a});
+                    mIndices.insert(mIndices.end(), {d, c, b});
+                } else {
+                    mIndices.insert(mIndices.end(), {a, b, d});
+                    mIndices.insert(mIndices.end(), {b, c, d});
+                }
             }
         }
     }

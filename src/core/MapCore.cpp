@@ -192,16 +192,20 @@ namespace KCore {
                             auto tilecode = item.description.getTilecode();
                             auto zoom = tilecode.z, x = tilecode.x, y = tilecode.y;
 
-                            auto result = source.getDataForTile(zoom, x, y, 32, 32);
+                            auto result = source.getDataForTile(zoom, x, y, 128, 128);
 
                             auto results = std::make_shared<std::vector<uint8_t>>();
-                            results->insert(results->begin(), result, result + (32 * 32 * 2));
+                            results->insert(results->begin(), result, result + (128 * 128 * 2));
+
+                            auto mesh = new GridMesh(1.0f, 1.0f, 127, 127);
+                            mesh->applyHeights(result, 127, 127);
+
+                            delete[] result;
 
                             auto composite = item.description.getQuadcode() + ".meta.heights";
                             mDataStash.setOrReplace(composite, results);
 
-                            // !TODO: create event
-                            auto event = MapEvent::MakeTerrainEvent(item.description.getQuadcode());
+                            auto event = MapEvent::MakeTerrainEvent(item.description.getQuadcode(), mesh);
                             pushEventToContentQueue(event);
                         }
                 });

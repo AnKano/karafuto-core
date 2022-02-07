@@ -93,7 +93,8 @@ namespace KCore {
             mXOrigin = values[1];
             mXOpposite = values[1] + 1.0;
 
-            mPixelWidth = 1.0 / 3601.0;
+//            mPixelWidth = 1.0 / 3601.0;
+            mPixelWidth = 1.0 / 3600.0;
             mPixelHeight = mPixelWidth;
         };
     };
