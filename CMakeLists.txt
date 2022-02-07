@@ -41,6 +41,8 @@ if (NOT EMSCRIPTEN)
 
         add_subdirectory(${THIRD_PARTY_DIR}/glm)
 
+        include_directories(${THIRD_PARTY_DIR}/rapidjson/include)
+
         include_directories(${THIRD_PARTY_DIR}/earcut/include)
 
         include_directories(${THIRD_PARTY_DIR}/stb-image)

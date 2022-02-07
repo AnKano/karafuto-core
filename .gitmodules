@@ -10,3 +10,6 @@
 [submodule "third-party/earcut"]
 	path = third-party/earcut
 	url = https://github.com/mapbox/earcut.hpp
+[submodule "third-party/rapidjson"]
+	path = third-party/rapidjson
+	url = https://github.com/Tencent/rapidjson
