@@ -6,6 +6,7 @@
 #include "queue/tasks/CallbackTask.hpp"
 #include "misc/Utils.hpp"
 #include "misc/STBImageUtils.hpp"
+#include "meshes/PolylineMesh.hpp"
 
 namespace KCore {
     MapCore::MapCore(float latitude, float longitude) {
@@ -50,6 +51,8 @@ namespace KCore {
             source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N53E142.hgt"});
             source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N53E143.hgt"});
             source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N54E142.hgt"});
+
+            primitivesSource.addSourcePiece(new KCore::GeoJSONFileSourcePiece{"assets/sources/points.geojson"});
         }
     }
 
@@ -132,12 +135,73 @@ namespace KCore {
                             mDataStash.setOrReplace(composite, raw);
                             mRenderingContext.pushTextureDataToGPUQueue(composite, raw);
                             std::cout << url << " finally loaded kek" << std::endl;
-                        },
-                        [url]() {
-                            std::cout << url << " not loaded" << std::endl;
-                        }
+                        }, nullptr
                 };
                 mNetworkingContext.pushRequestToQueue(request);
+
+                auto tile = mCurrentCommonTiles[item];
+                mTaskContext.pushTaskToQueue(new CallbackTask{
+                        [tile, this]() {
+                            auto tilecode = tile.getTilecode();
+                            auto zoom = tilecode.z, x = tilecode.x, y = tilecode.y;
+
+                            auto *result = (std::vector<GeoJSONObject> *) primitivesSource.getDataForTile(zoom, x, y);
+
+                            auto size = result->size();
+                            auto *objects = new std::vector<GeoJSONTransObject>();
+
+                            for (int i = 0; i < size; i++) {
+                                auto &ref = (*result)[i];
+
+                                GeoJSONTransObject obj{};
+                                obj.type = ref.mType;
+                                obj.mainShapeCoordsCount = ref.mMainShapeCoords.size();
+                                obj.holeShapeCoordsCount = ref.mHoleShapeCoords.size();
+                                obj.holeShapePositions = nullptr;
+                                obj.mainShapePositions = nullptr;
+
+                                if (ref.mType == Polyline) {
+                                    obj.mesh = new PolylineMesh(ref);
+                                }
+
+                                if (obj.mainShapeCoordsCount) {
+                                    obj.mainShapePositions = new glm::vec3[obj.mainShapeCoordsCount];
+                                    for (int j = 0; j < obj.mainShapeCoordsCount; j++) {
+                                        auto project = mWorld->latLonToGlPoint(
+                                                {ref.mMainShapeCoords[j][1], ref.mMainShapeCoords[j][0]}
+                                        );
+                                        obj.mainShapePositions[j] = {project.x, 0.0f, project.y};
+                                    }
+                                }
+
+                                if (obj.holeShapeCoordsCount) {
+                                    obj.holeShapePositions = new glm::vec3[obj.holeShapeCoordsCount];
+                                    for (int j = 0; j < obj.holeShapeCoordsCount; j++) {
+                                        auto project = mWorld->latLonToGlPoint(
+                                                {ref.mHoleShapeCoords[j][1], ref.mHoleShapeCoords[j][0]}
+                                        );
+                                        obj.holeShapePositions[j] = {project.x, 0.0f, project.y};
+                                    }
+                                }
+
+                                objects->push_back(obj);
+                            }
+
+                            delete result;
+
+                            auto composite = tile.getQuadcode() + ".common.geojson";
+                            if (size > 0) {
+                                auto ptr = std::shared_ptr<std::vector<GeoJSONTransObject>>();
+                                ptr.reset(objects);
+                                mDataStash.setOrReplace(composite, ptr);
+
+                                auto event = MapEvent::MakeGeoJSONEvent(tile.getQuadcode(), ptr.get());
+                                pushEventToContentQueue(event);
+                            } else {
+                                mDataStash.setOrReplace(composite, nullptr);
+                            }
+                        }
+                });
                 continue;
             }
         }
@@ -301,5 +365,14 @@ namespace KCore {
 
     DllExport void ReleaseCopy(const uint8_t *ptr) {
         delete ptr;
+    }
+
+    DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length) {
+        if (points == nullptr)
+            length = 0;
+        else
+            length = points->size();
+
+        return points->data();
     }
 }

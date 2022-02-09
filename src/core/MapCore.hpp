@@ -14,8 +14,13 @@
 #include "contexts/task/TaskContext.hpp"
 #include "cache/LimitedSpaceCache.hpp"
 #include "events/MapEvent.hpp"
-#include "sources/local/SRTMLocalSource.hpp"
-#include "sources/local/SRTMFileSourcePiece.hpp"
+
+#include "sources/local/srtm/SRTMLocalSource.hpp"
+#include "sources/local/srtm/SRTMFileSourcePiece.hpp"
+
+#include "sources/local/geojson/GeoJSONLocalSource.hpp"
+#include "sources/local/geojson/GeoJSONFileSourcePiece.hpp"
+#include "sources/local/geojson/primitives/GeoJSONTransObject.hpp"
 
 namespace KCore {
     class MapCore {
@@ -29,6 +34,7 @@ namespace KCore {
         std::map<std::string, TileDescription> mCurrentMetaTiles;
 
         SRTMLocalSource source;
+        GeoJSONLocalSource primitivesSource;
 
         RenderContext mRenderingContext{this};
         TaskContext mTaskContext{this};
@@ -42,9 +48,6 @@ namespace KCore {
         std::vector<KCore::MapEvent> mStoredCommonEvents;
         std::vector<KCore::MapEvent> mStoredMetaEvents;
         std::vector<KCore::MapEvent> mStoredContentEvents;
-//        std::mutex mCommonEventsLock;
-//        std::mutex mMetaEventsLock;
-//        std::mutex mContentEventsLock;
 
         std::vector<KCore::MapEvent> mActualContentEvents;
     public:
@@ -96,6 +99,7 @@ namespace KCore {
 
     DllExport void *GetBufferPtrFromTag(KCore::MapCore *mapCore, const char *tag, int &length);
 
-    DllExport void ReleaseCopy(const uint8_t* ptr);
+    DllExport void ReleaseCopy(const uint8_t *ptr);
+    DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length);
     }
 }

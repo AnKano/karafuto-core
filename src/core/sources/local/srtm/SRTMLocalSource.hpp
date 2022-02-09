@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../BaseSource.hpp"
+#include "../../BaseSource.hpp"
 #include "SRTMFileSourcePiece.hpp"
 
 namespace KCore {

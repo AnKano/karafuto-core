@@ -60,7 +60,7 @@ namespace KCore {
         createBorderSurfaceX(width, segmentsX, -0.5f, 0.0f, -1.0f);
         createBorderSurfaceX(width, segmentsX, 0.5f, 1.0f, 2.0f);
 
-//        // East and West borders
+        // East and West borders
         createBorderSurfaceY(length, segmentsY, -0.5f, 0.0f, -1.0f, false);
         createBorderSurfaceY(length, segmentsY, 0.5f, 1.0f, 2.0f, true);
     }

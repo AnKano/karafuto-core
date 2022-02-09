@@ -14,7 +14,8 @@ namespace KCore {
     public:
         BaseSource() = default;
 
-        virtual uint8_t *getDataForTile(uint8_t zoom, uint16_t x, uint16_t y, uint16_t slicesX, uint16_t slicesY) = 0;
+        virtual uint8_t *getDataForTile(uint8_t zoom, uint16_t x, uint16_t y,
+                                        uint16_t slicesX = 0, uint16_t slicesY = 0) = 0;
 
         void addSourcePiece(BaseSourcePiece *piece) {
             auto sharedPiece = std::shared_ptr<BaseSourcePiece>(piece);

@@ -6,6 +6,8 @@
 #include <fstream>
 #include <vector>
 
+#include "BaseSourcePiece.hpp"
+
 namespace KCore {
     class FileSource : public BaseSourcePiece {
     protected:

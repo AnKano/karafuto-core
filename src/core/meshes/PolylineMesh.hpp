@@ -1,10 +1,116 @@
 #pragma once
 
 #include "BaseMesh.hpp"
+#include "../sources/local/geojson/GeoJSONObject.hpp"
+
+#include <stdexcept>
+#include <iostream>
+
+#include <glm/gtx/vector_angle.hpp>
 
 namespace KCore {
     class PolylineMesh : public BaseMesh {
     public:
+        PolylineMesh(const GeoJSONObject &object) {
+            if (object.mType != Polyline)
+                throw std::runtime_error("Can't instantiate mesh using object of different type!");
+
+            createMeshFromObject(object);
+        }
+
+    private:
+        void createMeshFromObject(const GeoJSONObject &object) {
+            std::vector<std::vector<std::array<double, 2>>> collector;
+            // map main shape
+            collector.emplace_back();
+            // map hole shape (we should avoid it after)
+            collector.emplace_back();
+
+            std::vector<std::array<double, 2>> forwardCollector, reverseCollector;
+
+            bool isStart = true;
+            glm::vec2 prevDirection;
+            for (int i = 0; i < object.mMainShapeCoords.size() - 1; i++) {
+                auto firstPoint = glm::vec2{object.mMainShapeCoords[i][0], object.mMainShapeCoords[i][1]};
+                auto secondPoint = glm::vec2{object.mMainShapeCoords[i + 1][0], object.mMainShapeCoords[i + 1][1]};
+
+                auto direction = glm::normalize(secondPoint - firstPoint);
+                auto clockwisePerp = glm::normalize(glm::vec2{direction.y, -direction.x});
+                auto counterClockwisePerp = glm::normalize(glm::vec2{-direction.y, direction.x});
+
+                std::cout.precision(17);
+
+                auto aPl = firstPoint + counterClockwisePerp * 0.0005f;
+                auto aPr = firstPoint + clockwisePerp * 0.0005f;
+                auto bPl = secondPoint + counterClockwisePerp * 0.0005f;
+                auto bPr = secondPoint + clockwisePerp * 0.0005f;
+
+                forwardCollector.push_back({aPl.x, aPl.y});
+                forwardCollector.push_back({bPl.x, bPl.y});
+                reverseCollector.push_back({aPr.x, aPr.y});
+                reverseCollector.push_back({bPr.x, bPr.y});
+
+                if (isStart) {
+                    prevDirection = direction;
+                    isStart = false;
+                    continue;
+                }
+
+                auto clockwiseAngle = std::atan2(
+                        direction.x * prevDirection.y - direction.y * prevDirection.x,
+                        direction.x * prevDirection.x + direction.y * prevDirection.y
+                );
+
+                // isTurnRight
+                if (clockwiseAngle > 0.0f) {
+                    auto &leanPoint1 = forwardCollector[forwardCollector.size() - 3];
+                    auto &leanPoint2 = forwardCollector[forwardCollector.size() - 2];
+
+                    auto dirToPoint1 = glm::normalize(glm::vec2{leanPoint1[0], leanPoint1[1]} - firstPoint);
+                    auto dirToPoint2 = glm::normalize(glm::vec2{leanPoint2[0], leanPoint2[1]} - firstPoint);
+
+                    auto dirSum = -glm::normalize(dirToPoint1 + dirToPoint2);
+
+                    auto patch = firstPoint + (dirSum * 0.0005f);
+
+                    reverseCollector.erase(reverseCollector.end() - 3, reverseCollector.end() - 1);
+                    reverseCollector.insert(reverseCollector.end() - 1, {patch.x, patch.y});
+                } else {
+                    auto &leanPoint1 = reverseCollector[reverseCollector.size() - 3];
+                    auto &leanPoint2 = reverseCollector[reverseCollector.size() - 2];
+
+                    auto dirToPoint1 = glm::normalize(glm::vec2{leanPoint1[0], leanPoint1[1]} - firstPoint);
+                    auto dirToPoint2 = glm::normalize(glm::vec2{leanPoint2[0], leanPoint2[1]} - firstPoint);
+
+                    auto dirSum = -glm::normalize(dirToPoint1 + dirToPoint2);
+
+                    auto patch = firstPoint + (dirSum * 0.0005f);
+
+                    forwardCollector.erase(forwardCollector.end() - 3, forwardCollector.end() - 1);
+                    forwardCollector.insert(forwardCollector.end() - 1, {patch.x, patch.y});
+                }
+
+                prevDirection = direction;
+            }
+
+            collector[0] = forwardCollector;
+            collector[0].insert(collector[0].end(), reverseCollector.rbegin(), reverseCollector.rend());
+
+            for (const auto &item: forwardCollector) {
+                std::cout << "(" << item[0] << ", " << item[1] << ")" << std::endl;
+            }
+
+            for (const auto &item: reverseCollector) {
+                std::cout << "(" << item[0] << ", " << item[1] << ")" << std::endl;
+            }
+
+            std::cout << std::endl;
+
+            for (const auto &item: object.mMainShapeCoords) {
+                std::cout << "(" << item[0] << ", " << item[1] << ")" << std::endl;
+            }
+        }
+
         void createMesh() override {
 
         }

@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../FileSource.hpp"
+#include "../../FileSource.hpp"
 
 #include <sstream>
 #include <iostream>
@@ -17,7 +17,7 @@ namespace KCore {
     public:
         SRTMFileSourcePiece(const std::string &path) : FileSource(path) {
             try {
-                parseMeta(mFileNameBase);
+                parseMeta();
             } catch (const std::exception &e) {
                 mFileCorrupted = true;
                 std::cerr << e.what() << std::endl;
@@ -75,16 +75,16 @@ namespace KCore {
             return value;
         }
 
-        void parseMeta(std::string &fileNameBase) {
-            auto it = fileNameBase.begin();
+        void parseMeta() {
+            auto it = mFileNameBase.begin();
 
             const int stages = 2;
             std::array<int, stages> values{};
             for (int i = 0; i < stages; i++) {
-                auto sign = parseSRTMSignByIterator(fileNameBase, it, i + 1);
+                auto sign = parseSRTMSignByIterator(mFileNameBase, it, i + 1);
                 if (!sign.has_value()) throw std::runtime_error("Filename corrupted!");
 
-                values[i] = parseNumberByIterator(fileNameBase, it);
+                values[i] = parseNumberByIterator(mFileNameBase, it);
             }
 
             mYOrigin = values[0] + 1.0;

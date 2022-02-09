@@ -11,7 +11,8 @@ namespace KCore {
         ContentLoadedRender,
         ContentLoadedImage,
 
-        TerrainLoaded
+        TerrainLoaded,
+        GeoJSONLoaded
     };
 
     struct MapEvent {
@@ -78,6 +79,20 @@ namespace KCore {
         static MapEvent MakeTerrainEvent(const std::string &quadcode, void* payloadPtr) {
             MapEvent event{};
             event.type = TerrainLoaded;
+            event.payload = payloadPtr;
+#if defined(_MSC_VER)
+            strcpy_s(event.quadcode, quadcode.c_str());
+#endif
+#if defined(__GNUC__)
+            strcpy(event.quadcode, quadcode.c_str());
+#endif
+
+            return event;
+        }
+
+        static MapEvent MakeGeoJSONEvent(const std::string &quadcode, void* payloadPtr) {
+            MapEvent event{};
+            event.type = GeoJSONLoaded;
             event.payload = payloadPtr;
 #if defined(_MSC_VER)
             strcpy_s(event.quadcode, quadcode.c_str());
