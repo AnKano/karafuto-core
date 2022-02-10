@@ -7,6 +7,7 @@
 #include "misc/Utils.hpp"
 #include "misc/STBImageUtils.hpp"
 #include "meshes/PolylineMesh.hpp"
+#include "meshes/PolygonMesh.hpp"
 
 namespace KCore {
     MapCore::MapCore(float latitude, float longitude) {
@@ -161,7 +162,37 @@ namespace KCore {
                                 obj.mainShapePositions = nullptr;
 
                                 if (ref.mType == Polyline) {
-                                    obj.mesh = new PolylineMesh(ref);
+                                    auto converted = std::vector<std::array<double, 2>>{};
+                                    for (const auto &item: ref.mMainShapeCoords) {
+                                        auto project = mWorld->latLonToGlPoint(
+                                                {item[1], item[0]}
+                                        );
+                                        converted.push_back({project.x, project.y});
+                                    }
+
+                                    obj.mesh = new PolylineMesh(ref, converted);
+                                }
+
+                                if (ref.mType == Polygon || ref.mType == PolygonWithHole) {
+                                    auto convertedMain = std::vector<std::array<double, 2>>{};
+                                    for (const auto &item: ref.mMainShapeCoords) {
+                                        auto project = mWorld->latLonToGlPoint(
+                                                {item[1], item[0]}
+                                        );
+                                        convertedMain.push_back({project.x, project.y});
+                                    }
+
+                                    auto convertedHole = std::vector<std::array<double, 2>>{};
+                                    for (const auto &item: ref.mHoleShapeCoords) {
+                                        auto project = mWorld->latLonToGlPoint(
+                                                {item[1], item[0]}
+                                        );
+                                        convertedHole.push_back({project.x, project.y});
+                                    }
+
+                                    obj.mesh = new PolygonMesh(ref,
+                                                               convertedMain,
+                                                               convertedHole);
                                 }
 
                                 if (obj.mainShapeCoordsCount) {
