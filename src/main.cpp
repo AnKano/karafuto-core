@@ -61,36 +61,6 @@ EMSCRIPTEN_BINDINGS(karafuto) {
 #include <glm/glm.hpp>
 
 int main() {
-//    const char *json = R"({
-//    "type": "Feature",
-//    "geometry": {
-//        "type": "Point",
-//        "coordinates": [30.5, 50.5]
-//    },
-//    "properties": {
-//        "bool": true,
-//        "string": "foo",
-//        "double": 2.5,
-//        "uint": 10,
-//        "int": -10,
-//        "null": null,
-//        "nested": [5, {"foo": "bar"}]
-//    }
-//})";
-//
-//    rapidjson::Document d;
-//    d.Parse(json);
-//
-//    const auto &s = d["properties"];
-//    const auto &val = s["nested"];
-//    const auto &val1 = val[0];
-//
-////    rapidjson::StringBuffer buffer;
-////    rapidjson::Writer<rapidjson::StringBuffer> writer(buffer);
-////    d.Accept(writer);
-//
-//    std::cout << val1.GetInt() << std::endl;
-
     const uint16_t viewportWidth{2560};
     const uint16_t viewportHeight{1259};
 

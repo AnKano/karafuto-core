@@ -3,7 +3,8 @@
 //
 
 #include "RenderTask.hpp"
-#include "glad/glad.h"
+
+#include <GL/glew.h>
 
 #include "../../MapCore.hpp"
 

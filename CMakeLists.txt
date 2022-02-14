@@ -37,7 +37,8 @@ if (NOT EMSCRIPTEN)
 
     # include described down libs as static (built-in general .dll) dependencies
     set(BUILD_SHARED_LIBS OFF)
-        add_subdirectory(${THIRD_PARTY_DIR}/glad)
+        add_definitions(-DGLEW_STATIC)
+        add_subdirectory(${THIRD_PARTY_DIR}/glew)
 
         add_subdirectory(${THIRD_PARTY_DIR}/glm)
 
@@ -49,10 +50,10 @@ if (NOT EMSCRIPTEN)
     set(BUILD_SHARED_LIBS OFF)
 
     add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
-    target_link_libraries(libkcore glad glfw libcurl glm)
+    target_link_libraries(libkcore PRIVATE libglew_static glfw libcurl glm)
 
     add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
-    target_link_libraries(karafuto_core glad glfw libcurl glm)
+    target_link_libraries(karafuto_core PRIVATE libglew_static glfw libcurl glm)
 endif ()
 
 #if (EMSCRIPTEN)

@@ -1,10 +1,10 @@
 #pragma once
 
-#include <glad/glad.h>
+#include "Shader.hpp"
+
+#include <GL/glew.h>
 
 #include <optional>
-
-#include "Shader.hpp"
 
 namespace KCore::OpenGL {
     struct AttributeDescription {

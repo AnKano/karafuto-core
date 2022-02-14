@@ -1,10 +1,14 @@
 #pragma once
 
-#include "glad/glad.h"
+#include <GL/glew.h>
+
+#if defined(_MSC_VER)
+    #include <Windows.h>
+#endif
 
 #define GLFW_INCLUDE_NONE
 
-#include "GLFW/glfw3.h"
+#include <GLFW/glfw3.h>
 
 #include <stdexcept>
 #include <thread>

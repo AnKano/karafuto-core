@@ -13,6 +13,15 @@ namespace KCore {
 
             // invisible window actually not create any context. it is needed
             // as a root object for OpenGL processes
+#ifdef __EMSCRIPTEN__
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+#else
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+#endif
 
 //            glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
             mWindowContext_ptr = glfwCreateWindow(256, 256, "Karafuto Core", nullptr, nullptr);
@@ -20,7 +29,14 @@ namespace KCore {
                 throw std::runtime_error("Can't instantiate glfw window!");
             glfwMakeContextCurrent(mWindowContext_ptr);
 
-            gladLoadGL();
+            glewExperimental = GL_TRUE;
+
+            GLenum err = glewInit();
+            if (err != GLEW_OK) {
+                glfwTerminate();
+                throw std::runtime_error(std::string("Could initialize GLEW, error = ") +
+                                         (const char *) glewGetErrorString(err));
+            }
 
             glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
             glEnable(GL_BLEND);

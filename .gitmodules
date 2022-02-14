@@ -13,3 +13,6 @@
 [submodule "third-party/rapidjson"]
 	path = third-party/rapidjson
 	url = https://github.com/Tencent/rapidjson
+[submodule "third-party/glew"]
+	path = third-party/glew
+	url = https://github.com/Perlmint/glew-cmake
