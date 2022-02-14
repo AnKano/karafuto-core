@@ -23,7 +23,7 @@ namespace KCore::STBImageUtils {
         if (width * height < 0 || channels < 0 || resultSize > result.max_size())
             throw std::runtime_error("can't decode image");
 
-        result.resize(resultSize);
+        result.reserve(resultSize);
         result.insert(result.begin(), data, data + resultSize);
 
         // release STB Image data

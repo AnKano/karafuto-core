@@ -31,37 +31,33 @@ namespace KCore {
     private:
         static std::optional<int8_t> parseSRTMSignByIterator(
                 const std::string &string,
-                std::_String_iterator<std::_String_val<std::_Simple_types<char>>> &it,
-                uint8_t stage
-        ) {
-            if (it == string.end())
+                uint64_t &position,
+                uint8_t stage) {
+            if (position > string.length())
                 throw std::runtime_error("Found EOL in filename!");
 
-            auto ch = *(it++);
+            auto ch = string[position];
 
             switch (stage) {
-                case 1:
-                    if (ch == 'N') return 1;
+                case 1:if (ch == 'N') return 1;
                     if (ch == 'S') return -1;
-                case 2:
-                    if (ch == 'E') return 1;
+                case 2:if (ch == 'E') return 1;
                     if (ch == 'W') return -1;
-                default:
-                    throw std::runtime_error("Wrong char in filename!");
+                default:throw std::runtime_error("Wrong char in filename!");
             }
         }
 
         static uint16_t parseNumberByIterator(
                 const std::string &string,
-                std::_String_iterator<std::_String_val<std::_Simple_types<char>>> &it
+                uint64_t &position
         ) {
-            if (it == string.end()) throw std::runtime_error("Found EOL in filename!");
+            if (position > string.length()) throw std::runtime_error("Found EOL in filename!");
 
             std::stringstream collector;
 
-            while (it != string.end() && *it >= '0' && *it <= '9') {
-                collector << *it;
-                it++;
+            while (position <= string.length() && string[position] >= '0' && string[position] <= '9') {
+                collector << string[position];
+                position++;
             }
 
             collector.seekg(0, std::ios::end);
@@ -76,15 +72,15 @@ namespace KCore {
         }
 
         void parseMeta() {
-            auto it = mFileNameBase.begin();
+            uint64_t pos = 0;
 
             const int stages = 2;
             std::array<int, stages> values{};
             for (int i = 0; i < stages; i++) {
-                auto sign = parseSRTMSignByIterator(mFileNameBase, it, i + 1);
+                auto sign = parseSRTMSignByIterator(mFileNameBase, pos, i + 1);
                 if (!sign.has_value()) throw std::runtime_error("Filename corrupted!");
 
-                values[i] = parseNumberByIterator(mFileNameBase, it);
+                values[i] = parseNumberByIterator(mFileNameBase, pos);
             }
 
             mYOrigin = values[0] + 1.0;
@@ -93,7 +89,6 @@ namespace KCore {
             mXOrigin = values[1];
             mXOpposite = values[1] + 1.0;
 
-//            mPixelWidth = 1.0 / 3601.0;
             mPixelWidth = 1.0 / 3600.0;
             mPixelHeight = mPixelWidth;
         };

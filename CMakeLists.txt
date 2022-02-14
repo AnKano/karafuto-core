@@ -30,30 +30,39 @@ if (NOT EMSCRIPTEN)
         set(HTTP_ONLY ON)
         add_subdirectory(${THIRD_PARTY_DIR}/curl)
 
-        add_subdirectory(${THIRD_PARTY_DIR}/glfw)
+        add_subdirectory(${THIRD_PARTY_DIR}/glfw EXCLUDE_FROM_ALL)
         # rename libname for unifying
         set_target_properties(glfw PROPERTIES OUTPUT_NAME "libglfw3")
     set(BUILD_SHARED_LIBS ON)
 
     # include described down libs as static (built-in general .dll) dependencies
     set(BUILD_SHARED_LIBS OFF)
-        add_definitions(-DGLEW_STATIC)
-        add_subdirectory(${THIRD_PARTY_DIR}/glew)
+        add_subdirectory(${THIRD_PARTY_DIR}/glew EXCLUDE_FROM_ALL)
 
-        add_subdirectory(${THIRD_PARTY_DIR}/glm)
+        add_subdirectory(${THIRD_PARTY_DIR}/glm EXCLUDE_FROM_ALL)
 
-        include_directories(${THIRD_PARTY_DIR}/rapidjson/include)
+        include_directories(${THIRD_PARTY_DIR}/rapidjson/include )
 
         include_directories(${THIRD_PARTY_DIR}/earcut/include)
 
         include_directories(${THIRD_PARTY_DIR}/stb-image)
     set(BUILD_SHARED_LIBS OFF)
 
-    add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
-    target_link_libraries(libkcore PRIVATE libglew_static glfw libcurl glm)
+    add_library(libkcore ${CPP_HEADERS} ${CPP_SOURCES})
+    target_link_libraries(libkcore
+            glfw
+            libglew_static
+            libcurl
+            glm
+            )
 
     add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
-    target_link_libraries(karafuto_core PRIVATE libglew_static glfw libcurl glm)
+    target_link_libraries(karafuto_core
+            glfw
+            libglew_static
+            libcurl
+            glm
+            )
 endif ()
 
 #if (EMSCRIPTEN)

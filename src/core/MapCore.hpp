@@ -50,6 +50,12 @@ namespace KCore {
         std::vector<KCore::MapEvent> mStoredContentEvents;
 
         std::vector<KCore::MapEvent> mActualContentEvents;
+
+        void update2D(const float &aspectRatio, const float &zoom, const float &cameraPositionX,
+                      const float &cameraPositionY);
+
+        std::shared_ptr<std::vector<uint8_t>> GetBufferPtrFromTag(const char *tag, int &length);
+
     public:
         MapCore(float latitude, float longitude);
 
@@ -81,6 +87,7 @@ namespace KCore {
 
     private:
         void performUpdate();
+
     };
 
     extern "C" {

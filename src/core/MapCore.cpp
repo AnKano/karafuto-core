@@ -26,32 +26,32 @@ namespace KCore {
 
         // declare sources
         {
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N45E141.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N45E142.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N46E141.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N46E142.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N46E143.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N47E141.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N47E142.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N47E143.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N48E141.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N48E142.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N48E144.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N49E142.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N49E143.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N49E144.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N50E142.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N50E143.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N51E141.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N51E142.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N51E143.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N52E141.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N52E142.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N52E143.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N53E141.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N53E142.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N53E143.hgt"});
-            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N54E142.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N45E141.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N45E142.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N46E141.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N46E142.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N46E143.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N47E141.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N47E142.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N47E143.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N48E141.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N48E142.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N48E144.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N49E142.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N49E143.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N49E144.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N50E142.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N50E143.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N51E141.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N51E142.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N51E143.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N52E141.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N52E142.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N52E143.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N53E141.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N53E142.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N53E143.hgt"});
+//            source.addSourcePiece(new KCore::SRTMFileSourcePiece{"assets/sources/N54E142.hgt"});
 
             primitivesSource.addSourcePiece(new KCore::GeoJSONFileSourcePiece{"assets/sources/points.geojson"});
         }
@@ -73,6 +73,23 @@ namespace KCore {
         this->mCameraViewMatrix = cameraViewMatrix;
         this->mCameraProjectionMatrix = cameraProjectionMatrix;
         this->mCameraPosition = cameraPosition;
+
+        performUpdate();
+    }
+
+    void MapCore::update2D(const float &aspectRatio, const float &zoom,
+                           const float &cameraPositionX, const float &cameraPositionY) {
+        this->mCameraPosition = glm::vec3{-cameraPositionX, zoom, cameraPositionY};
+        this->mCameraViewMatrix = glm::lookAt(
+                this->mCameraPosition,
+                {mCameraPosition.x, 0.0f, mCameraPosition.z},
+                {0.0f, 0.0f, 1.0f}
+        );
+
+        this->mCameraProjectionMatrix = glm::perspective(
+                glm::radians(45.0f), aspectRatio,
+                100.0f, 2500000.0f
+        );
 
         performUpdate();
     }
@@ -324,6 +341,13 @@ namespace KCore {
     void MapCore::pushEventToContentQueue(const MapEvent &event) {
         std::lock_guard lock{mEventsLock};
         mActualContentEvents.push_back(event);
+    };
+
+    std::shared_ptr<std::vector<uint8_t>> MapCore::GetBufferPtrFromTag(const char *tag, int &length) {
+        auto stash = &mDataStash;
+
+        auto buffer = (std::shared_ptr<std::vector<uint8_t>> *) stash->getByKey(tag);
+        return *buffer;
     };
 
 #ifdef __EMSCRIPTEN__

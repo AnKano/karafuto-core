@@ -101,9 +101,9 @@ int main() {
                 int len = 0;
                 auto data = KCore::GetBufferPtrFromTag(&core, tag.c_str(), len);
 
-                auto *buf = new uint8_t[len];
-                memcpy_s(buf, len, data, len);
-                delete[]buf;
+//                auto *buf = new uint8_t[len];
+//                memcpy_s(buf, len, data, len);
+//                delete[]buf;
             }
         }
         std::this_thread::sleep_for(0.05ms);
@@ -132,9 +132,9 @@ int main() {
                 int len = 0;
                 auto data = KCore::GetBufferPtrFromTag(&core, tag.c_str(), len);
 
-                auto *buf = new uint8_t[len];
-                memcpy_s(buf, len, data, len);
-                delete[]buf;
+//                auto *buf = new uint8_t[len];
+//                memcpy_s(buf, len, data, len);
+//                delete[]buf;
             }
         }
     }

@@ -1,6 +1,7 @@
 #pragma once
 
 #include <chrono>
+#include <thread>
 
 #include "../../queue/Queue.hpp"
 #include "../../queue/tasks/CallbackTask.hpp"
