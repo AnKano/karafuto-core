@@ -106,7 +106,7 @@ int main() {
     for (auto i = 0; i < iterations; i++) {
         core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
         auto a = core.getSyncEvents();
-        auto b = core.getContentFrameEvents();
+        auto b = core.getAsyncEvents();
     }
     auto elapsed = std::chrono::system_clock::now() - start;
 

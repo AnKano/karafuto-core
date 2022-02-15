@@ -21,8 +21,8 @@ namespace KCore {
         TaskContext mTaskContext{};
         NetworkContext mNetworkContext{};
 
-        std::vector<KCore::MapEvent> mSyncEvents;
-        std::vector<KCore::MapEvent> mAsyncEvents;
+        std::mutex mSyncLock, mAsyncLock;
+        std::vector<KCore::MapEvent> mSyncEvents, mAsyncEvents;
 
     public:
         BaseWorld() : BaseWorld(0.0f, 0.0f) {}
@@ -62,13 +62,32 @@ namespace KCore {
         }
 
         [[nodiscard]]
-        const std::vector<KCore::MapEvent> &getSyncEvents() const {
+        std::vector<KCore::MapEvent> getSyncEvents() {
+            // unnecessary
+            std::lock_guard<std::mutex> lock{mSyncLock};
+            // make copy of events
             return mSyncEvents;
         }
 
         [[nodiscard]]
-        const std::vector<KCore::MapEvent> &getAsyncEvents() const {
-            return mAsyncEvents;
+        std::vector<KCore::MapEvent> getAsyncEvents() {
+            std::lock_guard<std::mutex> lock{mAsyncLock};
+            // make copy of events
+            auto copy = mAsyncEvents;
+            // clear all async events
+            mAsyncEvents.clear();
+
+            return copy;
+        }
+
+        void pushToSyncEvents(const MapEvent &event) {
+            std::lock_guard<std::mutex> lock{mSyncLock};
+            mSyncEvents.push_back(event);
+        }
+
+        void pushToAsyncEvents(const MapEvent &event) {
+            std::lock_guard<std::mutex> lock{mAsyncLock};
+            mAsyncEvents.push_back(event);
         }
 
     protected:

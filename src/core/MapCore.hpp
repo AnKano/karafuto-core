@@ -50,7 +50,7 @@ namespace KCore {
 
         std::vector<MapEvent> getSyncEvents();
 
-        std::vector<MapEvent> getContentFrameEvents();
+        std::vector<MapEvent> getAsyncEvents();
 
         void pushEventToContentQueue(const MapEvent &event);
 

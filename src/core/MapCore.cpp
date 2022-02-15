@@ -222,13 +222,9 @@ namespace KCore {
         return mWorldAdapter->getSyncEvents();
     }
 
-    std::vector<MapEvent> MapCore::getContentFrameEvents() {
-//        std::lock_guard lock{mEventsLock};
-//
-//        auto events = mActualContentEvents;
-//        mActualContentEvents.clear();
-
-        return {};
+    std::vector<MapEvent> MapCore::getAsyncEvents() {
+        auto events = mWorldAdapter->getAsyncEvents();
+        return events;
     }
 
     void MapCore::pushEventToContentQueue(const MapEvent &event) {
@@ -268,7 +264,7 @@ namespace KCore {
         return new KCore::MapCore();
     }
 
-    DllExport void SetWorldAdapter(KCore::MapCore *core, KCore::BaseWorld* adapter) {
+    DllExport void SetWorldAdapter(KCore::MapCore *core, KCore::BaseWorld *adapter) {
         core->setWorldAdapter(adapter);
     }
 
@@ -286,13 +282,13 @@ namespace KCore {
 
         length = (int) syncEvents.size();
 
-        auto* events = new MapEvent[length];
+        auto *events = new MapEvent[length];
         std::copy(syncEvents.begin(), syncEvents.end(), events);
 
         return events;
     }
 
-    DllExport void ReleaseSyncEvents(MapEvent* syncArrayPtr) {
+    DllExport void ReleaseSyncEvents(MapEvent *syncArrayPtr) {
         delete[] syncArrayPtr;
     }
 

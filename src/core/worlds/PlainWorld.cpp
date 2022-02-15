@@ -1,4 +1,5 @@
 #include "PlainWorld.hpp"
+#include "../misc/STBImageUtils.hpp"
 
 namespace KCore {
     void PlainWorld::calculateTiles() {
@@ -16,13 +17,36 @@ namespace KCore {
             bool inNew = mCurrBaseTiles.count(item) > 0;
 
             if (inPrev) {
-                mSyncEvents.push_back(MapEvent::MakeNotInFrustumEvent(item));
+                auto event = MapEvent::MakeNotInFrustumEvent(item);
+                pushToSyncEvents(event);
             }
 
             if (inNew) {
-                mSyncEvents.push_back(MapEvent::MakeInFrustumEvent(
-                        item, &mCurrBaseTiles[item].mPayload
-                ));
+                auto event = MapEvent::MakeInFrustumEvent(item, &mCurrBaseTiles[item].mPayload);
+                pushToSyncEvents(event);
+            }
+        }
+
+        for (auto &item: diff) {
+            bool inNew = mCurrBaseTiles.count(item) > 0;
+
+            if (inNew) {
+                std::string url{"http://tile.openstreetmap.org/" + mCurrBaseTiles[item].tileURL() + ".png"};
+                auto request = new NetworkRequest{
+                        url,
+                        [this, item](const std::vector<uint8_t> &data) {
+                            auto image = KCore::STBImageUtils::decodeImageBuffer(data);
+
+                            auto raw = new uint8_t[image.size()];
+                            std::copy(image.begin(), image.end(), raw);
+
+                            auto event = MapEvent::MakeImageLoadedEvent(
+                                    item, raw
+                            );
+                            pushToAsyncEvents(event);
+                        }, nullptr
+                };
+                mNetworkContext.pushRequestToQueue(request);
             }
         }
     }
