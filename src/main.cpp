@@ -4,6 +4,7 @@
 
 
 #include "core/MapCore.hpp"
+#include "core/worlds/PlainWorld.hpp"
 
 #ifdef __EMSCRIPTEN__
 
@@ -61,90 +62,56 @@ EMSCRIPTEN_BINDINGS(karafuto) {
 #include <glm/glm.hpp>
 
 int main() {
-    const uint16_t viewportWidth{2560};
-    const uint16_t viewportHeight{1259};
-
+    const uint16_t viewportWidth{2560}, viewportHeight{1280};
     const float aspectRatio{(float) viewportWidth / viewportHeight};
 
-    // create camera that reproduce equivalent point of view and matrix
-
-    glm::mat4 cameraProjectionMatrix = glm::perspective(
-            glm::radians(60.0f), aspectRatio,
-            0.1f, 2500000.0f
-    );
+    // create camera that describe point of view and matrix
+    glm::mat4 cameraProjectionMatrix;
+    glm::mat4 cameraViewMatrix;
 
     glm::vec3 cameraOpenGlSpacePosition{1000.0f, 10000.0f, 10000.0f};
     glm::vec3 cameraOpenGlSpaceTarget{0.0f, 0.0f, 0.0f};
     glm::vec3 cameraOpenGlSpaceUp{0.0f, 1.0f, 0.0f};
 
-    glm::mat4 cameraViewMatrix = glm::lookAt(
-            cameraOpenGlSpacePosition,
-            cameraOpenGlSpaceTarget,
-            cameraOpenGlSpaceUp
-    );
+    // setup matrices
+    {
+        cameraViewMatrix = glm::lookAt(
+                cameraOpenGlSpacePosition,
+                cameraOpenGlSpaceTarget,
+                cameraOpenGlSpaceUp
+        );
 
-    const uint16_t iteration = 5000;
+        cameraProjectionMatrix = glm::perspective(
+                glm::radians(60.0f), aspectRatio,
+                0.1f, 2500000.0f
+        );
+    }
 
-//     46.9181f, 142.7189f is latitude and longitude of
-//     the surroundings of the city of Yuzhno-Sakhalinsk
-    KCore::MapCore core{46.9181f, 142.7189f};
+    const uint16_t iterations{5000};
+
+    auto terrainSource = new KCore::SRTMLocalSource;
+    terrainSource->addSourcePart("assets/sources/N45E141.hgt");
+    terrainSource->addSourcePart("assets/sources", ".hgt");
+
+    // 46.9181f, 142.7189f is latitude and longitude of
+    // the surroundings of the city of Yuzhno-Sakhalinsk
+    auto *world = new KCore::PlainWorld{46.9181f, 142.7189f};
+    // world.setImageSource("http://tile.openstreetmap.org/", ".png");
+    // world.setTerrainSource(terrainSource);
+
+    KCore::MapCore core;
+    core.setWorldAdapter(world);
+
     auto start = std::chrono::system_clock::now();
-    for (uint16_t i = 0; i < iteration; i++) {
-        cameraOpenGlSpacePosition.z -= 1000.0f;
+    for (auto i = 0; i < iterations; i++) {
         core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-        auto a = core.getCommonFrameEvents();
-        auto b = core.getMetaFrameEvents();
-        auto c = core.getContentFrameEvents();
-        for (const auto &item: c) {
-            if (item.type == KCore::ContentLoadedRender) {
-                auto tag = std::string{item.quadcode} + ".meta.image";
-                int len = 0;
-                auto data = KCore::GetBufferPtrFromTag(&core, tag.c_str(), len);
-
-//                auto *buf = new uint8_t[len];
-//                memcpy_s(buf, len, data, len);
-//                delete[]buf;
-            }
-        }
-        std::this_thread::sleep_for(0.05ms);
+        auto a = core.getSyncEvents();
+        auto b = core.getContentFrameEvents();
     }
-    auto stop = std::chrono::system_clock::now();
+    auto elapsed = std::chrono::system_clock::now() - start;
 
-    cameraOpenGlSpacePosition = {1500.0f, 2000.0f, 15000.0f};
-    cameraOpenGlSpaceTarget = {0.0f, 10000.0f, 0.0f};
-
-    cameraViewMatrix = glm::lookAt(
-            cameraOpenGlSpacePosition,
-            cameraOpenGlSpaceTarget,
-            cameraOpenGlSpaceUp
-    );
-
-    start = std::chrono::system_clock::now();
-    for (uint16_t i = 0; i < iteration; i++) {
-        cameraOpenGlSpacePosition.x -= 1000.0f;
-        core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-        auto a = core.getCommonFrameEvents();
-        auto b = core.getMetaFrameEvents();
-        auto c = core.getContentFrameEvents();
-        for (const auto &item: c) {
-            if (item.type == KCore::ContentLoadedRender) {
-                auto tag = std::string{item.quadcode} + ".meta.image";
-                int len = 0;
-                auto data = KCore::GetBufferPtrFromTag(&core, tag.c_str(), len);
-
-//                auto *buf = new uint8_t[len];
-//                memcpy_s(buf, len, data, len);
-//                delete[]buf;
-            }
-        }
-    }
-    stop = std::chrono::system_clock::now();
-
-    auto elapsed = stop - start;
-    std::cout << (elapsed / std::chrono::microseconds(1)) / iteration << " microseconds per iteration" << std::endl;
-    core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-
-    std::this_thread::sleep_for(20s);
+    std::cout << (elapsed / std::chrono::microseconds(1)) / iterations
+              << " microseconds per iterations" << std::endl;
 
     return 0;
 }

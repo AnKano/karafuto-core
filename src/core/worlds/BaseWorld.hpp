@@ -1,63 +1,50 @@
 #pragma once
 
-#include <list>
+#include <unordered_map>
 #include <map>
 
 #include "../misc/FrustumCulling.hpp"
 #include "../geography/TileDescription.hpp"
 #include "../cache/TimeoutCache.hpp"
+#include "../contexts/task/TaskContext.hpp"
+#include "../contexts/network/NetworkContext.hpp"
 
 namespace KCore {
-    class MapCore;
-
-    struct WorldConfig {
-        bool GenerateMeta;
-    };
-
     class BaseWorld {
     protected:
-        MapCore *core;
-
-        WorldConfig mConfig;
+        glm::vec2 mOriginLatLon{};
+        glm::vec3 mOriginPosition{};
 
         KCore::FrustumCulling mCullingFilter{};
+        std::map<std::string, TileDescription> mCurrBaseTiles{}, mPrevBaseTiles{};
 
-        TimeoutCache<TileDescription> mTilesCache;
-        std::vector<TileDescription> mCommonTiles{};
+        TaskContext mTaskContext{};
+        NetworkContext mNetworkContext{};
 
-        glm::vec2 mOriginPositionReal{};
-        glm::vec3 mOriginPositionWebMercator{};
+        std::vector<KCore::MapEvent> mSyncEvents;
+        std::vector<KCore::MapEvent> mAsyncEvents;
 
     public:
-        BaseWorld(const glm::vec2 &originLatLon, const glm::vec2 &originPoint,
-                  const struct WorldConfig &config)
-                : mOriginPositionReal(originPoint),
-                  mOriginPositionWebMercator(originPoint.x, 0.0f, originPoint.y),
-                  mConfig(config) {
-            mTilesCache.setStayAliveInterval(3);
-        }
+        BaseWorld() : BaseWorld(0.0f, 0.0f) {}
 
-        void setConfig(const WorldConfig &config) {
-            mConfig = config;
+        BaseWorld(float latitude, float longitude) {
+            glm::vec2 originPoint{GeographyConverter::latLonToPoint({latitude, longitude})};
+            mOriginLatLon = originPoint;
+            mOriginPosition = {latitude, 0.0f, longitude};
         }
 
         [[nodiscard]]
-        const std::vector<TileDescription> &getTiles() {
-            return mCommonTiles;
+        const std::map<std::string, TileDescription> &getTiles() {
+            return mCurrBaseTiles;
         }
 
-        [[nodiscard]]
-        const WorldConfig &getConfig() const {
-            return mConfig;
-        }
-
-        glm::vec2 latLonToGlPoint(const glm::vec2 &latLon) {
+        glm::vec2 latLonToWorldPosition(const glm::vec2 &latLon) {
             auto projectedPoint = GeographyConverter::latLonToPoint(latLon);
-            return projectedPoint - mOriginPositionReal;
+            return projectedPoint - mOriginLatLon;
         }
 
-        glm::vec2 glPointToLatLon(const glm::vec2 &point) {
-            auto projectedPoint = point + mOriginPositionReal;
+        glm::vec2 worldPositionToLatLon(const glm::vec2 &point) {
+            auto projectedPoint = point + mOriginLatLon;
             return GeographyConverter::pointToLatLon(projectedPoint);
         }
 
@@ -66,32 +53,37 @@ namespace KCore {
         }
 
         void setPosition(const glm::vec3 &position) {
-            mOriginPositionWebMercator = position;
+            mOriginPosition = position;
         }
 
         virtual void update() {
             calculateTiles();
+            makeEvents();
+        }
+
+        [[nodiscard]]
+        const std::vector<KCore::MapEvent> &getSyncEvents() const {
+            return mSyncEvents;
+        }
+
+        [[nodiscard]]
+        const std::vector<KCore::MapEvent> &getAsyncEvents() const {
+            return mAsyncEvents;
         }
 
     protected:
+        virtual void makeEvents() = 0;
+
         virtual void calculateTiles() {
-            // clear up all mCommonTiles
-            mCommonTiles.clear();
+            // store old tiles and clear up current
+            mPrevBaseTiles = std::move(mCurrBaseTiles);
+            mCurrBaseTiles = {};
 
             std::vector<TileDescription> tiles{};
 
             // create tiles
-            for (const auto &item: std::vector{"0", "1", "2", "3"}) {
-                auto founded = mTilesCache[item];
-                if (founded) {
-                    tiles.emplace_back(*founded);
-                    continue;
-                }
-
-                auto tile = createTile(item);
-                auto element = mTilesCache.setOrReplace(item, tile);
-                tiles.push_back(element);
-            }
+            for (const auto &item: std::vector{"0", "1", "2", "3"})
+                tiles.push_back(createTile(item));
 
             std::size_t count{0};
             while (count != tiles.size()) {
@@ -103,16 +95,8 @@ namespace KCore {
                         tile->setType(TileType::Separated);
                     tile->setVisibility(TileVisibility::Hide);
 
-                    for (const auto &item: std::vector{"0", "1", "2", "3"}) {
-                        auto founded = mTilesCache[quadcode + item];
-                        if (founded) {
-                            tiles.emplace_back(*founded);
-                        } else {
-                            auto child = createTile(quadcode + item);
-                            auto tileDescription = mTilesCache.setOrReplace(quadcode + item, child);
-                            tiles.push_back(tileDescription);
-                        }
-                    }
+                    for (const auto &item: std::vector{"0", "1", "2", "3"})
+                        tiles.push_back(createTile(quadcode + item));
                 }
 
                 count++;
@@ -121,11 +105,13 @@ namespace KCore {
             auto condition = [this](const TileDescription &tile) {
                 if (tile.getVisibility() != Visible) return false;
                 const auto center = tile.getCenter();
-                auto distance = glm::length(glm::vec3(center.x, 0, center.y) - mOriginPositionWebMercator);
+                auto distance = glm::length(glm::vec3(center.x, 0, center.y) - mOriginPosition);
                 return distance <= 500000.0f;
             };
 
-            std::copy_if(tiles.begin(), tiles.end(), std::back_inserter(mCommonTiles), condition);
+            for (const auto &item: tiles)
+                if (condition(item))
+                    mCurrBaseTiles[item.getQuadcode()] = item;
         }
 
         bool screenSpaceError(TileDescription &tile, float quality) {
@@ -138,7 +124,7 @@ namespace KCore {
             }
 
             auto center = tile.getCenter();
-            auto distance = glm::length(glm::vec3(center.x, 0, center.y) - mOriginPositionWebMercator);
+            auto distance = glm::length(glm::vec3(center.x, 0, center.y) - mOriginPosition);
             auto error = quality * tile.getSideLength() / distance;
 
             return error > 1.0f;
@@ -175,8 +161,8 @@ namespace KCore {
             {
                 auto boundsLatLon = tile.getBoundsLatLon();
 
-                auto sw = latLonToGlPoint({boundsLatLon[1], boundsLatLon[0]});
-                auto ne = latLonToGlPoint({boundsLatLon[3], boundsLatLon[2]});
+                auto sw = latLonToWorldPosition({boundsLatLon[1], boundsLatLon[0]});
+                auto ne = latLonToWorldPosition({boundsLatLon[3], boundsLatLon[2]});
 
                 tile.setBoundsWorld({sw.x, sw.y, ne.x, ne.y});
             }
@@ -192,7 +178,7 @@ namespace KCore {
                 auto secondPoint = glm::vec3(boundsWorld[0], 0, boundsWorld[1]);
 
                 tile.setSideLength(glm::length(firstPoint - secondPoint));
-                tile.setCenterLatLon(glPointToLatLon(tile.getCenter()));
+                tile.setCenterLatLon(worldPositionToLatLon(tile.getCenter()));
             }
 
             return tile;

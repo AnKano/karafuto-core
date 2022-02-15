@@ -36,7 +36,7 @@ namespace KCore {
             if (position > string.length())
                 throw std::runtime_error("Found EOL in filename!");
 
-            auto ch = string[position];
+            auto ch = string[position++];
 
             switch (stage) {
                 case 1:if (ch == 'N') return 1;

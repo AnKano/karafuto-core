@@ -3,13 +3,16 @@
 #include <cstdint>
 #include <vector>
 #include <memory>
+#include <filesystem>
 
-#include "BaseSourcePiece.hpp"
+#include "BaseSourcePart.hpp"
+
+namespace fs = std::filesystem;
 
 namespace KCore {
     class BaseSource {
     protected:
-        std::vector<std::shared_ptr<BaseSourcePiece>> mPieces;
+        std::vector<std::shared_ptr<BaseSourcePart>> mPieces;
 
     public:
         BaseSource() = default;
@@ -17,13 +20,31 @@ namespace KCore {
         virtual uint8_t *getDataForTile(uint8_t zoom, uint16_t x, uint16_t y,
                                         uint16_t slicesX = 0, uint16_t slicesY = 0) = 0;
 
-        void addSourcePiece(BaseSourcePiece *piece) {
-            auto sharedPiece = std::shared_ptr<BaseSourcePiece>(piece);
+        void addSourcePart(BaseSourcePart *part) {
+            auto sharedPiece = std::shared_ptr<BaseSourcePart>(part);
             mPieces.push_back(sharedPiece);
         }
 
+        void addSourcePart(const std::string &filePath) {
+            createPartFile(filePath);
+        }
+
+        void addSourcePart(const std::string &directoryPath, const std::string &postfix) {
+            for (const auto &entry: fs::directory_iterator(directoryPath)) {
+                auto filePath = entry.path();
+                auto ext = entry.path().extension().string();
+
+                if (ext != postfix) continue;
+
+                createPartFile(filePath.string());
+            }
+        }
+
     protected:
-        virtual std::vector<std::shared_ptr<BaseSourcePiece>>
-            getRelatedPieces(uint8_t zoom, uint16_t x, uint16_t y) = 0;
+        virtual std::vector<std::shared_ptr<BaseSourcePart>> getRelatedPieces(
+                uint8_t zoom, uint16_t x, uint16_t y
+        ) = 0;
+
+        virtual void createPartFile(const std::string &path) = 0;
     };
 }

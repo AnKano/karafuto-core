@@ -39,8 +39,12 @@ namespace KCore {
         }
 
     protected:
-        std::vector<std::shared_ptr<BaseSourcePiece>> getRelatedPieces(uint8_t zoom, uint16_t x, uint16_t y) override {
+        std::vector<std::shared_ptr<BaseSourcePart>> getRelatedPieces(uint8_t zoom, uint16_t x, uint16_t y) override {
             return {};
+        }
+
+        void createPartFile(const std::string &path) override {
+            mPieces.push_back(static_cast<const std::shared_ptr<BaseSourcePart>>(new GeoJSONFileSourcePiece(path)));
         }
     };
 }

@@ -56,7 +56,7 @@ namespace KCore {
         }
 
     protected:
-        static void collectTileColumn(const std::vector<std::shared_ptr<BaseSourcePiece>> &related,
+        static void collectTileColumn(const std::vector<std::shared_ptr<BaseSourcePart>> &related,
                                       uint16_t *package,
                                       const float &minimalX, const float &maximalX,
                                       const float &minimalY, const float &maximalY,
@@ -105,7 +105,7 @@ namespace KCore {
             }
         }
 
-        static void collectTileRow(const std::vector<std::shared_ptr<BaseSourcePiece>> &related,
+        static void collectTileRow(const std::vector<std::shared_ptr<BaseSourcePart>> &related,
                                    uint16_t *package,
                                    const float &minimalX, const float &maximalX,
                                    const float &minimalY, const float &maximalY,
@@ -154,7 +154,7 @@ namespace KCore {
             }
         }
 
-        static void collectTileKernel(const std::vector<std::shared_ptr<BaseSourcePiece>> &related,
+        static void collectTileKernel(const std::vector<std::shared_ptr<BaseSourcePart>> &related,
                                       uint16_t *package,
                                       const float &minimalX, const float &minimalY,
                                       const double &offsetX, const double &offsetY,
@@ -194,7 +194,7 @@ namespace KCore {
             }
         }
 
-        std::vector<std::shared_ptr<BaseSourcePiece>> getRelatedPieces(uint8_t zoom, uint16_t x, uint16_t y) override {
+        std::vector<std::shared_ptr<BaseSourcePart>> getRelatedPieces(uint8_t zoom, uint16_t x, uint16_t y) override {
             auto minimalX = GeographyConverter::tileToLon(x, zoom);
             auto maximalY = GeographyConverter::tileToLat(y, zoom);
             auto maximalX = GeographyConverter::tileToLon(x + 1, zoom);
@@ -209,7 +209,7 @@ namespace KCore {
                     }
             };
 
-            std::vector<std::shared_ptr<BaseSourcePiece>> related;
+            std::vector<std::shared_ptr<BaseSourcePart>> related;
 
             for (const auto &item: mPieces) {
                 auto *raster = (SRTMFileSourcePiece *) item.get();
@@ -228,6 +228,11 @@ namespace KCore {
             }
 
             return related;
+        }
+
+        void createPartFile(const std::string &path) override {
+            auto part = static_cast<const std::shared_ptr<BaseSourcePart>>(new SRTMFileSourcePiece(path));
+            mPieces.push_back(part);
         }
     };
 }

@@ -6,10 +6,10 @@
 #include <fstream>
 #include <vector>
 
-#include "BaseSourcePiece.hpp"
+#include "BaseSourcePart.hpp"
 
 namespace KCore {
-    class FileSource : public BaseSourcePiece {
+    class FileSource : public BaseSourcePart {
     protected:
         std::string mPath;
 

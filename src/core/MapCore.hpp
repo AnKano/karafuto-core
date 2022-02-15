@@ -28,36 +28,12 @@ namespace KCore {
         glm::mat4 mCameraViewMatrix{}, mCameraProjectionMatrix{};
         glm::vec3 mCameraPosition{};
 
-        BaseWorld *mWorld{};
-
-        std::map<std::string, TileDescription> mCurrentCommonTiles;
-        std::map<std::string, TileDescription> mCurrentMetaTiles;
-
-        SRTMLocalSource source;
-        GeoJSONLocalSource primitivesSource;
-
-        RenderContext mRenderingContext{this};
-        TaskContext mTaskContext{this};
-        NetworkContext mNetworkingContext{};
-
-        std::mutex mEventsLock;
+        BaseWorld *mWorldAdapter{nullptr};
 
     public:
         LimitedSpaceCache<std::shared_ptr<void>> mDataStash;
 
-        std::vector<KCore::MapEvent> mStoredCommonEvents;
-        std::vector<KCore::MapEvent> mStoredMetaEvents;
-        std::vector<KCore::MapEvent> mStoredContentEvents;
-
-        std::vector<KCore::MapEvent> mActualContentEvents;
-
-        void update2D(const float &aspectRatio, const float &zoom, const float &cameraPositionX,
-                      const float &cameraPositionY);
-
-        std::shared_ptr<std::vector<uint8_t>> GetBufferPtrFromTag(const char *tag, int &length);
-
-    public:
-        MapCore(float latitude, float longitude);
+        MapCore();
 
         void update(const glm::mat4 &cameraProjectionMatrix,
                     const glm::mat4 &cameraViewMatrix,
@@ -67,9 +43,12 @@ namespace KCore {
                     const float *cameraViewMatrix_ptr,
                     const float *cameraPosition_ptr);
 
-        std::vector<MapEvent> getCommonFrameEvents();
+        void update2D(const float &aspectRatio, const float &zoom, const float &cameraPositionX,
+                      const float &cameraPositionY);
 
-        std::vector<MapEvent> getMetaFrameEvents();
+        void setWorldAdapter(BaseWorld *worldAdapter);
+
+        std::vector<MapEvent> getSyncEvents();
 
         std::vector<MapEvent> getContentFrameEvents();
 
@@ -91,22 +70,21 @@ namespace KCore {
     };
 
     extern "C" {
-    DllExport KCore::MapCore *InstantiateMapCore(float latitude, float longitude);
+    DllExport KCore::MapCore *CreateMapCore();
+
+    DllExport void SetWorldAdapter(KCore::MapCore *core, KCore::BaseWorld *adapter);
 
     DllExport void UpdateMapCore(KCore::MapCore *mapCore,
                                  float *cameraProjectionMatrix,
                                  float *cameraViewMatrix,
                                  float *cameraPosition);
 
-    DllExport KCore::MapEvent *GetCommonFrameEvents(KCore::MapCore *mapCore, int &length);
+    DllExport KCore::MapEvent *GetSyncEvents(KCore::MapCore *mapCore, int &length);
 
-    DllExport KCore::MapEvent *GetMetaFrameEvents(KCore::MapCore *mapCore, int &length);
-
-    DllExport KCore::MapEvent *GetContentFrameEvents(KCore::MapCore *mapCore, int &length);
+    DllExport void ReleaseSyncEvents(MapEvent *syncArrayPtr);
 
     DllExport void *GetBufferPtrFromTag(KCore::MapCore *mapCore, const char *tag, int &length);
 
-    DllExport void ReleaseCopy(const uint8_t *ptr);
     DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length);
     }
 }

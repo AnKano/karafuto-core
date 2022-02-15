@@ -1,9 +1,9 @@
 #pragma once
 
 namespace KCore {
-    class BaseSourcePiece {
+    class BaseSourcePart {
     public:
-        BaseSourcePiece() = default;
+        BaseSourcePart() = default;
 
         virtual uint8_t *getTileData(uint8_t zoom, uint16_t x, uint16_t y) = 0;
     };

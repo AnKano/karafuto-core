@@ -2,19 +2,22 @@
 
 #include "BaseWorld.hpp"
 
+#include "../../bindings.hpp"
+
 namespace KCore {
     class PlainWorld : public BaseWorld {
     public:
-        PlainWorld(const glm::vec2 &originLatLon, const glm::vec2 &originPoint,
-                   const struct WorldConfig &config) : BaseWorld(originLatLon, originPoint, config) {}
+        PlainWorld() : BaseWorld(0.0f, 0.0f) {}
 
-        void update() override {
-            BaseWorld::update();
-        }
+        PlainWorld(float latitude, float longitude) : BaseWorld(latitude, longitude) {}
+
+        void makeEvents() override;
 
     private:
-        void calculateTiles() override {
-            BaseWorld::calculateTiles();
-        }
+        void calculateTiles() override;
     };
+
+    extern "C" {
+    DllExport KCore::PlainWorld *CreatePlainWorld(float latitude, float longitude);
+    }
 }

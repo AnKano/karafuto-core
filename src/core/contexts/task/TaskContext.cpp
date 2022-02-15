@@ -3,7 +3,7 @@
 #include "../../MapCore.hpp"
 
 namespace KCore {
-    TaskContext::TaskContext(MapCore *core) {
+    TaskContext::TaskContext() {
         mTaskThread = std::make_unique<std::thread>([this]() {
             runTaskLoop();
         });

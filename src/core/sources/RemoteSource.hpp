@@ -6,10 +6,10 @@
 #include <fstream>
 #include <vector>
 
-#include "BaseSourcePiece.hpp"
+#include "BaseSourcePart.hpp"
 
 namespace KCore {
-    class RemoteSource : public BaseSourcePiece {
+    class RemoteSource : public BaseSourcePart {
     protected:
         std::string mRawUrl;
         std::string mURLPrefix, mURLSuffix;

@@ -21,7 +21,7 @@ namespace KCore {
         bool mReadyToBeDead = false;
 
     public:
-        TaskContext(MapCore *core);
+        TaskContext();
 
         ~TaskContext();
 
