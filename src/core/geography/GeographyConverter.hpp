@@ -3,91 +3,93 @@
 #include "glm/glm.hpp"
 
 #ifdef WIN32
+
 #include <cmath>
+
 #endif
 
 #include <string>
 #include <iostream>
 
 namespace KCore {
-	class GeographyConverter {
-		constexpr static float R = 6378137.0f;
-		constexpr static float MAX_LATITUDE = 85.0511287798f;
+    class GeographyConverter {
+        constexpr static float R = 6378137.0f;
+        constexpr static float MAX_LATITUDE = 85.0511287798f;
 
         constexpr static float ECC = 6378137.0f;
         constexpr static float ECC_2 = 6378137.0f * 6378137.0f;
 
         constexpr static float MULTIPLIER = 1.0f;
 
-	public:
-		static glm::vec2 project(const glm::vec2& latLon) {
-			auto max = MAX_LATITUDE;
-			auto lat = fmax(fmin(max, latLon.x), -max);
+    public:
+        static glm::vec2 project(const glm::vec2 &latLon) {
+            auto max = MAX_LATITUDE;
+            auto lat = fmax(fmin(max, latLon.x), -max);
 
-			return {
-				R * latLon.y * (M_PI / 180.0f),
-				R * log(tan(M_PI / 4.0f + (lat * (M_PI / 180.0f)) / 2.0f))
-			};
-		}
+            return {
+                    R * latLon.y * (M_PI / 180.0f),
+                    R * log(tan(M_PI / 4.0f + (lat * (M_PI / 180.0f)) / 2.0f))
+            };
+        }
 
-		static glm::vec2 unproject(const glm::vec2& point) {
-			return {
-				180.0f * (2.0f * atanf(expf(point.y / R)) - (M_PI / 2)) / M_PI,
-				point.x * 180.0f / M_PI / R
-			};
-		}
+        static glm::vec2 unproject(const glm::vec2 &point) {
+            return {
+                    180.0f * (2.0f * atanf(expf(point.y / R)) - (M_PI / 2)) / M_PI,
+                    point.x * 180.0f / M_PI / R
+            };
+        }
 
-		static glm::vec2 latLonToPoint(const glm::vec2& latLon) {
-			auto projected = GeographyConverter::project(latLon);
-			projected.x *= -1.0f;
-			projected.y *= -1.0f;
+        static glm::vec2 latLonToPoint(const glm::vec2 &latLon) {
+            auto projected = GeographyConverter::project(latLon);
+            projected.x *= -1.0f;
+            projected.y *= -1.0f;
 
             projected.x *= MULTIPLIER;
             projected.y *= MULTIPLIER;
 
-			return projected;
-		}
+            return projected;
+        }
 
-		static glm::vec2 pointToLatLon(const glm::vec2& point) {
-			auto _point = glm::vec2(point.x, point.y);
+        static glm::vec2 pointToLatLon(const glm::vec2 &point) {
+            auto _point = glm::vec2(point.x, point.y);
             _point.x *= -1.0f;
             _point.y *= -1.0f;
 
-			_point.x /= MULTIPLIER;
-			_point.y /= MULTIPLIER;
+            _point.x /= MULTIPLIER;
+            _point.y /= MULTIPLIER;
 
-			return GeographyConverter::unproject(_point);
-		}
+            return GeographyConverter::unproject(_point);
+        }
 
-		static glm::ivec3 quadcodeToTilecode(const std::string& quadcode) {
-			int x = 0, y = 0, z = (int) quadcode.length();
+        static glm::ivec3 quadcodeToTilecode(const std::string &quadcode) {
+            int x = 0, y = 0, z = (int) quadcode.length();
 
-			for (int i = z; i > 0; i--) {
-				auto mask = 1 << (i - 1);
+            for (int i = z; i > 0; i--) {
+                auto mask = 1 << (i - 1);
 
-				auto ch = quadcode[z - i];
-				int q = ch - '0';
+                auto ch = quadcode[z - i];
+                int q = ch - '0';
 
-				if (q == 1)
-					x |= mask;
-				if (q == 2)
-					y |= mask;
-				if (q == 3) {
-					x |= mask;
-					y |= mask;
-				}
-			}
+                if (q == 1)
+                    x |= mask;
+                if (q == 2)
+                    y |= mask;
+                if (q == 3) {
+                    x |= mask;
+                    y |= mask;
+                }
+            }
 
-			return { x, y, z };
-		}
+            return {x, y, z};
+        }
 
-		static float tileToLon(uint16_t x, uint16_t z) {
-			return x / powf(2.0f, z) * 360.0f - 180.0f;
-		}
+        static float tileToLon(uint16_t x, uint16_t z) {
+            return x / powf(2.0f, z) * 360.0f - 180.0f;
+        }
 
-		static float tileToLat(uint16_t y, uint16_t z) {
-			float n = M_PI - 2.0f * M_PI * y / powf(2.0f, z);
-			return 180.0f / (float)M_PI * (float)atan(0.5f * (expf(n) - expf(-n)));
-		}
-	};
+        static float tileToLat(uint16_t y, uint16_t z) {
+            float n = M_PI - 2.0f * M_PI * y / powf(2.0f, z);
+            return 180.0f / (float) M_PI * (float) atan(0.5f * (expf(n) - expf(-n)));
+        }
+    };
 }

@@ -13,9 +13,6 @@ file(GLOB_RECURSE CPP_SOURCES
         ${MAIN_SOURCE_DIR}/*.cpp)
 
 if (NOT EMSCRIPTEN)
-#    set(CMAKE_CXX_FLAGS_RELEASE "-O3")
-
-    set(CMAKE_ARCHIVE_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
     set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
 
     if (WIN32)
@@ -40,29 +37,29 @@ if (NOT EMSCRIPTEN)
         add_subdirectory(${THIRD_PARTY_DIR}/glew EXCLUDE_FROM_ALL)
 
         add_subdirectory(${THIRD_PARTY_DIR}/glm EXCLUDE_FROM_ALL)
-
-        include_directories(${THIRD_PARTY_DIR}/rapidjson/include )
-
-        include_directories(${THIRD_PARTY_DIR}/earcut/include)
-
-        include_directories(${THIRD_PARTY_DIR}/stb-image)
     set(BUILD_SHARED_LIBS OFF)
 
     add_library(libkcore ${CPP_HEADERS} ${CPP_SOURCES})
-    target_link_libraries(libkcore
+    target_link_libraries(libkcore PUBLIC
             glfw
             libglew_static
             libcurl
-            glm
-            )
+            glm)
 
     add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
-    target_link_libraries(karafuto_core
+    target_link_libraries(karafuto_core PUBLIC
             glfw
             libglew_static
             libcurl
-            glm
-            )
+            glm)
+
+    target_include_directories(libkcore PUBLIC ${THIRD_PARTY_DIR}/rapidjson/include)
+    target_include_directories(libkcore PUBLIC ${THIRD_PARTY_DIR}/earcut/include)
+    target_include_directories(libkcore PUBLIC ${THIRD_PARTY_DIR}/stb-image)
+
+    target_include_directories(karafuto_core PUBLIC ${THIRD_PARTY_DIR}/rapidjson/include)
+    target_include_directories(karafuto_core PUBLIC ${THIRD_PARTY_DIR}/earcut/include)
+    target_include_directories(karafuto_core PUBLIC ${THIRD_PARTY_DIR}/stb-image)
 endif ()
 
 #if (EMSCRIPTEN)
