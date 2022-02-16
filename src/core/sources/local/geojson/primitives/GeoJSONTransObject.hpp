@@ -1,6 +1,8 @@
 #pragma once
 
 #include "../../../../../bindings.hpp"
+#include "../../../../meshes/BaseMesh.hpp"
+
 #include "glm/vec3.hpp"
 
 #include <vector>
