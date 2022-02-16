@@ -4,6 +4,7 @@
 #include "../sources/local/geojson/primitives/GeoJSONTransObject.hpp"
 #include "../meshes/PolylineMesh.hpp"
 #include "../meshes/PolygonMesh.hpp"
+#include "../sources/RemoteSource.hpp"
 
 namespace KCore {
     void PlainWorld::calculateTiles() {
@@ -35,7 +36,7 @@ namespace KCore {
             bool inNew = mCurrBaseTiles.count(item) > 0;
 
             if (inNew) {
-                std::string url{"http://tile.openstreetmap.org/" + mCurrBaseTiles[item].tileURL() + ".png"};
+                auto url = ((RemoteSource *) mSources["base"])->bakeUrl(mCurrBaseTiles[item]);
                 auto request = new NetworkRequest{
                         url,
                         [this, item](const std::vector<uint8_t> &data) {
@@ -64,8 +65,7 @@ namespace KCore {
                         [this, tile]() {
                             auto tilecode = tile.getTilecode();
                             auto zoom = tilecode.z, x = tilecode.x, y = tilecode.y;
-
-                            auto *result = (std::vector<GeoJSONObject> *) jsonPrimitives->getDataForTile(zoom, x, y);
+                            auto *result = (std::vector<GeoJSONObject> *) mSources["json"]->getDataForTile(zoom, x, y);
 
                             auto size = result->size();
                             auto *objects = new std::vector<GeoJSONTransObject>();

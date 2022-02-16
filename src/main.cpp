@@ -5,6 +5,7 @@
 
 #include "core/MapCore.hpp"
 #include "core/worlds/PlainWorld.hpp"
+#include "core/sources/RemoteSource.hpp"
 
 #ifdef __EMSCRIPTEN__
 
@@ -89,15 +90,21 @@ int main() {
 
     const uint16_t iterations{5000};
 
-    auto terrainSource = new KCore::SRTMLocalSource;
-    terrainSource->addSourcePart("assets/sources/N45E141.hgt");
-    terrainSource->addSourcePart("assets/sources", ".hgt");
-
     // 46.9181f, 142.7189f is latitude and longitude of
     // the surroundings of the city of Yuzhno-Sakhalinsk
     auto *world = new KCore::PlainWorld{46.9181f, 142.7189f};
-    // world.setImageSource("http://tile.openstreetmap.org/", ".png");
-    // world.setTerrainSource(terrainSource);
+
+    auto jsonSource = new KCore::GeoJSONLocalSource;
+    jsonSource->addSourcePart("assets/sources/points.geojson");
+    world->registerSource(jsonSource, "json");
+
+    auto terrainSource = new KCore::SRTMLocalSource;
+    terrainSource->addSourcePart("assets/sources/N45E141.hgt");
+    terrainSource->addSourcePart("assets/sources", ".hgt");
+    world->registerSource(terrainSource, "terrain");
+
+    auto imageSource = new KCore::RemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
+    world->registerSource(imageSource, "base");
 
     KCore::MapCore core;
     core.setWorldAdapter(world);

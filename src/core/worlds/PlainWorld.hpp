@@ -9,20 +9,10 @@
 
 namespace KCore {
     class PlainWorld : public BaseWorld {
-    private:
-        BaseSource *srtmPrimitives;
-        BaseSource *jsonPrimitives;
-
     public:
         PlainWorld() : BaseWorld(0.0f, 0.0f) {}
 
-        PlainWorld(float latitude, float longitude) : BaseWorld(latitude, longitude) {
-            srtmPrimitives = new KCore::SRTMLocalSource;
-            srtmPrimitives->addSourcePart("assets/sources", ".hgt");
-
-            jsonPrimitives = new KCore::GeoJSONLocalSource;
-            jsonPrimitives->addSourcePart("assets/sources/points.geojson");
-        }
+        PlainWorld(float latitude, float longitude) : BaseWorld(latitude, longitude) {}
 
         void makeEvents() override;
 

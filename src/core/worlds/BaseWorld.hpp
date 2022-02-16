@@ -8,10 +8,13 @@
 #include "../cache/TimeoutCache.hpp"
 #include "../contexts/task/TaskContext.hpp"
 #include "../contexts/network/NetworkContext.hpp"
+#include "../sources/BaseSource.hpp"
 
 namespace KCore {
     class BaseWorld {
     protected:
+        std::map<std::string, BaseSource *> mSources;
+
         glm::vec2 mOriginLatLon{};
         glm::vec3 mOriginPosition{};
 
@@ -59,6 +62,10 @@ namespace KCore {
         virtual void update() {
             calculateTiles();
             makeEvents();
+        }
+
+        void registerSource(BaseSource *source, const std::string &as) {
+            mSources[as] = source;
         }
 
         [[nodiscard]]
