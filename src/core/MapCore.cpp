@@ -10,10 +10,7 @@
 #include "meshes/PolygonMesh.hpp"
 
 namespace KCore {
-    MapCore::MapCore() {
-        mDataStash.setMaximalCount(1000);
-        mDataStash.setStayAliveInterval(3);
-    }
+    MapCore::MapCore() = default;
 
     void MapCore::setWorldAdapter(BaseWorld *worldAdapter) {
         mWorldAdapter = worldAdapter;
@@ -65,172 +62,12 @@ namespace KCore {
     }
 
     std::vector<MapEvent> MapCore::getSyncEvents() {
-
-//        if (!mWorldAdapter) throw std::runtime_error("world not initialized");
-//
-//        auto previousFrameTilesCopy = mCurrentCommonTiles;
-//
-//        auto tiles = mWorldAdapter->getTiles();
-//        std::map<std::string, TileDescription> currentFrameTiles;
-//        for (const auto &item: tiles)
-//            currentFrameTiles[item.getQuadcode()] = item;
-//
-//        mCurrentCommonTiles = currentFrameTiles;
-//
-//        auto diff = mapKeysDifference<std::string>(previousFrameTilesCopy, currentFrameTiles);
-//        auto inter = mapKeysIntersection<std::string>(previousFrameTilesCopy, currentFrameTiles);
-//
-//        auto events = std::vector<MapEvent>();
-//        for (auto &item: diff) {
-//            bool inPrev = previousFrameTilesCopy.find(item) != std::end(previousFrameTilesCopy);
-//            bool inNew = currentFrameTiles.find(item) != std::end(currentFrameTiles);
-//
-//            if (inPrev) {
-//                events.push_back(MapEvent::MakeNotInFrustumEvent(item));
-//                continue;
-//            }
-//
-//            if (inNew) {
-//                events.push_back(MapEvent::MakeInFrustumEvent(item, &mCurrentCommonTiles[item].mPayload));
-//
-//                // ... so, download resource for appeared element
-//                auto composite = std::string{item} + ".common.image";
-//                auto test = mDataStash.getByKey(composite);
-//                auto inStash = test != nullptr;
-//                if (inStash)
-//                    pushEventToContentQueue(MapEvent::MakeImageLoadedEvent(item, test->get()));
-//
-////                std::string token = "pk.eyJ1IjoiYW5rYW5vIiwiYSI6ImNqeWVocmNnYTAxaWIzaGxoeGd4ejExN3MifQ.8QQWwjxjyoIH8ma0McKeNA";
-////                std::string url{"http://api.mapbox.com/v4/mapbox.satellite/" + mCurrentCommonTiles[item].tileURL() +
-////                                 ".png?access_token=" + token};
-//
-//                std::string url{"http://tile.openstreetmap.org/" + mCurrentCommonTiles[item].tileURL() + ".png"};
-//                std::string quadcode{mCurrentCommonTiles[item].getQuadcode()};
-//                std::string tag{"common.image"};
-//
-//                auto request = new NetworkRequest{
-//                        url,
-//                        [url, tag, this, composite](const std::vector<uint8_t> &data) {
-//                            auto raw = std::make_shared<std::vector<uint8_t>>(
-//                                    KCore::STBImageUtils::decodeImageBuffer(data));
-//                            mDataStash.setOrReplace(composite, raw);
-////                            mRenderingContext.pushTextureDataToGPUQueue(composite, raw);
-//                            std::cout << url << " finally loaded kek" << std::endl;
-//                        }, nullptr
-//                };
-//                mWorldAdapter->getNetworkContext().pushRequestToQueue(request);
-//
-//                auto tile = mCurrentCommonTiles[item];
-//                mWorldAdapter->getTaskContext().pushTaskToQueue(new CallbackTask{
-//                        [tile, this]() {
-//                            auto tilecode = tile.getTilecode();
-//                            auto zoom = tilecode.z, x = tilecode.x, y = tilecode.y;
-//
-//                            auto *result = (std::vector<GeoJSONObject> *) primitivesSource.getDataForTile(zoom, x, y);
-//
-//                            auto size = result->size();
-//                            auto *objects = new std::vector<GeoJSONTransObject>();
-//
-//                            for (int i = 0; i < size; i++) {
-//                                auto &ref = (*result)[i];
-//
-//                                GeoJSONTransObject obj{};
-//                                obj.type = ref.mType;
-//                                obj.mainShapeCoordsCount = ref.mMainShapeCoords.size();
-//                                obj.holeShapeCoordsCount = ref.mHoleShapeCoords.size();
-//                                obj.holeShapePositions = nullptr;
-//                                obj.mainShapePositions = nullptr;
-//
-//                                if (ref.mType == Polyline) {
-//                                    auto converted = std::vector<std::array<double, 2>>{};
-//                                    for (const auto &item: ref.mMainShapeCoords) {
-//                                        auto project = mWorldAdapter->latLonToWorldPosition(
-//                                                {item[1], item[0]}
-//                                        );
-//                                        converted.push_back({project.x, project.y});
-//                                    }
-//
-//                                    obj.mesh = new PolylineMesh(ref, converted);
-//                                }
-//
-//                                if (ref.mType == Polygon || ref.mType == PolygonWithHole) {
-//                                    auto convertedMain = std::vector<std::array<double, 2>>{};
-//                                    for (const auto &item: ref.mMainShapeCoords) {
-//                                        auto project = mWorldAdapter->latLonToWorldPosition(
-//                                                {item[1], item[0]}
-//                                        );
-//                                        convertedMain.push_back({project.x, project.y});
-//                                    }
-//
-//                                    auto convertedHole = std::vector<std::array<double, 2>>{};
-//                                    for (const auto &item: ref.mHoleShapeCoords) {
-//                                        auto project = mWorldAdapter->latLonToWorldPosition(
-//                                                {item[1], item[0]}
-//                                        );
-//                                        convertedHole.push_back({project.x, project.y});
-//                                    }
-//
-//                                    obj.mesh = new PolygonMesh(ref,
-//                                                               convertedMain,
-//                                                               convertedHole);
-//                                }
-//
-//                                if (obj.mainShapeCoordsCount) {
-//                                    obj.mainShapePositions = new glm::vec3[obj.mainShapeCoordsCount];
-//                                    for (int j = 0; j < obj.mainShapeCoordsCount; j++) {
-//                                        auto project = mWorldAdapter->latLonToWorldPosition(
-//                                                {ref.mMainShapeCoords[j][1], ref.mMainShapeCoords[j][0]}
-//                                        );
-//                                        obj.mainShapePositions[j] = {project.x, 0.0f, project.y};
-//                                    }
-//                                }
-//
-//                                if (obj.holeShapeCoordsCount) {
-//                                    obj.holeShapePositions = new glm::vec3[obj.holeShapeCoordsCount];
-//                                    for (int j = 0; j < obj.holeShapeCoordsCount; j++) {
-//                                        auto project = mWorldAdapter->latLonToWorldPosition(
-//                                                {ref.mHoleShapeCoords[j][1], ref.mHoleShapeCoords[j][0]}
-//                                        );
-//                                        obj.holeShapePositions[j] = {project.x, 0.0f, project.y};
-//                                    }
-//                                }
-//
-//                                objects->push_back(obj);
-//                            }
-//
-//                            delete result;
-//
-//                            auto composite = tile.getQuadcode() + ".common.geojson";
-//                            if (size > 0) {
-//                                auto ptr = std::shared_ptr<std::vector<GeoJSONTransObject>>();
-//                                ptr.reset(objects);
-//                                mDataStash.setOrReplace(composite, ptr);
-//
-//                                auto event = MapEvent::MakeGeoJSONEvent(tile.getQuadcode(), ptr.get());
-//                                pushEventToContentQueue(event);
-//                            } else {
-//                                mDataStash.setOrReplace(composite, nullptr);
-//                            }
-//                        }
-//                });
-//                continue;
-//            }
-//        }
-//
-//        mSyncEvents = events;
-
         return mWorldAdapter->getSyncEvents();
     }
 
     std::vector<MapEvent> MapCore::getAsyncEvents() {
-        auto events = mWorldAdapter->getAsyncEvents();
-        return events;
+        return mWorldAdapter->getAsyncEvents();
     }
-
-    void MapCore::pushEventToContentQueue(const MapEvent &event) {
-//        std::lock_guard lock{mEventsLock};
-//        mActualContentEvents.push_back(event);
-    };
 
 #ifdef __EMSCRIPTEN__
     void map_core::update(intptr_t camera_projection_matrix_addr,
@@ -293,12 +130,13 @@ namespace KCore {
     }
 
     DllExport void *GetBufferPtrFromTag(KCore::MapCore *mapCore, const char *tag, int &length) {
-        auto stash = &mapCore->mDataStash;
-
-        auto buffer = (std::shared_ptr<std::vector<uint8_t>> *) stash->getByKey(tag);
-        auto &buffer_ref = *buffer;
-        length = (int) buffer_ref->size();
-        return buffer_ref->data();
+//        auto stash = &mapCore->mDataStash;
+//
+//        auto buffer = (std::shared_ptr<std::vector<uint8_t>> *) stash->getByKey(tag);
+//        auto &buffer_ref = *buffer;
+//        length = (int) buffer_ref->size();
+//        return buffer_ref->data();
+        return nullptr;
     }
 
     DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length) {

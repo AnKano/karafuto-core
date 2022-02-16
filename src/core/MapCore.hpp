@@ -31,8 +31,6 @@ namespace KCore {
         BaseWorld *mWorldAdapter{nullptr};
 
     public:
-        LimitedSpaceCache<std::shared_ptr<void>> mDataStash;
-
         MapCore();
 
         void update(const glm::mat4 &cameraProjectionMatrix,
@@ -51,8 +49,6 @@ namespace KCore {
         std::vector<MapEvent> getSyncEvents();
 
         std::vector<MapEvent> getAsyncEvents();
-
-        void pushEventToContentQueue(const MapEvent &event);
 
 #ifdef __EMSCRIPTEN__
         void update(intptr_t camera_projection_matrix_addr,

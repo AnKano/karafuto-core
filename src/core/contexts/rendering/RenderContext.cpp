@@ -130,9 +130,9 @@ namespace KCore {
 
                 auto buffer = mFramebuffer->getColorAttachTexture()->getTextureData();
                 auto buffer_ptr = std::make_shared<std::vector<uint8_t>>(buffer);
-                mCore_ptr->mDataStash.setOrReplace(task->mQuadcode + ".meta.image", buffer_ptr);
-
-                mCore_ptr->pushEventToContentQueue(MapEvent::MakeRenderLoadedEvent(task->mQuadcode));
+//                mCore_ptr->mDataStash.setOrReplace(task->mQuadcode + ".meta.image", buffer_ptr);
+//
+//                mCore_ptr->pushEventToContentQueue(MapEvent::MakeRenderLoadedEvent(task->mQuadcode));
 
                 // get next task or nullptr
                 task = mQueue.popTask();
