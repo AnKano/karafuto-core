@@ -106,6 +106,30 @@ int main() {
     auto imageSource = new KCore::RemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
     world->registerSource(imageSource, "base");
 
+    auto tileGen = new KCore::Stage([](KCore::BaseWorld *world) {
+        auto& currTiles = world->getCurrentBaseTiles();
+        auto& prevTiles = world->getPreviousBaseTiles();
+
+        auto diff = mapKeysDifference<std::string>(currTiles, prevTiles);
+        auto inter = mapKeysIntersection<std::string>(currTiles, prevTiles);
+
+        for (auto &item: diff) {
+            bool inPrev = prevTiles.count(item) > 0;
+            bool inNew = currTiles.count(item) > 0;
+
+            if (inPrev) {
+                auto event = KCore::MapEvent::MakeNotInFrustumEvent(item);
+                world->pushToSyncEvents(event);
+            }
+
+            if (inNew) {
+                auto event = KCore::MapEvent::MakeInFrustumEvent(item, &currTiles[item].mPayload);
+                world->pushToSyncEvents(event);
+            }
+        }
+    });
+    world->registerStage(tileGen);
+
     KCore::MapCore core;
     core.setWorldAdapter(world);
 

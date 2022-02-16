@@ -14,6 +14,7 @@ namespace KCore {
         std::function<void(const std::vector<uint8_t> &)> mOnSuccess = [this](const std::vector<uint8_t> &data) {
             std::cout << mUrl << " loaded " << data.size() << " bytes and flushed to /dev/null" << std::endl;
         };
+
         std::function<void()> mOnFailure = [this]() {
             std::cout << mUrl << " not loaded" << std::endl;
         };

@@ -9,11 +9,13 @@
 #include "../contexts/task/TaskContext.hpp"
 #include "../contexts/network/NetworkContext.hpp"
 #include "../sources/BaseSource.hpp"
+#include "stages/Stage.hpp"
 
 namespace KCore {
     class BaseWorld {
     protected:
         std::map<std::string, BaseSource *> mSources;
+        std::vector<Stage *> mStages;
 
         glm::vec2 mOriginLatLon{};
         glm::vec3 mOriginPosition{};
@@ -68,6 +70,10 @@ namespace KCore {
             mSources[as] = source;
         }
 
+        void registerStage(Stage *stage) {
+            mStages.push_back(stage);
+        }
+
         [[nodiscard]]
         std::vector<KCore::MapEvent> getSyncEvents() {
             // unnecessary
@@ -95,6 +101,14 @@ namespace KCore {
         void pushToAsyncEvents(const MapEvent &event) {
             std::lock_guard<std::mutex> lock{mAsyncLock};
             mAsyncEvents.push_back(event);
+        }
+
+        std::map<std::string, TileDescription> &getCurrentBaseTiles() {
+            return mCurrBaseTiles;
+        }
+
+        std::map<std::string, TileDescription> &getPreviousBaseTiles() {
+            return mPrevBaseTiles;
         }
 
     protected:
