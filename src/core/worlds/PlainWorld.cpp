@@ -72,53 +72,48 @@ namespace KCore {
 
                             for (int i = 0; i < size; i++) {
                                 auto &ref = (*result)[i];
-                                GeoJSONTransObject obj{};
-                                obj.type = ref.mType;
-                                obj.mainShapeCoordsCount = ref.mMainShapeCoords.size();
-                                obj.holeShapeCoordsCount = ref.mHoleShapeCoords.size();
-                                obj.holeShapePositions = nullptr;
-                                obj.mainShapePositions = nullptr;
-                                if (ref.mType == Polyline) {
-                                    auto converted = std::vector<std::array<double, 2>>{};
-                                    for (const auto &item: ref.mMainShapeCoords) {
-                                        auto project = latLonToWorldPosition({item[1], item[0]});
-                                        converted.push_back({project.x, project.y});
-                                    }
-                                    obj.mesh = new PolylineMesh(ref, converted);
-                                }
-                                if (ref.mType == Polygon || ref.mType == PolygonWithHole) {
-                                    auto convertedMain = std::vector<std::array<double, 2>>{};
-                                    for (const auto &item: ref.mMainShapeCoords) {
-                                        auto project = latLonToWorldPosition({item[1], item[0]});
-                                        convertedMain.push_back({project.x, project.y});
-                                    }
-                                    auto convertedHole = std::vector<std::array<double, 2>>{};
-                                    for (const auto &item: ref.mHoleShapeCoords) {
-                                        auto project = latLonToWorldPosition({item[1], item[0]});
-                                        convertedHole.push_back({project.x, project.y});
-                                    }
-                                    obj.mesh = new PolygonMesh(ref,
-                                                               convertedMain,
-                                                               convertedHole);
-                                }
-                                if (obj.mainShapeCoordsCount) {
+                                GeoJSONTransObject obj{
+                                        ref.mType,
+                                        (int) (ref.mMainShapeCoords.size()),
+                                        (int) (ref.mHoleShapeCoords.size()),
+                                        nullptr, nullptr
+                                };
+
+                                auto convertedMain = std::vector<std::array<double, 2>>{};
+                                auto convertedHole = std::vector<std::array<double, 2>>{};
+
+                                if (obj.mainShapeCoordsCount > 0) {
                                     obj.mainShapePositions = new glm::vec3[obj.mainShapeCoordsCount];
-                                    for (int j = 0; j < obj.mainShapeCoordsCount; j++) {
+
+                                    for (int idx = 0; idx < obj.mainShapeCoordsCount; idx++) {
                                         auto project = latLonToWorldPosition(
-                                                {ref.mMainShapeCoords[j][1], ref.mMainShapeCoords[j][0]}
-                                        );
-                                        obj.mainShapePositions[j] = {project.x, 0.0f, project.y};
+                                                {ref.mMainShapeCoords[idx][1], ref.mMainShapeCoords[idx][0]
+                                                });
+                                        convertedMain.push_back({project.x, project.y});
+                                        obj.mainShapePositions[idx] = {project.x, 0.0f, project.y};
                                     }
                                 }
-                                if (obj.holeShapeCoordsCount) {
-                                    obj.holeShapePositions = new glm::vec3[obj.holeShapeCoordsCount];
-                                    for (int j = 0; j < obj.holeShapeCoordsCount; j++) {
+
+                                if (obj.holeShapeCoordsCount > 0) {
+                                    auto coordsCount = obj.holeShapeCoordsCount;
+                                    obj.holeShapePositions = new glm::vec3[coordsCount];
+
+                                    for (int idx = 0; idx < coordsCount; idx++) {
                                         auto project = latLonToWorldPosition(
-                                                {ref.mHoleShapeCoords[j][1], ref.mHoleShapeCoords[j][0]}
-                                        );
-                                        obj.holeShapePositions[j] = {project.x, 0.0f, project.y};
+                                                {ref.mHoleShapeCoords[idx][1], ref.mHoleShapeCoords[idx][0]
+                                                });
+                                        convertedHole.push_back({project.x, project.y});
+                                        obj.holeShapePositions[idx] = {project.x, 0.0f, project.y};
                                     }
                                 }
+
+                                if (ref.mType == Polyline)
+                                    obj.mesh = new PolylineMesh(ref, convertedMain);
+
+
+                                if (ref.mType == Polygon || ref.mType == PolygonWithHole)
+                                    obj.mesh = new PolygonMesh(ref, convertedMain, convertedHole);
+
                                 objects->push_back(obj);
                             }
 

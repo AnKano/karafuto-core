@@ -24,12 +24,7 @@ namespace KCore {
             MapEvent event{};
             event.type = InFrustum;
             event.payload = payloadPtr;
-#if defined(_MSC_VER)
-            strcpy_s(event.quadcode, quadcode.c_str());
-#endif
-#if defined(__GNUC__)
-            strcpy(event.quadcode, quadcode.c_str());
-#endif
+            std::strcpy(event.quadcode, quadcode.c_str());
 
             return event;
         }
@@ -38,12 +33,7 @@ namespace KCore {
             MapEvent event{};
             event.type = NotInFrustum;
             event.payload = nullptr;
-#if defined(_MSC_VER)
-            strcpy_s(event.quadcode, quadcode.c_str());
-#endif
-#if defined(__GNUC__)
-            strcpy(event.quadcode, quadcode.c_str());
-#endif
+            std::strcpy(event.quadcode, quadcode.c_str());
 
             return event;
         }
@@ -52,12 +42,7 @@ namespace KCore {
             MapEvent event{};
             event.type = ContentLoadedRender;
             event.payload = nullptr;
-#if defined(_MSC_VER)
-            strcpy_s(event.quadcode, quadcode.c_str());
-#endif
-#if defined(__GNUC__)
-            strcpy(event.quadcode, quadcode.c_str());
-#endif
+            std::strcpy(event.quadcode, quadcode.c_str());
 
             return event;
         }
@@ -66,12 +51,7 @@ namespace KCore {
             MapEvent event{};
             event.type = ContentLoadedImage;
             event.payload = payloadPtr;
-#if defined(_MSC_VER)
-            strcpy_s(event.quadcode, quadcode.c_str());
-#endif
-#if defined(__GNUC__)
-            strcpy(event.quadcode, quadcode.c_str());
-#endif
+            std::strcpy(event.quadcode, quadcode.c_str());
 
             return event;
         }
@@ -80,12 +60,7 @@ namespace KCore {
             MapEvent event{};
             event.type = TerrainLoaded;
             event.payload = payloadPtr;
-#if defined(_MSC_VER)
-            strcpy_s(event.quadcode, quadcode.c_str());
-#endif
-#if defined(__GNUC__)
-            strcpy(event.quadcode, quadcode.c_str());
-#endif
+            std::strcpy(event.quadcode, quadcode.c_str());
 
             return event;
         }
@@ -94,12 +69,7 @@ namespace KCore {
             MapEvent event{};
             event.type = GeoJSONLoaded;
             event.payload = payloadPtr;
-#if defined(_MSC_VER)
-            strcpy_s(event.quadcode, quadcode.c_str());
-#endif
-#if defined(__GNUC__)
-            strcpy(event.quadcode, quadcode.c_str());
-#endif
+            std::strcpy(event.quadcode, quadcode.c_str());
 
             return event;
         }
