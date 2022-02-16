@@ -111,6 +111,18 @@ namespace KCore {
             return mPrevBaseTiles;
         }
 
+        std::map<std::string, BaseSource *> &getSources() {
+            return mSources;
+        }
+
+        TaskContext &getTaskContext() {
+            return mTaskContext;
+        }
+
+        NetworkContext &getNetworkContext() {
+            return mNetworkContext;
+        }
+
     protected:
         virtual void makeEvents() = 0;
 
