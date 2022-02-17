@@ -107,6 +107,9 @@ int main() {
     auto imageSource = new KCore::RemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
     world->registerSource(imageSource, "base");
 
+    world->registerStage(KCore::BuiltInStages::ImageCalculate());
+    world->registerStage(KCore::BuiltInStages::JSONCalculate());
+
     KCore::MapCore core;
     core.setWorldAdapter(world);
 

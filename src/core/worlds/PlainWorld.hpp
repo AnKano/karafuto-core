@@ -16,8 +16,6 @@ namespace KCore {
 
         PlainWorld(float latitude, float longitude) : BaseWorld(latitude, longitude) {
             registerStage(KCore::BuiltInStages::CommonCalculate());
-            registerStage(KCore::BuiltInStages::ImageCalculate());
-            registerStage(KCore::BuiltInStages::JSONCalculate());
         }
 
         void makeEvents() override;

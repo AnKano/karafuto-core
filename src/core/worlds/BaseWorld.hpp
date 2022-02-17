@@ -21,7 +21,9 @@ namespace KCore {
         glm::vec3 mOriginPosition{};
 
         KCore::FrustumCulling mCullingFilter{};
-        std::map<std::string, TileDescription> mCurrBaseTiles{}, mPrevBaseTiles{};
+
+        std::map<std::string, TileDescription> mCreatedBaseTiles{};
+        std::map<std::string, bool> mCurrBaseTiles{}, mPrevBaseTiles{};
 
         TaskContext mTaskContext{};
         NetworkContext mNetworkContext{};
@@ -39,8 +41,14 @@ namespace KCore {
         }
 
         [[nodiscard]]
-        const std::map<std::string, TileDescription> &getTiles() {
-            return mCurrBaseTiles;
+        std::map<std::string, TileDescription> getTiles() {
+            std::map<std::string, TileDescription> currentTilesCopy{};
+
+            for (const auto &[key, _]: mCurrBaseTiles) {
+                currentTilesCopy[key] = mCreatedBaseTiles[key];
+            }
+
+            return currentTilesCopy;
         }
 
         glm::vec2 latLonToWorldPosition(const glm::vec2 &latLon) {
@@ -103,12 +111,24 @@ namespace KCore {
             mAsyncEvents.push_back(event);
         }
 
-        std::map<std::string, TileDescription> &getCurrentBaseTiles() {
-            return mCurrBaseTiles;
+        std::map<std::string, TileDescription> getCurrentBaseTiles() {
+            std::map<std::string, TileDescription> currentTilesCopy{};
+
+            for (const auto &[key, _]: mCurrBaseTiles) {
+                currentTilesCopy[key] = mCreatedBaseTiles[key];
+            }
+
+            return currentTilesCopy;
         }
 
-        std::map<std::string, TileDescription> &getPreviousBaseTiles() {
-            return mPrevBaseTiles;
+        std::map<std::string, TileDescription> getPreviousBaseTiles() {
+            std::map<std::string, TileDescription> prevTilesCopy{};
+
+            for (const auto &[key, _]: mPrevBaseTiles) {
+                prevTilesCopy[key] = mCreatedBaseTiles[key];
+            }
+
+            return prevTilesCopy;
         }
 
         std::map<std::string, BaseSource *> &getSources() {
@@ -161,9 +181,15 @@ namespace KCore {
                 return distance <= 500000.0f;
             };
 
-            for (const auto &item: tiles)
-                if (condition(item))
-                    mCurrBaseTiles[item.getQuadcode()] = item;
+            for (const auto &item: tiles) {
+                auto quadcode = item.getQuadcode();
+                if (condition(item)) {
+                    if (mCreatedBaseTiles.count(quadcode) == 0)
+                        mCreatedBaseTiles[quadcode] = item;
+
+                    mCurrBaseTiles[quadcode] = true;
+                }
+            }
         }
 
         bool screenSpaceError(TileDescription &tile, float quality) {
