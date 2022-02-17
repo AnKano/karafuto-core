@@ -28,7 +28,9 @@ namespace KCore {
                 }
 
                 if (inNew) {
-                    auto event = KCore::MapEvent::MakeInFrustumEvent(item, &currTiles[item].mPayload);
+                    auto& stash = world->getCreatedTiles();
+                    auto* payload = &stash[item];
+                    auto event = KCore::MapEvent::MakeInFrustumEvent(item, payload);
                     world->pushToSyncEvents(event);
                 }
             }

@@ -40,6 +40,10 @@ namespace KCore {
             mOriginPosition = {latitude, 0.0f, longitude};
         }
 
+        std::map<std::string, TileDescription> &getCreatedTiles() {
+            return mCreatedBaseTiles;
+        }
+
         [[nodiscard]]
         std::map<std::string, TileDescription> getTiles() {
             std::map<std::string, TileDescription> currentTilesCopy{};
