@@ -12,8 +12,8 @@
 namespace KCore {
     KCore::Stage *BuiltInStages::CommonCalculate() {
         auto stage = new KCore::Stage([](KCore::BaseWorld *world) {
-            auto &currTiles = world->getCurrentBaseTiles();
-            auto &prevTiles = world->getPreviousBaseTiles();
+            auto currTiles = world->getCurrentBaseTiles();
+            auto prevTiles = world->getPreviousBaseTiles();
 
             auto diff = mapKeysDifference<std::string>(currTiles, prevTiles);
             auto inter = mapKeysIntersection<std::string>(currTiles, prevTiles);
@@ -39,8 +39,8 @@ namespace KCore {
 
     KCore::Stage *BuiltInStages::ImageCalculate() {
         auto imageGen = new KCore::Stage([](KCore::BaseWorld *world) {
-            auto &currTiles = world->getCurrentBaseTiles();
-            auto &prevTiles = world->getPreviousBaseTiles();
+            auto currTiles = world->getCurrentBaseTiles();
+            auto prevTiles = world->getPreviousBaseTiles();
 
             auto diff = mapKeysDifference<std::string>(currTiles, prevTiles);
             auto inter = mapKeysIntersection<std::string>(currTiles, prevTiles);
@@ -74,8 +74,8 @@ namespace KCore {
 
     KCore::Stage *BuiltInStages::JSONCalculate() {
         auto jsonGen = new KCore::Stage([](KCore::BaseWorld *world) {
-            auto &currTiles = world->getCurrentBaseTiles();
-            auto &prevTiles = world->getPreviousBaseTiles();
+            auto currTiles = world->getCurrentBaseTiles();
+            auto prevTiles = world->getPreviousBaseTiles();
 
             auto diff = mapKeysDifference<std::string>(currTiles, prevTiles);
             auto inter = mapKeysIntersection<std::string>(currTiles, prevTiles);
