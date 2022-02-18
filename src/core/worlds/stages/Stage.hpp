@@ -9,14 +9,18 @@ namespace KCore {
 
     class Stage {
     private:
-        std::function<void(BaseWorld *)> mProcessor =
-                [](BaseWorld *) {
+        std::function<void(BaseWorld *, Stage *)> mStageFunction =
+                [](BaseWorld *, Stage *) {
                     // do nothing in placeholder
                 };
 
+        Stage *mNext{nullptr};
+
     public:
-        Stage(std::function<void(BaseWorld *)> processor);
+        Stage(std::function<void(BaseWorld *, Stage *)> processor);
 
         void invoke(BaseWorld *world);
+
+        void next(Stage *stage);
     };
 }

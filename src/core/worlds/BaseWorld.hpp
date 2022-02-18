@@ -9,10 +9,14 @@
 #include "../contexts/task/TaskContext.hpp"
 #include "../contexts/network/NetworkContext.hpp"
 #include "../sources/BaseSource.hpp"
+#include "../geography/tiles/GenericTile.hpp"
 #include "stages/Stage.hpp"
 
 namespace KCore {
     class BaseWorld {
+    public:
+        int mIteration = 0;
+
     protected:
         std::map<std::string, BaseSource *> mSources;
         std::vector<Stage *> mStages;
@@ -22,8 +26,9 @@ namespace KCore {
 
         KCore::FrustumCulling mCullingFilter{};
 
-        std::map<std::string, TileDescription> mCreatedBaseTiles{};
+        std::map<std::string, GenericTile *> mCreatedBaseTiles{}, mCreatedMetaTiles{};
         std::map<std::string, bool> mCurrBaseTiles{}, mPrevBaseTiles{};
+        std::map<std::string, bool> mCurrMetaTiles{}, mPrevMetaTiles{};
 
         TaskContext mTaskContext{};
         NetworkContext mNetworkContext{};
@@ -40,7 +45,7 @@ namespace KCore {
             mOriginPosition = {latitude, 0.0f, longitude};
         }
 
-        std::map<std::string, TileDescription> &getCreatedTiles() {
+        std::map<std::string, GenericTile*> &getCreatedTiles() {
             return mCreatedBaseTiles;
         }
 
@@ -49,7 +54,7 @@ namespace KCore {
             std::map<std::string, TileDescription> currentTilesCopy{};
 
             for (const auto &[key, _]: mCurrBaseTiles) {
-                currentTilesCopy[key] = mCreatedBaseTiles[key];
+                currentTilesCopy[key] = mCreatedBaseTiles[key]->getTileDescription();
             }
 
             return currentTilesCopy;
@@ -82,8 +87,9 @@ namespace KCore {
             mSources[as] = source;
         }
 
-        void registerStage(Stage *stage) {
+        Stage *registerStage(Stage *stage) {
             mStages.push_back(stage);
+            return stage;
         }
 
         [[nodiscard]]
@@ -119,7 +125,7 @@ namespace KCore {
             std::map<std::string, TileDescription> currentTilesCopy{};
 
             for (const auto &[key, _]: mCurrBaseTiles) {
-                currentTilesCopy[key] = mCreatedBaseTiles[key];
+                currentTilesCopy[key] = mCreatedBaseTiles[key]->getTileDescription();
             }
 
             return currentTilesCopy;
@@ -129,7 +135,7 @@ namespace KCore {
             std::map<std::string, TileDescription> prevTilesCopy{};
 
             for (const auto &[key, _]: mPrevBaseTiles) {
-                prevTilesCopy[key] = mCreatedBaseTiles[key];
+                prevTilesCopy[key] = mCreatedBaseTiles[key]->getTileDescription();
             }
 
             return prevTilesCopy;
@@ -188,8 +194,9 @@ namespace KCore {
             for (const auto &item: tiles) {
                 auto quadcode = item.getQuadcode();
                 if (condition(item)) {
-                    if (mCreatedBaseTiles.count(quadcode) == 0)
-                        mCreatedBaseTiles[quadcode] = item;
+                    if (mCreatedBaseTiles.count(quadcode) == 0) {
+                        mCreatedBaseTiles[quadcode] = new GenericTile(this, item);
+                    }
 
                     mCurrBaseTiles[quadcode] = true;
                 }

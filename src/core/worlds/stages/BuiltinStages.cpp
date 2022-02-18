@@ -11,7 +11,7 @@
 
 namespace KCore {
     KCore::Stage *BuiltInStages::CommonCalculate() {
-        auto stage = new KCore::Stage([](KCore::BaseWorld *world) {
+        auto stage = new KCore::Stage([](KCore::BaseWorld *world, KCore::Stage *nextStage) {
             auto currTiles = world->getCurrentBaseTiles();
             auto prevTiles = world->getPreviousBaseTiles();
 
@@ -28,8 +28,8 @@ namespace KCore {
                 }
 
                 if (inNew) {
-                    auto& stash = world->getCreatedTiles();
-                    auto* payload = &stash[item];
+                    auto &stash = world->getCreatedTiles();
+                    auto *payload = &stash[item];
                     auto event = KCore::MapEvent::MakeInFrustumEvent(item, payload);
                     world->pushToSyncEvents(event);
                 }
@@ -40,7 +40,7 @@ namespace KCore {
     }
 
     KCore::Stage *BuiltInStages::ImageCalculate() {
-        auto imageGen = new KCore::Stage([](KCore::BaseWorld *world) {
+        auto imageGen = new KCore::Stage([](KCore::BaseWorld *world, KCore::Stage *nextStage) {
             auto currTiles = world->getCurrentBaseTiles();
             auto prevTiles = world->getPreviousBaseTiles();
 
@@ -54,7 +54,7 @@ namespace KCore {
                     auto url = ((KCore::RemoteSource *) world->getSources()["base"])->bakeUrl(currTiles[item]);
                     auto request = new KCore::NetworkRequest{
                             url,
-                            [world, item](const std::vector<uint8_t> &data) {
+                            [world, item, nextStage](const std::vector<uint8_t> &data) {
                                 auto image = KCore::STBImageUtils::decodeImageBuffer(data);
 
                                 auto raw = new uint8_t[image.size()];
@@ -63,19 +63,24 @@ namespace KCore {
                                 auto event = KCore::MapEvent::MakeImageLoadedEvent(
                                         item, raw
                                 );
+                                std::cout << world->mIteration << " image downloading succesfull!" << std::endl;
                                 world->pushToAsyncEvents(event);
+
                             }, nullptr
                     };
                     world->getNetworkContext().pushRequestToQueue(request);
                 }
             }
+
+            // invoke next related stage or ignore it
+            nextStage->invoke(world);
         });
 
         return imageGen;
     }
 
     KCore::Stage *BuiltInStages::JSONCalculate() {
-        auto jsonGen = new KCore::Stage([](KCore::BaseWorld *world) {
+        auto jsonGen = new KCore::Stage([](KCore::BaseWorld *world, KCore::Stage *nextStag) {
             auto currTiles = world->getCurrentBaseTiles();
             auto prevTiles = world->getPreviousBaseTiles();
 

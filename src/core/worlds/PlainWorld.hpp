@@ -12,11 +12,9 @@
 namespace KCore {
     class PlainWorld : public BaseWorld {
     public:
-        PlainWorld() : BaseWorld(0.0f, 0.0f) {}
+        PlainWorld();
 
-        PlainWorld(float latitude, float longitude) : BaseWorld(latitude, longitude) {
-            registerStage(KCore::BuiltInStages::CommonCalculate());
-        }
+        PlainWorld(float latitude, float longitude);
 
         void makeEvents() override;
 

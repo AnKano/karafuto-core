@@ -104,11 +104,16 @@ int main() {
     terrainSource->addSourcePart("assets/sources", ".hgt");
     world->registerSource(terrainSource, "terrain");
 
-    auto imageSource = new KCore::RemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
-    world->registerSource(imageSource, "base");
-
-    world->registerStage(KCore::BuiltInStages::ImageCalculate());
-    world->registerStage(KCore::BuiltInStages::JSONCalculate());
+//    auto imageSource = new KCore::RemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
+//    world->registerSource(imageSource, "base");
+//
+//    auto *image = KCore::BuiltInStages::ImageCalculate();
+//    image->next(new KCore::Stage{[](KCore::BaseWorld *bw, KCore::Stage *s) {
+//        std::cout << bw->mIteration << " image succesfully loaded!" << std::endl;
+//    }});
+//
+//    world->registerStage(image);
+//    world->registerStage(KCore::BuiltInStages::JSONCalculate());
 
     KCore::MapCore core;
     core.setWorldAdapter(world);
