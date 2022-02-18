@@ -1,5 +1,6 @@
 #pragma once
 
+#include <mutex>
 #include "../TileDescription.hpp"
 #include "resource/Resource.hpp"
 
@@ -8,24 +9,26 @@ namespace KCore {
 
     class GenericTile {
     private:
+        typedef std::function<void(BaseWorld *, GenericTile *)> GTFunc;
+
         BaseWorld *mWorld;
         TileDescription mDescription;
 
-        // place resource as tag to void ptr
-        std::map<std::string, void *> mResources;
+        std::map<std::string, GTFunc> mImmediateResource, mDeferResource;
+        std::map<std::string, std::vector<std::string>> mDeferResourceRelations;
 
-        std::vector<std::function<void(BaseWorld *, GenericTile *)>> mImmediateResource;//, mDeferResource;
+        std::mutex mResourceStatusLock;
+        std::map<std::string, bool> mCompletedImmediateResource;
 
     public:
         GenericTile(BaseWorld *world, const TileDescription &description);
 
-//        void registerImmediateResource(Resource *resource);
+        void registerImmediateResource(const std::string &tag, const GTFunc &callback);
 
-        void registerImmediateResource(const std::function<void(BaseWorld *, GenericTile *)>& callback);
+        void registerDeferResource(const std::string &tag, const GTFunc &callback,
+                                   const std::vector<std::string> &relatedTags);
 
-//        void registerDeferResource(Resource *resource) {
-//
-//        }
+        void commitTag(const std::string &tag);
 
         void invokeResources();
 

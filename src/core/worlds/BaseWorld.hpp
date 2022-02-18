@@ -198,26 +198,46 @@ namespace KCore {
                 if (condition(item)) {
                     if (mCreatedBaseTiles.count(quadcode) == 0) {
                         mCreatedBaseTiles[quadcode] = new GenericTile(this, item);
-                        mCreatedBaseTiles[quadcode]->registerImmediateResource([](BaseWorld *world, GenericTile *tile) {
-                            auto desc = tile->getTileDescription();
-                            auto url = ((RemoteSource *) world->getSources()["base"])->bakeUrl(desc);
-                            auto request = new KCore::NetworkRequest{
-                                    url,
-                                    [world, desc](const std::vector<uint8_t> &data) {
-                                        auto image = STBImageUtils::decodeImageBuffer(data);
+                        mCreatedBaseTiles[quadcode]->registerImmediateResource(
+                                "image",
+                                [](BaseWorld *world, GenericTile *tile) {
+                                    auto desc = tile->getTileDescription();
+                                    auto url = ((RemoteSource *) world->getSources()["base"])->bakeUrl(
+                                            desc);
+                                    auto request = new KCore::NetworkRequest{
+                                            url,
+                                            [world, desc](
+                                                    const std::vector<uint8_t> &data) {
+                                                auto image = STBImageUtils::decodeImageBuffer(
+                                                        data);
 
-                                        auto raw = new uint8_t[image.size()];
-                                        std::copy(image.begin(), image.end(), raw);
+                                                auto raw = new uint8_t[image.size()];
+                                                std::copy(image.begin(),
+                                                          image.end(),
+                                                          raw);
 
-                                        auto event = KCore::MapEvent::MakeImageLoadedEvent(desc.getQuadcode(), raw);
-                                        std::cout << world->mIteration << " image downloading succesfull!" << std::endl;
-                                        world->pushToAsyncEvents(event);
-                                    }, nullptr
-                            };
-                            world->getNetworkContext().pushRequestToQueue(request);
+                                                auto event = KCore::MapEvent::MakeImageLoadedEvent(
+                                                        desc.getQuadcode(),
+                                                        raw);
+                                                std::cout
+                                                        << world->mIteration
+                                                        << " image downloading succesfull!"
+                                                        << std::endl;
+                                                world->pushToAsyncEvents(
+                                                        event);
+                                            }, nullptr
+                                    };
+                                    world->getNetworkContext().pushRequestToQueue(
+                                            request);
 
-                            std::cout << tile->getTileDescription().getQuadcode() << std::endl;
-                        });
+                                    std::cout
+                                            << tile->getTileDescription().getQuadcode()
+                                            << std::endl;
+
+                                    tile->commitTag("image");
+                                }
+                        );
+
                         mCreatedBaseTiles[quadcode]->invokeResources();
                     }
 
