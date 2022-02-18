@@ -27,23 +27,36 @@ namespace KCore {
     }
 
     void GenericTile::commitTag(const std::string &tag) {
-        std::lock_guard<std::mutex> lock{mResourceStatusLock};
+        mResourceStatusLock.lock();
 
+        // mark as completed
         mCompletedImmediateResource[tag] = true;
 
-        for (const auto &[resourceTag, resources] : mDeferResourceRelations) {
+        // create vec of tasks
+        auto tasks = std::vector<GTFunc>{};
+
+        // check over all relations
+        for (const auto &[resourceTag, resources]: mDeferResourceRelations) {
             auto pos = std::find(resources.begin(), resources.end(), tag);
             if (pos == resources.end()) continue;
 
             bool isReady = true;
-            for (const auto &item : resources)
+            for (const auto &item: resources)
                 if (!mCompletedImmediateResource[item]) {
                     isReady = false;
                     break;
                 }
 
-            mDeferResource[resourceTag].
+            if (isReady) {
+                tasks.push_back(mDeferResource[resourceTag]);
+                mDeferResource.erase(resourceTag);
+            }
         }
+
+        mResourceStatusLock.unlock();
+
+        for (const auto &item: tasks)
+            item(mWorld, this);
     }
 }
 

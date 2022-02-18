@@ -237,6 +237,15 @@ namespace KCore {
                                     tile->commitTag("image");
                                 }
                         );
+                        mCreatedBaseTiles[quadcode]->registerDeferResource(
+                                "echo",
+                                [](BaseWorld *world, GenericTile *tile) {
+                                    std::cout
+                                            << tile->getTileDescription().getQuadcode()
+                                            << " on final"
+                                            << std::endl;
+                                },
+                                {"image"});
 
                         mCreatedBaseTiles[quadcode]->invokeResources();
                     }
