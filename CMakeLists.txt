@@ -39,6 +39,13 @@ if (NOT EMSCRIPTEN)
     add_subdirectory(${THIRD_PARTY_DIR}/glm EXCLUDE_FROM_ALL)
     set(BUILD_SHARED_LIBS OFF)
 
+    add_library(libkcore STATIC ${CPP_HEADERS} ${CPP_SOURCES})
+    target_link_libraries(libkcore-static PUBLIC
+            glfw
+            libglew_static
+            libcurl
+            glm)
+
     add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
     target_link_libraries(libkcore PUBLIC
             glfw
@@ -54,12 +61,15 @@ if (NOT EMSCRIPTEN)
             glm)
 
     target_include_directories(libkcore PUBLIC ${THIRD_PARTY_DIR}/rapidjson/include)
+    target_include_directories(libkcore-static PUBLIC ${THIRD_PARTY_DIR}/rapidjson/include)
     target_include_directories(karafuto_core PUBLIC ${THIRD_PARTY_DIR}/rapidjson/include)
 
     target_include_directories(libkcore PUBLIC ${THIRD_PARTY_DIR}/earcut/include)
+    target_include_directories(libkcore-static PUBLIC ${THIRD_PARTY_DIR}/earcut/include)
     target_include_directories(karafuto_core PUBLIC ${THIRD_PARTY_DIR}/earcut/include)
 
     target_include_directories(libkcore PUBLIC ${THIRD_PARTY_DIR}/stb-image)
+    target_include_directories(libkcore-static PUBLIC ${THIRD_PARTY_DIR}/stb-image)
     target_include_directories(karafuto_core PUBLIC ${THIRD_PARTY_DIR}/stb-image)
 endif ()
 
