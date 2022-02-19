@@ -125,26 +125,18 @@ namespace KCore {
         return events;
     }
 
-    DllExport void ReleaseSyncEvents(MapEvent *syncArrayPtr) {
+    DllExport KCore::MapEvent *GetAsyncEvents(KCore::MapCore *corePtr, int &length) {
+        auto asyncEvents = corePtr->getAsyncEvents();
+
+        length = (int) asyncEvents.size();
+
+        auto *events = new MapEvent[length];
+        std::copy(asyncEvents.begin(), asyncEvents.end(), events);
+
+        return events;
+    }
+
+    DllExport void ReleaseEvents(MapEvent *syncArrayPtr) {
         delete[] syncArrayPtr;
-    }
-
-    DllExport void *GetBufferPtrFromTag(KCore::MapCore *mapCore, const char *tag, int &length) {
-//        auto stash = &mapCore->mDataStash;
-//
-//        auto buffer = (std::shared_ptr<std::vector<uint8_t>> *) stash->getByKey(tag);
-//        auto &buffer_ref = *buffer;
-//        length = (int) buffer_ref->size();
-//        return buffer_ref->data();
-        return nullptr;
-    }
-
-    DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length) {
-        if (points == nullptr)
-            length = 0;
-        else
-            length = points->size();
-
-        return points->data();
     }
 }

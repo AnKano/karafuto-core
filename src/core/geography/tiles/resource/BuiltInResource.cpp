@@ -2,8 +2,10 @@
 
 #include "../GenericTile.hpp"
 #include "../../../sources/RemoteSource.hpp"
+#include "../../../sources/local/srtm/SRTMLocalSource.hpp"
 #include "../../../contexts/network/NetworkRequest.hpp"
 #include "../../../worlds/BaseWorld.hpp"
+#include "../../../meshes/GridMesh.hpp"
 
 namespace KCore {
     std::function<void(KCore::BaseWorld *, GenericTile *tile)> BuiltInResource::ImageCalculate() {
@@ -12,25 +14,41 @@ namespace KCore {
             auto url = ((RemoteSource *) world->getSources()["base"])->bakeUrl(desc);
             auto request = new KCore::NetworkRequest{
                     url,
-                    [world, desc](
-                            const std::vector<uint8_t> &data) {
-                        auto image = STBImageUtils::decodeImageBuffer(
-                                data);
+                    [world, desc](const std::vector<uint8_t> &data) {
+                        auto image = STBImageUtils::decodeImageBuffer(data);
 
                         auto raw = new uint8_t[image.size()];
-                        std::copy(image.begin(),
-                                  image.end(),
-                                  raw);
+                        std::copy(image.begin(), image.end(), raw);
 
-                        auto event = KCore::MapEvent::MakeImageLoadedEvent(
-                                desc.getQuadcode(),
-                                raw);
-                        world->pushToAsyncEvents(
-                                event);
+                        auto event =
+                                KCore::MapEvent::MakeImageLoadedEvent(desc.getQuadcode(), raw);
+                        world->pushToAsyncEvents(event);
                     }, nullptr
             };
-            world->getNetworkContext().pushRequestToQueue(
-                    request);
+            world->getNetworkContext().pushRequestToQueue(request);
+
+            tile->commitTag("image");
+        };
+        return processor;
+    }
+
+    std::function<void(KCore::BaseWorld *, GenericTile *tile)> BuiltInResource::ImageCalculateMeta() {
+        auto processor = [](BaseWorld *world, GenericTile *tile) {
+            auto desc = tile->getTileDescription();
+            auto url = ((RemoteSource *) world->getSources()["base"])->bakeUrl(desc);
+            auto request = new KCore::NetworkRequest{
+                    url,
+                    [world, desc](const std::vector<uint8_t> &data) {
+                        auto image = STBImageUtils::decodeImageBuffer(data);
+
+                        auto raw = new uint8_t[image.size()];
+                        std::copy(image.begin(), image.end(), raw);
+
+                        auto event =
+                                KCore::MapEvent::MakeImageLoadedEvent(desc.getQuadcode(), raw);
+                    }, nullptr
+            };
+            world->getNetworkContext().pushRequestToQueue(request);
 
             tile->commitTag("image");
         };
@@ -98,6 +116,33 @@ namespace KCore {
                     }
             };
             world->getTaskContext().pushTaskToQueue(task);
+        };
+        return processor;
+    }
+
+    std::function<void(KCore::BaseWorld *, GenericTile *tile)> BuiltInResource::TerrainCalculate() {
+        auto processor = [](BaseWorld *world, GenericTile *tile) {
+            auto desc = tile->getTileDescription();
+            world->getTaskContext().pushTaskToQueue(new CallbackTask{
+                    [world, desc]() {
+                        auto tilecode = desc.getTilecode();
+                        auto zoom = tilecode.z, x = tilecode.x, y = tilecode.y;
+
+                        auto *source = (KCore::SRTMLocalSource *) world->getSources()["terrain"];
+                        auto result = source->getDataForTile(zoom, x, y, 128, 128);
+
+                        auto results = std::make_shared<std::vector<uint8_t>>();
+                        results->insert(results->begin(), result, result + (128 * 128 * 2));
+
+                        auto mesh = new GridMesh(1.0f, 1.0f, 127, 127);
+                        mesh->applyHeights(result, 127, 127);
+
+                        delete[] result;
+
+                        auto event = MapEvent::MakeTerrainEvent(desc.getQuadcode(), mesh);
+                        world->pushToAsyncEvents(event);
+                    }
+            });
         };
         return processor;
     }

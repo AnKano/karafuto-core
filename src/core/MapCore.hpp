@@ -77,10 +77,8 @@ namespace KCore {
 
     DllExport KCore::MapEvent *GetSyncEvents(KCore::MapCore *mapCore, int &length);
 
-    DllExport void ReleaseSyncEvents(MapEvent *syncArrayPtr);
+    DllExport KCore::MapEvent *GetAsyncEvents(KCore::MapCore *mapCore, int &length);
 
-    DllExport void *GetBufferPtrFromTag(KCore::MapCore *mapCore, const char *tag, int &length);
-
-    DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length);
+    DllExport void ReleaseEvents(MapEvent *syncArrayPtr);
     }
 }

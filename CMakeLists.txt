@@ -39,7 +39,7 @@ if (NOT EMSCRIPTEN)
     add_subdirectory(${THIRD_PARTY_DIR}/glm EXCLUDE_FROM_ALL)
     set(BUILD_SHARED_LIBS OFF)
 
-    add_library(libkcore ${CPP_HEADERS} ${CPP_SOURCES})
+    add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
     target_link_libraries(libkcore PUBLIC
             glfw
             libglew_static

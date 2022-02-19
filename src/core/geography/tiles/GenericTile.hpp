@@ -8,6 +8,8 @@ namespace KCore {
     class BaseWorld;
 
     class GenericTile {
+    public:
+        bool mInvoked = false;
     private:
         typedef std::function<void(BaseWorld *, GenericTile *)> GTFunc;
 
@@ -19,6 +21,9 @@ namespace KCore {
 
         std::mutex mResourceStatusLock;
         std::map<std::string, bool> mCompletedImmediateResource;
+
+        std::vector<std::string> mChildQuadcodes;
+        std::vector<std::string> mParentQuadcodes;
 
     public:
         GenericTile(BaseWorld *world, const TileDescription &description);
@@ -33,5 +38,9 @@ namespace KCore {
         void invokeResources();
 
         const TileDescription &getTileDescription();
+
+        void setChildQuadcodes(const std::vector<std::string> &quadcodes);
+
+        void setParentQuadcodes(const std::vector<std::string> &quadcodes);
     };
 }

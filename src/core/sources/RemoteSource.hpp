@@ -7,6 +7,7 @@
 #include <vector>
 #include "BaseSource.hpp"
 #include "../geography/TileDescription.hpp"
+#include "../../bindings.hpp"
 
 namespace KCore {
     class RemoteSource : public BaseSource {
@@ -19,45 +20,30 @@ namespace KCore {
          * mURLPrefix - "https://10.0.0.1:8080/"
          * mURLSuffix - ".png"
          **/
-        RemoteSource(std::string rawUrl) : mRawUrl(std::move(rawUrl)) {
-            restoreAffixes();
-        }
+        RemoteSource(std::string rawUrl);
 
         /** example prefix: "https://10.0.0.1:8080/"
          * example affix: ".png"
          * mRawUrl - "https://10.0.0.1:8080/{z}/{x}/{y}.png"
          **/
-        RemoteSource(std::string prefix, std::string affix)
-                : mURLPrefix(std::move(prefix)), mURLSuffix(std::move(affix)) {
-            restoreRawUrl();
-        }
+        RemoteSource(std::string prefix, std::string affix);
 
-        uint8_t *getDataForTile(uint8_t zoom, uint16_t x, uint16_t y, uint16_t slicesX, uint16_t slicesY) override {
-            return nullptr;
-        }
+        uint8_t *getDataForTile(uint8_t zoom, uint16_t x, uint16_t y, uint16_t slicesX, uint16_t slicesY) override;
 
-        std::string bakeUrl(const TileDescription &desc) {
-            return mURLPrefix + desc.tileURL() + mURLSuffix;
-        }
+        std::string bakeUrl(const TileDescription &desc);
 
     protected:
-        std::vector<std::shared_ptr<BaseSourcePart>> getRelatedPieces(uint8_t zoom, uint16_t x, uint16_t y) override {
-            return {};
-        }
+        std::vector<std::shared_ptr<BaseSourcePart>> getRelatedPieces(uint8_t zoom, uint16_t x, uint16_t y) override;
 
-        void createPartFile(const std::string &path) override {}
+        void createPartFile(const std::string &path) override;
 
     private:
-        void restoreRawUrl() {
-            mRawUrl = mURLPrefix + "{z}/{x}/{y}" + mURLSuffix;
-        }
+        void restoreRawUrl();
 
-        void restoreAffixes() {
-            auto payloadLength = std::string("{z}/{x}/{y}").length();
-            auto position = mRawUrl.find("{z}/{x}/{y}");
-
-            mURLPrefix = mRawUrl.substr(0, position);
-            mURLSuffix = mRawUrl.substr(position + payloadLength);
-        }
+        void restoreAffixes();
     };
+
+    extern "C" {
+    DllExport KCore::RemoteSource *CreateRemoteSource(const char* url);
+    }
 }

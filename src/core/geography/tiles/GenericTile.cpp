@@ -20,10 +20,19 @@ namespace KCore {
     void GenericTile::invokeResources() {
         for (const auto &[resource, resourceFunc]: mImmediateResource)
             resourceFunc(mWorld, this);
+        mInvoked = true;
     }
 
     const TileDescription &GenericTile::getTileDescription() {
         return mDescription;
+    }
+
+    void GenericTile::setChildQuadcodes(const std::vector<std::string> &quadcodes) {
+        mChildQuadcodes = quadcodes;
+    }
+
+    void GenericTile::setParentQuadcodes(const std::vector<std::string> &quadcodes) {
+        mParentQuadcodes = quadcodes;
     }
 
     void GenericTile::commitTag(const std::string &tag) {

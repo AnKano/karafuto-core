@@ -52,8 +52,12 @@ namespace KCore {
             mOriginPosition = {latitude, 0.0f, longitude};
         }
 
-        std::map<std::string, GenericTile *> &getCreatedTiles() {
+        std::map<std::string, GenericTile *> &getCreatedBaseTiles() {
             return mCreatedBaseTiles;
+        }
+
+        std::map<std::string, GenericTile *> &getCreatedMetaTiles() {
+            return mCreatedMetaTiles;
         }
 
         [[nodiscard]]
@@ -87,7 +91,12 @@ namespace KCore {
 
         virtual void update() {
             calculateTiles();
-            makeEvents();
+            performStages();
+        }
+
+        [[nodiscard]]
+        const std::map<std::string, BaseSource *> &getSources() const {
+            return mSources;
         }
 
         void registerSource(BaseSource *source, const std::string &as) {
@@ -148,6 +157,26 @@ namespace KCore {
             return prevTilesCopy;
         }
 
+        std::map<std::string, TileDescription> getCurrentMetaTiles() {
+            std::map<std::string, TileDescription> currentTilesCopy{};
+
+            for (const auto &[key, _]: mCurrMetaTiles) {
+                currentTilesCopy[key] = mCreatedMetaTiles[key]->getTileDescription();
+            }
+
+            return currentTilesCopy;
+        }
+
+        std::map<std::string, TileDescription> getPreviousMetaTiles() {
+            std::map<std::string, TileDescription> prevTilesCopy{};
+
+            for (const auto &[key, _]: mPrevMetaTiles) {
+                prevTilesCopy[key] = mCreatedMetaTiles[key]->getTileDescription();
+            }
+
+            return prevTilesCopy;
+        }
+
         std::map<std::string, BaseSource *> &getSources() {
             return mSources;
         }
@@ -161,7 +190,7 @@ namespace KCore {
         }
 
     protected:
-        virtual void makeEvents() = 0;
+        virtual void performStages() = 0;
 
         virtual void createTileResources(GenericTile *tile) = 0;
 
@@ -193,26 +222,12 @@ namespace KCore {
                 count++;
             }
 
-            auto condition = [this](const TileDescription &tile) {
-                if (tile.getVisibility() != Visible) return false;
-                const auto center = tile.getCenter();
-                auto distance = glm::length(glm::vec3(center.x, 0, center.y) - mOriginPosition);
-                return distance <= 500000.0f;
-            };
-
-            for (const auto &item: tiles) {
-                auto quadcode = item.getQuadcode();
-                if (condition(item)) {
-                    if (mCreatedBaseTiles.count(quadcode) == 0) {
-                        mCreatedBaseTiles[quadcode] = new GenericTile(this, item);
-                        createTileResources(mCreatedBaseTiles[quadcode]);
-                        mCreatedBaseTiles[quadcode]->invokeResources();
-                    }
-
-                    mCurrBaseTiles[quadcode] = true;
-                }
-            }
+            postTileCalculation(tiles);
         }
+
+        virtual void postTileCalculation(const std::vector<TileDescription> &tiles) = 0;
+
+        virtual void postMetaTileCalculation() = 0;
 
         bool screenSpaceError(TileDescription &tile, float quality) {
             const auto &quadcode = tile.getQuadcode();

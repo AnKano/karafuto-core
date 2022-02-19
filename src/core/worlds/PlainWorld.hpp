@@ -16,12 +16,17 @@ namespace KCore {
 
         PlainWorld(float latitude, float longitude);
 
-        void makeEvents() override;
+        void performStages() override;
 
         void createTileResources(GenericTile *tile) override;
 
     private:
         void calculateTiles() override;
+
+    protected:
+        void postTileCalculation(const std::vector<TileDescription> &tiles) override;
+
+        void postMetaTileCalculation() override;
     };
 
     extern "C" {
