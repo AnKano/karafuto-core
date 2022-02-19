@@ -6,7 +6,7 @@
 #include "../../MapCore.hpp"
 
 namespace KCore {
-    RenderContext::RenderContext(MapCore *core) : mCore_ptr(core) {
+    RenderContext::RenderContext() {
         mRenderThread = std::make_unique<std::thread>([this]() {
             if (!glfwInit())
                 throw std::runtime_error("Can't instantiate glfw module!");
@@ -89,20 +89,20 @@ namespace KCore {
     }
 
     void RenderContext::loadEverythingToGPU() {
-        std::lock_guard<std::mutex> lock{mTextureQueueLock};
-
-        for (auto &[key, value]: mTexturesQueue) {
-            auto buffer = value.get();
-            auto texture = std::make_shared<KCore::OpenGL::Texture>();
-            texture->setData(256, 256,
-                             GL_RGB, GL_RGB, GL_UNSIGNED_BYTE,
-                             buffer->data());
-            mGPUTextures[key] = texture;
-
-            value.reset();
-        }
-
-        mTexturesQueue.clear();
+//        std::lock_guard<std::mutex> lock{mTextureQueueLock};
+//
+//        for (auto &[key, value]: mTexturesQueue) {
+//            auto buffer = value.get();
+//            auto texture = std::make_shared<KCore::OpenGL::Texture>();
+//            texture->setData(256, 256,
+//                             GL_RGB, GL_RGB, GL_UNSIGNED_BYTE,
+//                             buffer->data());
+//            mGPUTextures[key] = texture;
+//
+//            value.reset();
+//        }
+//
+//        mTexturesQueue.clear();
     }
 
     void RenderContext::runRenderLoop() {

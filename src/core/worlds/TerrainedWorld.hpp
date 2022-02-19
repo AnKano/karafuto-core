@@ -15,6 +15,9 @@
 
 namespace KCore {
     class TerrainedWorld : public BaseWorld {
+    private:
+        RenderContext mRenderContext{};
+
     public:
         TerrainedWorld();
 

@@ -15,10 +15,10 @@ namespace KCore {
             auto request = new KCore::NetworkRequest{
                     url,
                     [world, desc](const std::vector<uint8_t> &data) {
-                        auto image = STBImageUtils::decodeImageBuffer(data);
+//                        auto image = STBImageUtils::decodeImageBuffer(data);
 
-                        auto raw = new uint8_t[image.size()];
-                        std::copy(image.begin(), image.end(), raw);
+                        auto raw = new uint8_t[data.size()];
+                        std::copy(data.begin(), data.end(), raw);
 
                         auto event =
                                 KCore::MapEvent::MakeImageLoadedEvent(desc.getQuadcode(), raw);

@@ -34,7 +34,6 @@ namespace KCore {
     class RenderContext {
     private:
         GLFWwindow *mWindowContext_ptr;
-        MapCore *mCore_ptr;
 
         std::shared_ptr<KCore::OpenGL::Shader> mShader;
         std::shared_ptr<KCore::OpenGL::Mesh> mMesh;
@@ -53,7 +52,7 @@ namespace KCore {
         bool mReadyToBeDead = false;
 
     public:
-        RenderContext(MapCore *core);
+        RenderContext();
 
         ~RenderContext();
 
