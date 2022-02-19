@@ -34,10 +34,8 @@ namespace KCore {
 
             tile->commitTag("image");
         };
-
         return processor;
     }
-
 
     std::function<void(KCore::BaseWorld *, GenericTile *tile)> BuiltInResource::JSONCalculate() {
         auto processor = [](BaseWorld *world, GenericTile *tile) {
@@ -101,7 +99,6 @@ namespace KCore {
             };
             world->getTaskContext().pushTaskToQueue(task);
         };
-
         return processor;
     }
 }

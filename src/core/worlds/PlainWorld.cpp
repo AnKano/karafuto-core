@@ -1,5 +1,4 @@
 #include "PlainWorld.hpp"
-#include "../misc/STBImageUtils.hpp"
 
 namespace KCore {
     PlainWorld::PlainWorld() : BaseWorld(0.0f, 0.0f) {}
@@ -19,6 +18,11 @@ namespace KCore {
             item->invoke(this);
 
         mIteration++;
+    }
+
+    void PlainWorld::createTileResources(GenericTile *tile) {
+        tile->registerImmediateResource("image", BuiltInResource::ImageCalculate());
+        tile->registerImmediateResource("json", BuiltInResource::JSONCalculate());
     }
 
     extern "C" {

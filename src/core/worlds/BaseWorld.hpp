@@ -163,6 +163,8 @@ namespace KCore {
     protected:
         virtual void makeEvents() = 0;
 
+        virtual void createTileResources(GenericTile *tile) = 0;
+
         virtual void calculateTiles() {
             // store old tiles and clear up current
             mPrevBaseTiles = std::move(mCurrBaseTiles);
@@ -203,13 +205,7 @@ namespace KCore {
                 if (condition(item)) {
                     if (mCreatedBaseTiles.count(quadcode) == 0) {
                         mCreatedBaseTiles[quadcode] = new GenericTile(this, item);
-                        mCreatedBaseTiles[quadcode]->registerImmediateResource(
-                                "image", BuiltInResource::ImageCalculate()
-                        );
-                        mCreatedBaseTiles[quadcode]->registerImmediateResource(
-                                "json", BuiltInResource::JSONCalculate()
-                        );
-
+                        createTileResources(mCreatedBaseTiles[quadcode]);
                         mCreatedBaseTiles[quadcode]->invokeResources();
                     }
 

@@ -18,6 +18,8 @@ namespace KCore {
 
         void makeEvents() override;
 
+        void createTileResources(GenericTile *tile) override;
+
     private:
         void calculateTiles() override;
     };
