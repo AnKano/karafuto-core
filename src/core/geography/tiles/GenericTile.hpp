@@ -42,5 +42,9 @@ namespace KCore {
         void setChildQuadcodes(const std::vector<std::string> &quadcodes);
 
         void setParentQuadcodes(const std::vector<std::string> &quadcodes);
+
+        const std::vector<std::string> &getChildQuadcodes();
+
+        const std::vector<std::string> &getParentQuadcodes();
     };
 }

@@ -20,7 +20,7 @@ namespace KCore {
         mIteration++;
     }
 
-    void PlainWorld::createTileResources(GenericTile *tile) {
+    void PlainWorld::createBaseTileResources(GenericTile *tile) {
         tile->registerImmediateResource("image", BuiltInResource::ImageCalculate());
         tile->registerImmediateResource("json", BuiltInResource::JSONCalculate());
     }
@@ -38,7 +38,7 @@ namespace KCore {
             if (condition(item)) {
                 if (mCreatedBaseTiles.count(quadcode) == 0) {
                     mCreatedBaseTiles[quadcode] = new GenericTile(this, item);
-                    createTileResources(mCreatedBaseTiles[quadcode]);
+                    createBaseTileResources(mCreatedBaseTiles[quadcode]);
                     mCreatedBaseTiles[quadcode]->invokeResources();
                 }
 

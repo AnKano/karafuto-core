@@ -16,7 +16,7 @@
 namespace KCore {
     class TerrainedWorld : public BaseWorld {
     private:
-        RenderContext mRenderContext{};
+        RenderContext mRenderContext{this};
 
     public:
         TerrainedWorld();
@@ -24,6 +24,8 @@ namespace KCore {
         TerrainedWorld(float latitude, float longitude);
 
         void update() override;
+
+        RenderContext &getRenderContext();
 
     private:
         std::vector<TileDescription> separateTileToDepth(const TileDescription &tile, uint8_t depth);
@@ -35,7 +37,9 @@ namespace KCore {
     protected:
         void performStages() override;
 
-        void createTileResources(GenericTile *tile) override;
+        void createBaseTileResources(GenericTile *tile) override;
+
+        void createMetaTileResources(GenericTile *tile);
 
         void postTileCalculation(const std::vector<TileDescription> &tiles) override;
 

@@ -67,5 +67,13 @@ namespace KCore {
         for (const auto &item: tasks)
             item(mWorld, this);
     }
+
+    const std::vector<std::string> &GenericTile::getChildQuadcodes() {
+        return mChildQuadcodes;
+    }
+
+    const std::vector<std::string> &GenericTile::getParentQuadcodes() {
+        return mParentQuadcodes;
+    }
 }
 

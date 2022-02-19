@@ -38,10 +38,10 @@ namespace KCore {
             return event;
         }
 
-        static MapEvent MakeRenderLoadedEvent(const std::string &quadcode) {
+        static MapEvent MakeRenderLoadedEvent(const std::string &quadcode, void* payloadPtr) {
             MapEvent event{};
             event.type = ContentLoadedRender;
-            event.payload = nullptr;
+            event.payload = payloadPtr;
             std::strcpy(event.quadcode, quadcode.c_str());
 
             return event;

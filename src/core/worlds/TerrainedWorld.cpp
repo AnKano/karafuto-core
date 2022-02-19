@@ -53,6 +53,11 @@ namespace KCore {
             mCurrMetaTiles[key] = true;
         }
 
+        auto toRenderContext = std::vector<GenericTile*>();
+        for (const auto &[quadcode, _]: mCurrMetaTiles)
+            toRenderContext.push_back(mCreatedMetaTiles[quadcode]);
+        mRenderContext.setCurrentTileState(toRenderContext);
+
         postMetaTileCalculation();
     }
 
@@ -69,6 +74,8 @@ namespace KCore {
             if (condition(item)) {
                 if (mCreatedBaseTiles.count(quadcode) == 0)
                     mCreatedBaseTiles[quadcode] = new GenericTile(this, item);
+                createBaseTileResources(mCreatedBaseTiles[quadcode]);
+                mCreatedBaseTiles[quadcode]->invokeResources();
                 mCurrBaseTiles[quadcode] = true;
             }
         }
@@ -79,7 +86,7 @@ namespace KCore {
             auto &tile = mCreatedMetaTiles[quadcode];
 
             if (!tile->mInvoked) {
-                createTileResources(tile);
+                createMetaTileResources(tile);
                 tile->invokeResources();
             }
         }
@@ -142,7 +149,11 @@ namespace KCore {
         mIteration++;
     }
 
-    void TerrainedWorld::createTileResources(GenericTile *tile) {
+    void TerrainedWorld::createBaseTileResources(GenericTile *tile) {
+        tile->registerImmediateResource("image", BuiltInResource::ImageCalculateMeta());
+    }
+
+    void TerrainedWorld::createMetaTileResources(GenericTile *tile) {
         tile->registerImmediateResource("terrain", BuiltInResource::TerrainCalculate());
     }
 
@@ -150,6 +161,10 @@ namespace KCore {
         BaseWorld::update();
         calculateMetaTiles();
         performStages();
+    }
+
+    RenderContext &TerrainedWorld::getRenderContext() {
+        return mRenderContext;
     }
 
     extern "C" {

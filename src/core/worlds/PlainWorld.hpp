@@ -18,7 +18,7 @@ namespace KCore {
 
         void performStages() override;
 
-        void createTileResources(GenericTile *tile) override;
+        void createBaseTileResources(GenericTile *tile) override;
 
     private:
         void calculateTiles() override;

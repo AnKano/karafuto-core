@@ -6,6 +6,7 @@
 #include "../../../contexts/network/NetworkRequest.hpp"
 #include "../../../worlds/BaseWorld.hpp"
 #include "../../../meshes/GridMesh.hpp"
+#include "../../../worlds/TerrainedWorld.hpp"
 
 namespace KCore {
     std::function<void(KCore::BaseWorld *, GenericTile *tile)> BuiltInResource::ImageCalculate() {
@@ -15,10 +16,10 @@ namespace KCore {
             auto request = new KCore::NetworkRequest{
                     url,
                     [world, desc](const std::vector<uint8_t> &data) {
-//                        auto image = STBImageUtils::decodeImageBuffer(data);
+                        auto image = STBImageUtils::decodeImageBuffer(data);
 
-                        auto raw = new uint8_t[data.size()];
-                        std::copy(data.begin(), data.end(), raw);
+                        auto raw = new uint8_t[image.size()];
+                        std::copy(image.begin(), image.end(), raw);
 
                         auto event =
                                 KCore::MapEvent::MakeImageLoadedEvent(desc.getQuadcode(), raw);
@@ -39,13 +40,10 @@ namespace KCore {
             auto request = new KCore::NetworkRequest{
                     url,
                     [world, desc](const std::vector<uint8_t> &data) {
+                        auto convWorld = (TerrainedWorld *) world;
                         auto image = STBImageUtils::decodeImageBuffer(data);
 
-                        auto raw = new uint8_t[image.size()];
-                        std::copy(image.begin(), image.end(), raw);
-
-                        auto event =
-                                KCore::MapEvent::MakeImageLoadedEvent(desc.getQuadcode(), raw);
+                        convWorld->getRenderContext().storeTextureInContext(image, desc.getQuadcode());
                     }, nullptr
             };
             world->getNetworkContext().pushRequestToQueue(request);

@@ -99,7 +99,7 @@ namespace KCore {
     protected:
         virtual void performStages() = 0;
 
-        virtual void createTileResources(GenericTile *tile) = 0;
+        virtual void createBaseTileResources(GenericTile *tile) = 0;
 
         virtual void calculateTiles();
 

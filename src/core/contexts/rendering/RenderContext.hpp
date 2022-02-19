@@ -3,7 +3,9 @@
 #include <GL/glew.h>
 
 #if defined(_MSC_VER)
-    #include <Windows.h>
+
+#include <Windows.h>
+
 #endif
 
 #define GLFW_INCLUDE_NONE
@@ -29,21 +31,23 @@
 using namespace std::chrono_literals;
 
 namespace KCore {
-    class MapCore;
+    class BaseWorld;
+
+    class GenericTile;
 
     class RenderContext {
     private:
+        BaseWorld *mWorldAdapter;
         GLFWwindow *mWindowContext_ptr;
 
         std::shared_ptr<KCore::OpenGL::Shader> mShader;
         std::shared_ptr<KCore::OpenGL::Mesh> mMesh;
         std::shared_ptr<KCore::OpenGL::ColorFramebuffer> mFramebuffer;
 
-        Queue<RenderTask> mQueue;
-
-        std::map<std::string, std::shared_ptr<KCore::OpenGL::Texture>> mGPUTextures;
-        std::vector<std::pair<std::string, std::shared_ptr<std::vector<uint8_t>>>> mTexturesQueue;
-        std::mutex mTextureQueueLock;
+        std::mutex mTexturesLock, mTileStateLock;
+        std::vector<KCore::GenericTile *> mCurrentTileState;
+        std::map<std::string, std::vector<uint8_t>> mInRAMNotConvertedTextures;
+        std::map<std::string, std::shared_ptr<KCore::OpenGL::Texture>> mInGPUTextures;
 
         std::unique_ptr<std::thread> mRenderThread;
 
@@ -52,7 +56,7 @@ namespace KCore {
         bool mReadyToBeDead = false;
 
     public:
-        RenderContext();
+        RenderContext(BaseWorld *world);
 
         ~RenderContext();
 
@@ -67,14 +71,9 @@ namespace KCore {
         [[nodiscard]]
         bool getWorkingStatus() const;
 
-        void pushTaskToQueue(RenderTask *task);
+        void storeTextureInContext(const std::vector<uint8_t> &data, const std::string &quadcode);
 
-        void pushTextureDataToGPUQueue(const std::string &basicString,
-                                       const std::shared_ptr<std::vector<uint8_t>> &sharedPtr);
-
-        void loadEverythingToGPU();
-
-        void clearQueue();
+        void setCurrentTileState(const std::vector<KCore::GenericTile *> &tiles);
 
     private:
         void runRenderLoop();
@@ -87,9 +86,10 @@ namespace KCore {
 
         void dispose();
 
-        static glm::vec4 getRandomGreyscale();
+        static glm::vec4 getRandomGreyscaleColor();
 
-        bool relatedTexturesAvailable(const std::shared_ptr<RenderTask> &task);
+        const std::vector<KCore::GenericTile *> &getCurrentTileState();
+//        bool relatedTexturesAvailable(const std::shared_ptr<RenderTask> &task);
 
         static void prepareTransformForChild(
                 const std::string &rootQuadcode, const std::string &childQuadcode,
@@ -105,5 +105,9 @@ namespace KCore {
                 const std::string &quadcode,
                 const glm::mat4 &scaleMatrix, const glm::mat4 &translationMatrix
         );
+
+        void loadTileTexturesToGPU(GenericTile *tile);
+
+        void unloadTexturesFromGPU();
     };
 }

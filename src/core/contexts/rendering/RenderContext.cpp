@@ -6,7 +6,8 @@
 #include "../../MapCore.hpp"
 
 namespace KCore {
-    RenderContext::RenderContext() {
+    RenderContext::RenderContext(BaseWorld *world) {
+        mWorldAdapter = world;
         mRenderThread = std::make_unique<std::thread>([this]() {
             if (!glfwInit())
                 throw std::runtime_error("Can't instantiate glfw module!");
@@ -74,21 +75,7 @@ namespace KCore {
         return mReadyToBeDead;
     }
 
-    void RenderContext::pushTaskToQueue(RenderTask *task) {
-        mQueue.pushTask(task);
-    }
-
-    void RenderContext::clearQueue() {
-        mQueue.clear();
-    }
-
-    void RenderContext::pushTextureDataToGPUQueue(const std::string &basicString,
-                                                  const std::shared_ptr<std::vector<uint8_t>> &sharedPtr) {
-        std::lock_guard<std::mutex> lock{mTextureQueueLock};
-        mTexturesQueue.emplace_back(basicString, sharedPtr);
-    }
-
-    void RenderContext::loadEverythingToGPU() {
+//    void RenderContext::loadEverythingToGPU() {
 //        std::lock_guard<std::mutex> lock{mTextureQueueLock};
 //
 //        for (auto &[key, value]: mTexturesQueue) {
@@ -103,48 +90,76 @@ namespace KCore {
 //        }
 //
 //        mTexturesQueue.clear();
-    }
+//    }
 
     void RenderContext::runRenderLoop() {
         while (!mShouldClose) {
-            auto task = mQueue.popTask();
-            while (task) {
-                loadEverythingToGPU();
 
-                // clear canvas and bind shader
-                mFramebuffer->bindAndClear();
-                mShader->bind();
+            // clear canvas and bind shader
+            mFramebuffer->bindAndClear();
+            mShader->bind();
 
-                if (!relatedTexturesAvailable(task)) continue;
+            auto state = getCurrentTileState();
 
-                auto rootQuadcode = task->mQuadcode;
+            for (const auto &tile: state) {
+                loadTileTexturesToGPU(tile);
+
+                auto rootQuadcode = tile->getTileDescription().getQuadcode();
                 glm::mat4 scaleMatrix, translationMatrix;
-                for (const auto &item: task->mChilds) {
+                for (const auto &item: tile->getChildQuadcodes()) {
+                    if (mInRAMNotConvertedTextures.count(item) == 0) continue;
                     prepareTransformForChild(rootQuadcode, item, scaleMatrix, translationMatrix);
                     drawTileToTexture(item, scaleMatrix, translationMatrix);
                 }
-                for (const auto &item: task->mParents) {
+                for (const auto &item: tile->getParentQuadcodes()) {
+                    if (mInRAMNotConvertedTextures.count(item) == 0) continue;
                     prepareTransformForParent(rootQuadcode, item, scaleMatrix, translationMatrix);
                     drawTileToTexture(item, scaleMatrix, translationMatrix);
                 }
 
                 auto buffer = mFramebuffer->getColorAttachTexture()->getTextureData();
-                auto buffer_ptr = std::make_shared<std::vector<uint8_t>>(buffer);
-//                mCore_ptr->mDataStash.setOrReplace(task->mQuadcode + ".meta.image", buffer_ptr);
-//
-//                mCore_ptr->pushEventToContentQueue(MapEvent::MakeRenderLoadedEvent(task->mQuadcode));
 
-                // get next task or nullptr
-                task = mQueue.popTask();
+                auto rawBuffer = new uint8_t[buffer.size()];
+                std::copy(buffer.begin(), buffer.end(), rawBuffer);
 
-                glfwPollEvents();
+                mWorldAdapter->pushToAsyncEvents(MapEvent::MakeRenderLoadedEvent(rootQuadcode, rawBuffer));
+
+                unloadTexturesFromGPU();
             }
+
+            glfwPollEvents();
 
             std::this_thread::sleep_for(mCheckInterval);
         }
 
         dispose();
         mReadyToBeDead = true;
+    }
+
+    void RenderContext::loadTileTexturesToGPU(GenericTile *tile) {
+        for (const auto &item: tile->getChildQuadcodes()) {
+            if (mInRAMNotConvertedTextures.count(item) == 0) continue;
+            auto &raw = mInRAMNotConvertedTextures[item];
+
+            auto texture = std::make_shared<KCore::OpenGL::Texture>();
+            texture->setData(256, 256, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE,
+                             raw.data());
+            mInGPUTextures[item] = texture;
+        }
+
+        for (const auto &item: tile->getParentQuadcodes()) {
+            if (mInRAMNotConvertedTextures.count(item) == 0) continue;
+            auto &raw = mInRAMNotConvertedTextures[item];
+
+            auto texture = std::make_shared<KCore::OpenGL::Texture>();
+            texture->setData(256, 256, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE,
+                             raw.data());
+            mInGPUTextures[item] = texture;
+        }
+    }
+
+    void RenderContext::unloadTexturesFromGPU() {
+        mInGPUTextures.clear();
     }
 
     void RenderContext::initShader() {
@@ -207,26 +222,12 @@ namespace KCore {
         glfwTerminate();
     }
 
-    glm::vec4 RenderContext::getRandomGreyscale() {
+    glm::vec4 RenderContext::getRandomGreyscaleColor() {
         auto r = ((float) rand() / (RAND_MAX));
         auto g = ((float) rand() / (RAND_MAX));
         auto b = ((float) rand() / (RAND_MAX));
 
         return {r, g, b, 1.0f};
-    }
-
-    bool RenderContext::relatedTexturesAvailable(const std::shared_ptr<RenderTask> &task) {
-        // check child nodes
-        for (const auto &item: task->mChilds)
-            if (mGPUTextures.find(item + ".common.image") == std::end(mGPUTextures))
-                return false;
-
-        // check parent nodes
-        for (const auto &item: task->mParents)
-            if (mGPUTextures.find(item + ".common.image") == std::end(mGPUTextures))
-                return false;
-
-        return true;
     }
 
     void RenderContext::prepareTransformForChild(const std::string &rootQuadcode, const std::string &childQuadcode,
@@ -298,12 +299,27 @@ namespace KCore {
         int32_t u_diffuse = mShader->uniform_position("u_diffuse");
 
         uint8_t slot = 0;
-        mGPUTextures[quadcode + ".common.image"]->bind(slot);
+        mInGPUTextures[quadcode]->bind(slot);
         glUniform1i(u_diffuse, slot);
-        glUniform4fv(u_color, 1, glm::value_ptr(getRandomGreyscale()));
+        glUniform4fv(u_color, 1, glm::value_ptr(getRandomGreyscaleColor()));
         glUniformMatrix4fv(u_scale_matrix_position, 1, GL_FALSE, glm::value_ptr(scaleMatrix));
         glUniformMatrix4fv(u_translation_matrix_position, 1, GL_FALSE, glm::value_ptr(translationMatrix));
 
         mMesh->draw();
+    }
+
+    void RenderContext::storeTextureInContext(const std::vector<uint8_t> &data, const std::string &quadcode) {
+        std::lock_guard<std::mutex> lock{mTexturesLock};
+        mInRAMNotConvertedTextures[quadcode] = data;
+    }
+
+    void RenderContext::setCurrentTileState(const std::vector<KCore::GenericTile *> &tiles) {
+        std::lock_guard<std::mutex> lock{mTileStateLock};
+        mCurrentTileState = tiles;
+    }
+
+    const std::vector<KCore::GenericTile *> &RenderContext::getCurrentTileState() {
+        std::lock_guard<std::mutex> lock{mTileStateLock};
+        return mCurrentTileState;
     }
 }
