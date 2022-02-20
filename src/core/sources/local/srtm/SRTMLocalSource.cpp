@@ -58,6 +58,7 @@ namespace KCore {
         auto relatedToEastFiles = getRelatedPieces(zoom, x, y + 1);
 
         auto *package = new uint16_t[slicesX * slicesY];
+        std::memset(package, 0, slicesX * slicesY * sizeof(uint16_t));
 
         collectTileKernel(relatedFiles, package, minimalX, minimalY, offsetX, offsetY, slicesX, slicesY);
 
