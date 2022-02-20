@@ -14,9 +14,11 @@ namespace KCore {
         int mainShapeCoordsCount;
         int holeShapeCoordsCount;
 
-        glm::vec3* mainShapePositions;
-        glm::vec3* holeShapePositions;
+        glm::vec3 *mainShapePositions;
+        glm::vec3 *holeShapePositions;
 
-        BaseMesh* mesh;
+        BaseMesh *mesh;
+
+        float height;
     };
 }

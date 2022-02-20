@@ -139,4 +139,13 @@ namespace KCore {
     DllExport void ReleaseEvents(MapEvent *syncArrayPtr) {
         delete[] syncArrayPtr;
     }
+
+    DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length) {
+        if (points == nullptr)
+            length = 0;
+        else
+            length = points->size();
+
+        return points->data();
+    }
 }

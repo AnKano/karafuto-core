@@ -53,7 +53,7 @@ namespace KCore {
             mCurrMetaTiles[key] = true;
         }
 
-        auto toRenderContext = std::vector<GenericTile*>();
+        auto toRenderContext = std::vector<GenericTile *>();
         for (const auto &[quadcode, _]: mCurrMetaTiles)
             toRenderContext.push_back(mCreatedMetaTiles[quadcode]);
         mRenderContext.setCurrentTileState(toRenderContext);
@@ -72,10 +72,11 @@ namespace KCore {
         for (const auto &item: tiles) {
             auto quadcode = item.getQuadcode();
             if (condition(item)) {
-                if (mCreatedBaseTiles.count(quadcode) == 0)
+                if (mCreatedBaseTiles.count(quadcode) == 0) {
                     mCreatedBaseTiles[quadcode] = new GenericTile(this, item);
-                createBaseTileResources(mCreatedBaseTiles[quadcode]);
-                mCreatedBaseTiles[quadcode]->invokeResources();
+                    createBaseTileResources(mCreatedBaseTiles[quadcode]);
+                    mCreatedBaseTiles[quadcode]->invokeResources();
+                }
                 mCurrBaseTiles[quadcode] = true;
             }
         }
@@ -155,6 +156,7 @@ namespace KCore {
 
     void TerrainedWorld::createMetaTileResources(GenericTile *tile) {
         tile->registerImmediateResource("terrain", BuiltInResource::TerrainCalculate());
+        tile->registerImmediateResource("json", BuiltInResource::JSONWithTerrainAdaptation());
     }
 
     void TerrainedWorld::update() {

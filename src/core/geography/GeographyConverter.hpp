@@ -91,5 +91,15 @@ namespace KCore {
             float n = M_PI - 2.0f * M_PI * y / powf(2.0f, z);
             return 180.0f / (float) M_PI * (float) atan(0.5f * (expf(n) - expf(-n)));
         }
+
+        static int lonToTileX(double lon, int z) {
+            return (int) (floor((lon + 180.0) / 360.0 * (1 << z)));
+        }
+
+        static int lat2TileY(double lat, int z) {
+            double latrad = lat * M_PI / 180.0;
+            return (int) (floor((1.0 - asinh(tan(latrad)) / M_PI) / 2.0 * (1 << z)));
+        }
+
     };
 }

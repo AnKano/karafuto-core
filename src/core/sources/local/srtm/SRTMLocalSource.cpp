@@ -2,6 +2,46 @@
 #include "../../../geography/GeographyConverter.hpp"
 
 namespace KCore {
+    uint16_t SRTMLocalSource::getElevationForLatLonPoint(float latitude, float longitude, int scale) {
+        auto zoom = scale;
+        auto x = GeographyConverter::lonToTileX(latitude, scale);
+        auto y = GeographyConverter::lat2TileY(longitude, scale);
+
+        auto relatedFiles = getRelatedPieces(zoom, x, y);
+
+        auto pX = latitude;
+        auto pY = longitude;
+
+        uint16_t elevation = 0;
+        for (const auto &item: relatedFiles) {
+            auto *raster = (SRTMFileSourcePiece *) item.get();
+
+            double minimalRasterX = raster->mXOrigin;
+            double maximalRasterY = raster->mYOrigin;
+            double maximalRasterX = raster->mXOpposite;
+            double minimalRasterY = raster->mYOpposite;
+
+            if (minimalRasterX > pX || pX > maximalRasterX ||
+                minimalRasterY > pY || pY > maximalRasterY)
+                continue;
+
+            // select raster that contain point
+            // hgt-files start from NW corner, but we work in SW-initial
+            double imx = pX - raster->mXOrigin;
+            double imy = raster->mYOrigin - pY;
+
+            uint32_t row = int(imx / raster->mPixelWidth);
+            uint32_t col = int(imy / raster->mPixelHeight);
+
+            uint32_t offset = sizeof(uint16_t) * ((col * 3601) + row);
+
+            elevation = (raster->mData[offset] << 8) | raster->mData[offset + 1];
+            break;
+        }
+
+        return elevation;
+    }
+
     uint8_t *SRTMLocalSource::getDataForTile(uint8_t zoom, uint16_t x, uint16_t y, uint16_t slicesX, uint16_t slicesY) {
         auto minimalX = GeographyConverter::tileToLon(x, zoom);
         auto maximalY = GeographyConverter::tileToLat(y, zoom);
@@ -18,7 +58,6 @@ namespace KCore {
         auto relatedToEastFiles = getRelatedPieces(zoom, x, y + 1);
 
         auto *package = new uint16_t[slicesX * slicesY];
-        memset(package, 0, slicesX * slicesY * sizeof(uint16_t));
 
         collectTileKernel(relatedFiles, package, minimalX, minimalY, offsetX, offsetY, slicesX, slicesY);
 

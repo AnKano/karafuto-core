@@ -80,5 +80,7 @@ namespace KCore {
     DllExport KCore::MapEvent *GetAsyncEvents(KCore::MapCore *mapCore, int &length);
 
     DllExport void ReleaseEvents(MapEvent *syncArrayPtr);
+
+    DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length);
     }
 }

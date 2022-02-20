@@ -8,6 +8,7 @@
 namespace KCore {
     RenderContext::RenderContext(BaseWorld *world) {
         mWorldAdapter = world;
+
         mRenderThread = std::make_unique<std::thread>([this]() {
             if (!glfwInit())
                 throw std::runtime_error("Can't instantiate glfw module!");
@@ -75,44 +76,28 @@ namespace KCore {
         return mReadyToBeDead;
     }
 
-//    void RenderContext::loadEverythingToGPU() {
-//        std::lock_guard<std::mutex> lock{mTextureQueueLock};
-//
-//        for (auto &[key, value]: mTexturesQueue) {
-//            auto buffer = value.get();
-//            auto texture = std::make_shared<KCore::OpenGL::Texture>();
-//            texture->setData(256, 256,
-//                             GL_RGB, GL_RGB, GL_UNSIGNED_BYTE,
-//                             buffer->data());
-//            mGPUTextures[key] = texture;
-//
-//            value.reset();
-//        }
-//
-//        mTexturesQueue.clear();
-//    }
-
     void RenderContext::runRenderLoop() {
         while (!mShouldClose) {
 
             // clear canvas and bind shader
-            mFramebuffer->bindAndClear();
             mShader->bind();
 
             auto state = getCurrentTileState();
 
             for (const auto &tile: state) {
+                mFramebuffer->bindAndClear();
+
                 loadTileTexturesToGPU(tile);
 
                 auto rootQuadcode = tile->getTileDescription().getQuadcode();
                 glm::mat4 scaleMatrix, translationMatrix;
                 for (const auto &item: tile->getChildQuadcodes()) {
-                    if (mInRAMNotConvertedTextures.count(item) == 0) continue;
+                    if (mInGPUTextures.count(item) == 0) continue;
                     prepareTransformForChild(rootQuadcode, item, scaleMatrix, translationMatrix);
                     drawTileToTexture(item, scaleMatrix, translationMatrix);
                 }
                 for (const auto &item: tile->getParentQuadcodes()) {
-                    if (mInRAMNotConvertedTextures.count(item) == 0) continue;
+                    if (mInGPUTextures.count(item) == 0) continue;
                     prepareTransformForParent(rootQuadcode, item, scaleMatrix, translationMatrix);
                     drawTileToTexture(item, scaleMatrix, translationMatrix);
                 }
@@ -138,7 +123,9 @@ namespace KCore {
 
     void RenderContext::loadTileTexturesToGPU(GenericTile *tile) {
         for (const auto &item: tile->getChildQuadcodes()) {
-            if (mInRAMNotConvertedTextures.count(item) == 0) continue;
+            if (mInRAMNotConvertedTextures.count(item) == 0) {
+                continue;
+            }
             auto &raw = mInRAMNotConvertedTextures[item];
 
             auto texture = std::make_shared<KCore::OpenGL::Texture>();

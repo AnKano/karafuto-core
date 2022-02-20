@@ -51,7 +51,7 @@ namespace KCore {
 
         std::unique_ptr<std::thread> mRenderThread;
 
-        std::chrono::milliseconds mCheckInterval = 1ms;
+        std::chrono::milliseconds mCheckInterval = 1s;
         bool mShouldClose = false;
         bool mReadyToBeDead = false;
 

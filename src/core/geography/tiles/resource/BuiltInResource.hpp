@@ -15,5 +15,7 @@ namespace KCore {
         std::function<void(KCore::BaseWorld *, GenericTile *tile)> JSONCalculate();
 
         std::function<void(KCore::BaseWorld *, GenericTile *tile)> TerrainCalculate();
+
+        std::function<void(KCore::BaseWorld *, GenericTile *tile)> JSONWithTerrainAdaptation();
     }
 }
