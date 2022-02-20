@@ -9,26 +9,27 @@ namespace KCore {
     RenderContext::RenderContext(BaseWorld *world) {
         mWorldAdapter = world;
 
-        mRenderThread = std::make_unique<std::thread>([this]() {
-            if (!glfwInit())
-                throw std::runtime_error("Can't instantiate glfw module!");
+        if (!glfwInit())
+            throw std::runtime_error("Can't instantiate glfw module!");
 
-            // invisible window actually not create any context. it is needed
-            // as a root object for OpenGL processes
+        // invisible window actually not create any context. it is needed
+        // as a root object for OpenGL processes
 #ifdef __EMSCRIPTEN__
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 0);
 #else
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-            glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
-            glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
-            glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+        glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 2);
+        glfwWindowHint(GLFW_OPENGL_FORWARD_COMPAT, GL_TRUE);
+        glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
 #endif
 
 //            glfwWindowHint(GLFW_VISIBLE, GLFW_FALSE);
-            mWindowContext_ptr = glfwCreateWindow(256, 256, "Karafuto Core", nullptr, nullptr);
-            if (!mWindowContext_ptr)
-                throw std::runtime_error("Can't instantiate glfw window!");
+        mWindowContext_ptr = glfwCreateWindow(256, 256, "Karafuto Core", nullptr, nullptr);
+        if (!mWindowContext_ptr)
+            throw std::runtime_error("Can't instantiate glfw window!");
+
+        mRenderThread = std::make_unique<std::thread>([this]() {
             glfwMakeContextCurrent(mWindowContext_ptr);
 
             glewExperimental = GL_TRUE;
@@ -112,7 +113,7 @@ namespace KCore {
                 unloadTexturesFromGPU();
             }
 
-            glfwPollEvents();
+//            glfwPollEvents();
 
             std::this_thread::sleep_for(mCheckInterval);
         }

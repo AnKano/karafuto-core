@@ -8,9 +8,9 @@
 
 #endif
 
-#define GLFW_INCLUDE_NONE
-
+#define GLFW_INCLUDE_GLCOREARB
 #include <GLFW/glfw3.h>
+#define BUFFER_OFFSET(i) ((char *)NULL + (i))
 
 #include <stdexcept>
 #include <thread>

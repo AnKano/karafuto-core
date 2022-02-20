@@ -18,6 +18,12 @@ if (NOT EMSCRIPTEN)
     if (WIN32)
         message("--Detected Windows!")
         add_compile_definitions(_USE_MATH_DEFINES)
+    elseif (APPLE)
+        # This is a bug in CMake that causes it to prefer the system version over
+        # the one in the specified ROOT folder.
+        set(OPENSSL_ROOT_DIR ${OPENSSL_ROOT_DIR} /usr/local/Cellar/openssl@3/3.0.1/)
+        set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
+        set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.dylib CACHE FILEPATH "" FORCE)
     else ()
         message("--Detected UNIX!")
     endif ()
