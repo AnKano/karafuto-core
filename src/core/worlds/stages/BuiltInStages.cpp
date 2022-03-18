@@ -3,6 +3,8 @@
 #include "Stage.hpp"
 #include "../BaseWorld.hpp"
 
+#include "../../misc/Utils.hpp"
+
 namespace KCore {
     KCore::Stage *BuiltInStages::CommonCalculate() {
         auto stage = new KCore::Stage([](KCore::BaseWorld *world, KCore::Stage *nextStage) {
@@ -49,7 +51,7 @@ namespace KCore {
                 if (inPrev) {
                     auto event = KCore::MapEvent::MakeNotInFrustumEvent(item);
                     world->pushToSyncEvents(event);
-                    std::cout << "Meta tile not in frustum!" << std::endl;
+//                    std::cout << "Meta tile not in frustum!" << std::endl;
                 }
 
                 if (inNew) {
@@ -58,7 +60,7 @@ namespace KCore {
 
                     auto event = KCore::MapEvent::MakeInFrustumEvent(item, (void *) payload);
                     world->pushToSyncEvents(event);
-                    std::cout << "Meta tile in frustum!" << std::endl;
+//                    std::cout << "Meta tile in frustum!" << std::endl;
                 }
             }
         });

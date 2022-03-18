@@ -12,7 +12,6 @@
 #include "../../geography/TileDescription.hpp"
 #include "../../queue/tasks/NetworkTask.hpp"
 #include "../../cache/BaseCache.hpp"
-#include "../rendering/RenderContext.hpp"
 #include "NetworkRequest.hpp"
 
 using namespace std::chrono_literals;

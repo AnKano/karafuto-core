@@ -1,12 +1,19 @@
 #include "TerrainedWorld.hpp"
 #include "stages/BuiltinStages.hpp"
 
+#ifdef __APPLE__
+#include "../contexts/rendering/opencl/RenderContext.hpp"
+#endif
+
 #include <algorithm>
 
 namespace KCore {
     TerrainedWorld::TerrainedWorld() : BaseWorld(0.0f, 0.0f) {}
 
     TerrainedWorld::TerrainedWorld(float latitude, float longitude) : BaseWorld(latitude, longitude) {
+#ifdef __APPLE__
+        mRenderContext = new KCore::OpenCL::RenderContext((BaseWorld*) this);
+#endif
         registerStage(KCore::BuiltInStages::MetaCalculate());
     }
 
@@ -56,7 +63,7 @@ namespace KCore {
         auto toRenderContext = std::vector<GenericTile *>();
         for (const auto &[quadcode, _]: mCurrMetaTiles)
             toRenderContext.push_back(mCreatedMetaTiles[quadcode]);
-        mRenderContext.setCurrentTileState(toRenderContext);
+        mRenderContext->setCurrentTileState(toRenderContext);
 
         postMetaTileCalculation();
     }
@@ -155,8 +162,8 @@ namespace KCore {
     }
 
     void TerrainedWorld::createMetaTileResources(GenericTile *tile) {
-        tile->registerImmediateResource("terrain", BuiltInResource::TerrainCalculate());
-        tile->registerImmediateResource("json", BuiltInResource::JSONWithTerrainAdaptation());
+//        tile->registerImmediateResource("terrain", BuiltInResource::TerrainCalculate());
+//        tile->registerImmediateResource("json", BuiltInResource::JSONWithTerrainAdaptation());
     }
 
     void TerrainedWorld::update() {
@@ -165,12 +172,12 @@ namespace KCore {
         performStages();
     }
 
-    RenderContext &TerrainedWorld::getRenderContext() {
+    IRenderContext* TerrainedWorld::getRenderContext() {
         return mRenderContext;
     }
 
     extern "C" {
-    DllExport KCore::TerrainedWorld *CreateTerrainWorld(float latitude, float longitude) {
+    DllExport KCore::TerrainedWorld *CreateTerrainedWorld(float latitude, float longitude) {
         return new KCore::TerrainedWorld(latitude, longitude);
     }
 

@@ -12,6 +12,7 @@
 #include "../geography/tiles/GenericTile.hpp"
 #include "stages/Stage.hpp"
 #include "../sources/RemoteSource.hpp"
+#include "../events/MapEvent.hpp"
 #include "../misc/STBImageUtils.hpp"
 #include "../sources/local/geojson/GeoJSONObject.hpp"
 #include "../sources/local/geojson/primitives/GeoJSONTransObject.hpp"

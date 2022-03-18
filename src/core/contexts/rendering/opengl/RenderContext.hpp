@@ -89,7 +89,6 @@ namespace KCore {
         static glm::vec4 getRandomGreyscaleColor();
 
         const std::vector<KCore::GenericTile *> &getCurrentTileState();
-//        bool relatedTexturesAvailable(const std::shared_ptr<RenderTask> &task);
 
         static void prepareTransformForChild(
                 const std::string &rootQuadcode, const std::string &childQuadcode,

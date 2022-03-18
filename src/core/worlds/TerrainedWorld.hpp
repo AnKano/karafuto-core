@@ -12,11 +12,12 @@
 #include "../misc/FrustumCulling.hpp"
 #include "../cache/TimeoutCache.hpp"
 #include "../geography/tiles/MetaTile.hpp"
+#include "../contexts/rendering/IRenderContext.hpp"
 
 namespace KCore {
     class TerrainedWorld : public BaseWorld {
     private:
-        RenderContext mRenderContext{this};
+        IRenderContext *mRenderContext;
 
     public:
         TerrainedWorld();
@@ -25,7 +26,7 @@ namespace KCore {
 
         void update() override;
 
-        RenderContext &getRenderContext();
+        IRenderContext *getRenderContext();
 
     private:
         std::vector<TileDescription> separateTileToDepth(const TileDescription &tile, uint8_t depth);

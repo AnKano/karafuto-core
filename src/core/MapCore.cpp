@@ -8,6 +8,7 @@
 #include "misc/STBImageUtils.hpp"
 #include "meshes/PolylineMesh.hpp"
 #include "meshes/PolygonMesh.hpp"
+#include "gzip/decompress.hpp"
 
 namespace KCore {
     MapCore::MapCore() = default;
@@ -105,6 +106,18 @@ namespace KCore {
         core->setWorldAdapter(adapter);
     }
 
+    DllExport uint8_t *DecompressByPtr(std::vector<uint8_t> *data) {
+        auto *conv = reinterpret_cast<const char *>(data->data());
+        std::string decompressed_data = gzip::decompress(conv, data->size());
+
+        auto *converted = new uint8_t[decompressed_data.size()];
+        std::copy(decompressed_data.begin(), decompressed_data.end(), converted);
+
+        delete data;
+
+        return converted;
+    }
+
     DllExport void UpdateMapCore(KCore::MapCore *mapCore,
                                  float *cameraProjectionMatrix,
                                  float *cameraViewMatrix,
@@ -138,6 +151,10 @@ namespace KCore {
 
     DllExport void ReleaseEvents(MapEvent *syncArrayPtr) {
         delete[] syncArrayPtr;
+    }
+
+    DllExport void ReleaseArray(uint8_t *arrayPtr) {
+        delete[] arrayPtr;
     }
 
     DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length) {

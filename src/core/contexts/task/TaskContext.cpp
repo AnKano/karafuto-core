@@ -43,7 +43,7 @@ namespace KCore {
                 // get next task or nullptr
                 task = mTaskQueue.popTask();
 
-                glfwPollEvents();
+//                glfwPollEvents();
             }
 
             std::this_thread::sleep_for(mWaitInterval);

@@ -4,7 +4,7 @@
 
 #include "RenderTask.hpp"
 
-#include <GL/glew.h>
+//#include <GL/glew.h>
 
 #include "../../MapCore.hpp"
 

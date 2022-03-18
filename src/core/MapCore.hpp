@@ -9,7 +9,7 @@
 #include "geography/TileDescription.hpp"
 #include "worlds/TerrainedWorld.hpp"
 #include "meshes/GridMesh.hpp"
-#include "contexts/rendering/RenderContext.hpp"
+#include "contexts/rendering/IRenderContext.hpp"
 #include "contexts/network/NetworkContext.hpp"
 #include "contexts/task/TaskContext.hpp"
 #include "cache/LimitedSpaceCache.hpp"
@@ -78,6 +78,10 @@ namespace KCore {
     DllExport KCore::MapEvent *GetSyncEvents(KCore::MapCore *mapCore, int &length);
 
     DllExport KCore::MapEvent *GetAsyncEvents(KCore::MapCore *mapCore, int &length);
+
+    DllExport uint8_t* DecompressByPtr(std::vector<uint8_t>* data);
+
+    DllExport void ReleaseArray(uint8_t *arrayPtr);
 
     DllExport void ReleaseEvents(MapEvent *syncArrayPtr);
 

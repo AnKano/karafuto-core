@@ -3,6 +3,7 @@
 #include <cstdint>
 #include <vector>
 #include <memory>
+#include <iostream>
 #include <filesystem>
 
 #include "BaseSourcePart.hpp"
@@ -35,6 +36,8 @@ namespace KCore {
                 auto ext = entry.path().extension().string();
 
                 if (ext != postfix) continue;
+
+//                std::cout << filePath.string() << std::endl;
 
                 createPartFile(filePath.string());
             }

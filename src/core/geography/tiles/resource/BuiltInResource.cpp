@@ -16,7 +16,7 @@ namespace KCore {
             auto request = new KCore::NetworkRequest{
                     url,
                     [world, desc](const std::vector<uint8_t> &data) {
-                        auto image = STBImageUtils::decodeImageBuffer(data);
+                        auto image = STBImageUtils::decodeImageBuffer(data.data(), data.size(), 3);
 
                         auto raw = new uint8_t[image.size()];
                         std::copy(image.begin(), image.end(), raw);
@@ -41,9 +41,13 @@ namespace KCore {
                     url,
                     [world, desc](const std::vector<uint8_t> &data) {
                         auto convWorld = (TerrainedWorld *) world;
-                        auto image = STBImageUtils::decodeImageBuffer(data);
 
-                        convWorld->getRenderContext().storeTextureInContext(image, desc.getQuadcode());
+                        // decode and check the size
+                        auto image = STBImageUtils::decodeImageBuffer(data.data(), data.size(), 3);
+                        if (image.size() != 256 * 256 * 3) return;
+
+                        // but anyway store raw data (we will compress and use it after)
+                        convWorld->getRenderContext()->storeTextureInContext(data, desc.getQuadcode());
                     }, nullptr
             };
             world->getNetworkContext().pushRequestToQueue(request);

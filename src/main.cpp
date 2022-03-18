@@ -89,7 +89,7 @@ int main() {
         );
     }
 
-    const uint16_t iterations{5000};
+    const uint16_t iterations{10000};
 
     // 46.9181f, 142.7189f is latitude and longitude of
     // the surroundings of the city of Yuzhno-Sakhalinsk
@@ -110,28 +110,41 @@ int main() {
 //    KCore::MapCore core;
 //    core.setWorldAdapter(world);
 
-    auto *world = new KCore::TerrainedWorld{46.9181f, 142.7189f};
+//    auto *world = new KCore::TerrainedWorld{46.9181f, 142.7189f};
+//
+//    auto jsonSource = new KCore::GeoJSONLocalSource;
+//    jsonSource->addSourcePart("assets/sources/points.geojson");
+//    world->registerSource(jsonSource, "json");
+//
+//    auto terrainSource = new KCore::SRTMLocalSource;
+//    terrainSource->addSourcePart("assets/sources", ".hgt");
+//    world->registerSource(terrainSource, "terrain");
+//
+//    auto imageSource = new KCore::RemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
+//    world->registerSource(imageSource, "base");
+//
+//    KCore::MapCore core;
+//    core.setWorldAdapter(world);
 
-    auto jsonSource = new KCore::GeoJSONLocalSource;
-    jsonSource->addSourcePart("assets/sources/points.geojson");
-    world->registerSource(jsonSource, "json");
+    auto MapCore_ptr = KCore::CreateMapCore();
+    auto World_ptr = KCore::CreateTerrainedWorld(46.9181f, 142.7189f);
 
-    auto terrainSource = new KCore::SRTMLocalSource;
-    terrainSource->addSourcePart("assets/sources/N45E141.hgt");
-    terrainSource->addSourcePart("assets/sources", ".hgt");
-    world->registerSource(terrainSource, "terrain");
+    auto TerrainSource_ptr = KCore::CreateSRTMLocalSource();
+    SRTMAddFileGlob(TerrainSource_ptr, "../build/assets/sources", ".hgt");
 
-    auto imageSource = new KCore::RemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
-    world->registerSource(imageSource, "base");
+    auto ImageSource_ptr = KCore::CreateRemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
 
-    KCore::MapCore core;
-    core.setWorldAdapter(world);
+    KCore::TerrainedWorldRegisterSource(World_ptr, TerrainSource_ptr, "terrain");
+    KCore::TerrainedWorldRegisterSource(World_ptr, ImageSource_ptr, "base");
+
+    KCore::SetWorldAdapter(MapCore_ptr, World_ptr);
 
     auto start = std::chrono::system_clock::now();
     for (auto i = 0; i < iterations; i++) {
-        core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-        auto a = core.getSyncEvents();
-        auto b = core.getAsyncEvents();
+        cameraOpenGlSpacePosition.x += 10;
+        MapCore_ptr->update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
+        auto a = MapCore_ptr->getSyncEvents();
+        auto b = MapCore_ptr->getAsyncEvents();
     }
     auto elapsed = std::chrono::system_clock::now() - start;
 

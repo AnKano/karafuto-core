@@ -16,3 +16,6 @@
 [submodule "third-party/glew"]
 	path = third-party/glew
 	url = https://github.com/Perlmint/glew-cmake
+[submodule "third-party/gzip-hpp"]
+	path = third-party/gzip-hpp
+	url = https://github.com/mapbox/gzip-hpp.git
