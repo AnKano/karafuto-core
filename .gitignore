@@ -11,3 +11,6 @@ cmake-*
 # exclude build fils but assets
 build/*
 !build/assets
+
+# exclude macos specific files
+.DS_Store
