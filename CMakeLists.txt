@@ -78,7 +78,7 @@ if (APPLE)
     set(BUILD_SHARED_LIBS OFF)
 endif ()
 
-if (UNIX)
+if (UNIX AND NOT APPLE)
     message("Unix: Added curl as shared library")
 
     set(BUILD_SHARED_LIBS ON)
@@ -115,7 +115,7 @@ if (APPLE)
     target_link_directories(karafuto_core PRIVATE ${OpenCL_LIBRARY})
 endif ()
 
-if (UNIX)
+if (UNIX AND NOT APPLE)
     add_library(libkcore-static STATIC ${CPP_HEADERS} ${CPP_SOURCES})
     add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
     add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
@@ -148,7 +148,7 @@ if (APPLE)
     target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
 endif()
 
-if (UNIX)
+if (UNIX AND NOT APPLE)
     message("Unix: Added RapidJSON, Earcut, stb-image, gzip includes")
     set(INCLUDE_COMPOUND
             ${THIRD_PARTY_DIR}/rapidjson/include
