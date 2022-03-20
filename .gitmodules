@@ -19,3 +19,6 @@
 [submodule "third-party/gzip-hpp"]
 	path = third-party/gzip-hpp
 	url = https://github.com/mapbox/gzip-hpp.git
+[submodule "third-party/zlib"]
+	path = third-party/zlib
+	url = https://github.com/madler/zlib

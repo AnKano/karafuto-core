@@ -14,6 +14,7 @@
 #include <vector>
 #include <cmath>
 #include <iostream>
+#include <cstdint>
 
 #include <gzip/decompress.hpp>
 #include "../../../misc/STBImageUtils.hpp"
@@ -107,7 +108,7 @@ namespace KCore::OpenCL {
         void loadToGPU() {
             auto format = cl_image_format{CL_RGBA, CL_UNSIGNED_INT8};
 
-            uint8_t convert[mTextureWidth * mTextureHeight * 4];
+            auto *convert = new uint8_t[mTextureWidth * mTextureHeight * 4];
             int pixel = 0;
             for (auto j = 0u; j < mTextureHeight; ++j) {
                 for (auto i = 0u; i < mTextureWidth; ++i) {
@@ -129,6 +130,8 @@ namespace KCore::OpenCL {
                 printf("Error: Failed to load image!\n");
                 exit(1);
             }
+
+            delete[] convert;
         }
     };
 }

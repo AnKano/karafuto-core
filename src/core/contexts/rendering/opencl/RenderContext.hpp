@@ -11,6 +11,8 @@
 #include <OpenCL/opencl.h>
 #elif defined(__linux__)
 #include <CL/cl.h>
+#elif defined(WIN32) || defined(WINDOWS)
+#include <CL/cl.h>
 #endif
 
 #include "Tile.hpp"

@@ -18,16 +18,20 @@ set(CPP_HEADERS_EXCLUDE "")
 set(CPP_SOURCES_EXCLUDE "")
 
 # select correct sources for current platform
-if (APPLE OR UNIX)
+if (APPLE OR UNIX OR WIN32)
     # MacOS, Unix and Windows should use OpenCL by default
 
     if (APPLE)
         message("MacOS: Select OpenCL Rendering backend")
-    endif()
+    endif ()
 
     if (UNIX)
         message("Unix: Select OpenCL Rendering backend")
-    endif()
+    endif ()
+
+    if (WIN32)
+        message("Windows: Select OpenCL Rendering backend")
+    endif ()
 
     #exclude OpenGL ES directories
     file(GLOB_RECURSE CPP_HEADERS_EXCLUDE
@@ -42,8 +46,11 @@ list(REMOVE_ITEM CPP_HEADERS ${CPP_HEADERS_EXCLUDE})
 list(REMOVE_ITEM CPP_SOURCES ${CPP_SOURCES_EXCLUDE})
 
 
-# ----|> declare necessary definitions
+# ----|> declare specific platform definitions
 if (WIN32)
+    # find better way to do it
+    set(OCL_ROOT "C:/Program Files (x86)/OCL_SDK_Light")
+
     message("Windows: Declare important math definitions")
     add_compile_definitions(_USE_MATH_DEFINES)
 endif ()
@@ -95,7 +102,30 @@ if (UNIX AND NOT APPLE)
     set(BUILD_SHARED_LIBS OFF)
 endif ()
 
+if (WIN32)
+    message("Windows: Added curl as shared library")
 
+    set(BUILD_SHARED_LIBS ON)
+    set(HTTP_ONLY ON)
+    add_subdirectory(${THIRD_PARTY_DIR}/curl)
+    set(BUILD_SHARED_LIBS ON)
+
+    #    message("Windows: Added opencl as static library")
+    #    find_package(OpenCL REQUIRED)
+
+    message("Windows: Added glm headers")
+    set(BUILD_SHARED_LIBS OFF)
+    add_subdirectory(${THIRD_PARTY_DIR}/glm EXCLUDE_FROM_ALL)
+    set(BUILD_SHARED_LIBS OFF)
+
+    message("Windows: Added zlib headers")
+    add_subdirectory(${THIRD_PARTY_DIR}/zlib)
+
+    message(${CMAKE_BINARY_DIR}/third-party/zlib)
+
+    set(ZLIB_INCLUDE_DIR ${THIRD_PARTY_DIR}/zlib "${CMAKE_BINARY_DIR}/third-party/zlib")
+    set(ZLIB_LIBRARY zlib)
+endif ()
 
 # ----|> declare targets
 
@@ -131,7 +161,21 @@ if (UNIX AND NOT APPLE)
     target_link_directories(karafuto_core PRIVATE ${OpenCL_LIBRARY})
 endif ()
 
+if (WIN32)
+    add_library(libkcore-static STATIC ${CPP_HEADERS} ${CPP_SOURCES})
+    add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
+    add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
 
+    set(LIBRARIES libcurl glm opencl zlibstatic)
+
+    target_link_directories(libkcore PRIVATE ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
+    target_link_directories(libkcore-static PRIVATE ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
+    target_link_directories(karafuto_core PRIVATE ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
+
+    target_link_libraries(libkcore PUBLIC ${LIBRARIES})
+    target_link_libraries(libkcore-static PUBLIC ${LIBRARIES})
+    target_link_libraries(karafuto_core PUBLIC ${LIBRARIES})
+endif ()
 
 # ----|> declare targets
 
@@ -146,7 +190,7 @@ if (APPLE)
     target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
     target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
     target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
-endif()
+endif ()
 
 if (UNIX AND NOT APPLE)
     message("Unix: Added RapidJSON, Earcut, stb-image, gzip includes")
@@ -159,7 +203,25 @@ if (UNIX AND NOT APPLE)
     target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
     target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
     target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
-endif()
+endif ()
+
+if (WIN32)
+    message("Windows: Added RapidJSON, Earcut, stb-image, gzip and opencl includes")
+    set(INCLUDE_COMPOUND
+            ${THIRD_PARTY_DIR}/rapidjson/include
+            ${THIRD_PARTY_DIR}/earcut/include
+            ${THIRD_PARTY_DIR}/stb-image
+            ${THIRD_PARTY_DIR}/gzip-hpp/include
+            ${OCL_ROOT}/include
+
+            ${THIRD_PARTY_DIR}/zlib
+            ${CMAKE_BINARY_DIR}/third-party/zlib
+            )
+    target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
+    include_directories(${THIRD_PARTY_DIR}/zlib)
+    target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
+    target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
+endif ()
 
 #if (TEMP_IT_SHOULD_NEVER_WORK)
 #    # include described down libs as shared (.dll) dependencies

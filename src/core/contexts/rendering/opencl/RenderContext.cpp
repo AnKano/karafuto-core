@@ -15,10 +15,17 @@
 namespace KCore::OpenCL {
     void RenderContext::initialize() {
         int err;                            // error code returned from api calls
+        cl_uint platforms_num;
+        cl_platform_id *platform_id;         // compute platform id
         cl_device_id device_id;             // compute device id
 
+        clGetPlatformIDs(0, nullptr, &platforms_num);
+        platform_id = (cl_platform_id *) malloc(sizeof(cl_platform_id) * platforms_num);
+
+        clGetPlatformIDs(platforms_num, platform_id, nullptr);
+
         // Connect to a compute device
-        err = clGetDeviceIDs(nullptr, CL_DEVICE_TYPE_GPU, 1, &device_id, nullptr);
+        err = clGetDeviceIDs(platform_id[0], CL_DEVICE_TYPE_GPU, 1, &device_id, nullptr);
         if (err != CL_SUCCESS) printf("Error: Failed to create a device group!\n");
 
         // Create a compute context
