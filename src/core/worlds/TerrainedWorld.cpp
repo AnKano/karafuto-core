@@ -1,7 +1,7 @@
 #include "TerrainedWorld.hpp"
 #include "stages/BuiltinStages.hpp"
 
-#ifdef __APPLE__
+#if defined(__APPLE__) || defined(__linux__)
 #include "../contexts/rendering/opencl/RenderContext.hpp"
 #endif
 
@@ -11,8 +11,8 @@ namespace KCore {
     TerrainedWorld::TerrainedWorld() : BaseWorld(0.0f, 0.0f) {}
 
     TerrainedWorld::TerrainedWorld(float latitude, float longitude) : BaseWorld(latitude, longitude) {
-#ifdef __APPLE__
-        mRenderContext = new KCore::OpenCL::RenderContext((BaseWorld*) this);
+#if defined(__APPLE__) || defined(__linux__)
+        mRenderContext = new KCore::OpenCL::RenderContext((BaseWorld *) this);
 #endif
         registerStage(KCore::BuiltInStages::MetaCalculate());
     }
@@ -172,7 +172,7 @@ namespace KCore {
         performStages();
     }
 
-    IRenderContext* TerrainedWorld::getRenderContext() {
+    IRenderContext *TerrainedWorld::getRenderContext() {
         return mRenderContext;
     }
 

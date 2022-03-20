@@ -4,8 +4,6 @@
 
 #include "IRenderContext.hpp"
 
-#include <iostream>
-
 #include <gzip/compress.hpp>
 
 namespace KCore {

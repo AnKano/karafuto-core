@@ -134,7 +134,7 @@ int main() {
 
     auto ImageSource_ptr = KCore::CreateRemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
 
-//    KCore::TerrainedWorldRegisterSource(World_ptr, TerrainSource_ptr, "terrain");
+    KCore::TerrainedWorldRegisterSource(World_ptr, TerrainSource_ptr, "terrain");
     KCore::TerrainedWorldRegisterSource(World_ptr, ImageSource_ptr, "base");
 
     KCore::SetWorldAdapter(MapCore_ptr, World_ptr);

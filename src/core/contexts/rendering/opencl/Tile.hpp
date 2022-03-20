@@ -99,8 +99,8 @@ namespace KCore::OpenCL {
             mPosX = positionX;
             mPosY = positionY;
 
-            mTargetX = screenWidth / std::powf(2.0, depth);
-            mTargetY = screenHeight / std::powf(2.0, depth);
+            mTargetX = screenWidth / std::pow(2.0, depth);
+            mTargetY = screenHeight / std::pow(2.0, depth);
         }
 
     private:

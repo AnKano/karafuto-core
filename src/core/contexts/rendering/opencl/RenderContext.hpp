@@ -7,10 +7,10 @@
 
 #include "../IRenderContext.hpp"
 
-#ifdef __APPLE__
-
+#if defined(__APPLE__)
 #include <OpenCL/opencl.h>
-
+#elif defined(__linux__)
+#include <CL/cl.h>
 #endif
 
 #include "Tile.hpp"
