@@ -29,7 +29,7 @@ namespace KCore::OpenCL {
         bool renderKernelSetup = false;
         bool wipeKernelSetup = false;
 
-        cl_mem mOutBuffer[2];
+        cl_mem mOutBuffer;
         std::size_t mOutImageHeight = 2048;
         std::size_t mOutImageWidth = 2048;
         std::size_t mOutImagePixelBytes = 2;
@@ -50,11 +50,11 @@ namespace KCore::OpenCL {
 
         void setupRenderKernel();
 
-        void performRenderKernel(const Tile& tile, unsigned int bufferIdx);
+        void performRenderKernel(const Tile& tile);
 
         void setupWipeKernel();
 
-        void performWipeKernel(unsigned int bufferIdx);
+        void performWipeKernel();
     };
 }
 

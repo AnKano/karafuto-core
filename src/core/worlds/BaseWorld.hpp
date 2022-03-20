@@ -73,11 +73,15 @@ namespace KCore {
 
         Stage *registerStage(Stage *stage);
 
-        [[nodiscard]]
-        std::vector<KCore::MapEvent> getSyncEvents();
+        std::size_t getSyncEventsLength();
+
+        std::size_t getAsyncEventsLength();
 
         [[nodiscard]]
         std::vector<KCore::MapEvent> getAsyncEvents();
+
+        [[nodiscard]]
+        std::vector<KCore::MapEvent> getSyncEvents();
 
         void pushToSyncEvents(const MapEvent &event);
 

@@ -106,14 +106,29 @@ namespace KCore {
         core->setWorldAdapter(adapter);
     }
 
-    DllExport uint8_t *DecompressByPtr(std::vector<uint8_t> *data) {
+    DllExport uint8_t *GetVectorMeta(std::vector<uint8_t> *data, int &length) {
+        std::cout << data->size() << std::endl;
+        length = data->size();
+        return data->data();
+    }
+
+    DllExport uint8_t *DecompressArrayByPtr(uint8_t *data, int length) {
+        std::string decompressed_data = gzip::decompress(
+            reinterpret_cast<const char *>(data), length
+        );
+
+        auto *converted = new uint8_t[decompressed_data.size()];
+        std::copy(decompressed_data.begin(), decompressed_data.end(), converted);
+
+        return converted;
+    }
+
+    DllExport uint8_t *DecompressVectorByPtr(std::vector<uint8_t> *data) {
         auto *conv = reinterpret_cast<const char *>(data->data());
         std::string decompressed_data = gzip::decompress(conv, data->size());
 
         auto *converted = new uint8_t[decompressed_data.size()];
         std::copy(decompressed_data.begin(), decompressed_data.end(), converted);
-
-        delete data;
 
         return converted;
     }
@@ -127,30 +142,32 @@ namespace KCore {
                         cameraPosition);
     }
 
-    DllExport KCore::MapEvent *GetSyncEvents(KCore::MapCore *corePtr, int &length) {
-        auto syncEvents = corePtr->getSyncEvents();
-
-        length = (int) syncEvents.size();
-
-        auto *events = new MapEvent[length];
-        std::copy(syncEvents.begin(), syncEvents.end(), events);
-
-        return events;
+    DllExport std::vector<MapEvent> *GetSyncEventsVector(KCore::MapCore *corePtr) {
+        return new std::vector<MapEvent>(corePtr->getSyncEvents());
     }
 
-    DllExport KCore::MapEvent *GetAsyncEvents(KCore::MapCore *corePtr, int &length) {
-        auto asyncEvents = corePtr->getAsyncEvents();
-
-        length = (int) asyncEvents.size();
-
-        auto *events = new MapEvent[length];
-        std::copy(asyncEvents.begin(), asyncEvents.end(), events);
-
-        return events;
+    DllExport std::vector<MapEvent> *GetAsyncEventsVector(KCore::MapCore *corePtr) {
+        return new std::vector<MapEvent>(corePtr->getAsyncEvents());
     }
 
-    DllExport void ReleaseEvents(MapEvent *syncArrayPtr) {
-        delete[] syncArrayPtr;
+    DllExport KCore::MapEvent *EjectSyncEventsFromVector(std::vector<MapEvent> *vecPtr, int &length) {
+        length = (int) vecPtr->size();
+        return vecPtr->data();
+    }
+
+    DllExport KCore::MapEvent *EjectAsyncEventsFromVector(std::vector<MapEvent> *vecPtr, int &length) {
+        length = (int) vecPtr->size();
+        return vecPtr->data();
+    }
+
+    DllExport void ReleaseEventsVector(std::vector<MapEvent> *vecPtr) {
+        for (const auto &item: *vecPtr) {
+            if (item.type == EventType::ContentLoadedRender) {
+                delete (std::vector<uint8_t> *) (item.payload);
+            }
+        }
+
+        delete vecPtr;
     }
 
     DllExport void ReleaseArray(uint8_t *arrayPtr) {

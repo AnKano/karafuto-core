@@ -90,6 +90,16 @@ namespace KCore {
         mAsyncEvents.push_back(event);
     }
 
+    std::size_t BaseWorld::getSyncEventsLength() {
+        std::lock_guard<std::mutex> lock{mSyncLock};
+        return mSyncEvents.size();
+    }
+
+    std::size_t BaseWorld::getAsyncEventsLength() {
+        std::lock_guard<std::mutex> lock{mAsyncLock};
+        return mAsyncEvents.size();
+    }
+
     std::map<std::string, TileDescription> BaseWorld::getCurrentBaseTiles() {
         std::map<std::string, TileDescription> currentTilesCopy{};
 

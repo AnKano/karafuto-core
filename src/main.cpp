@@ -89,7 +89,7 @@ int main() {
         );
     }
 
-    const uint16_t iterations{10000};
+    const uint16_t iterations{50000};
 
     // 46.9181f, 142.7189f is latitude and longitude of
     // the surroundings of the city of Yuzhno-Sakhalinsk
@@ -134,7 +134,7 @@ int main() {
 
     auto ImageSource_ptr = KCore::CreateRemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
 
-    KCore::TerrainedWorldRegisterSource(World_ptr, TerrainSource_ptr, "terrain");
+//    KCore::TerrainedWorldRegisterSource(World_ptr, TerrainSource_ptr, "terrain");
     KCore::TerrainedWorldRegisterSource(World_ptr, ImageSource_ptr, "base");
 
     KCore::SetWorldAdapter(MapCore_ptr, World_ptr);
@@ -143,8 +143,12 @@ int main() {
     for (auto i = 0; i < iterations; i++) {
         cameraOpenGlSpacePosition.x += 10;
         MapCore_ptr->update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-        auto a = MapCore_ptr->getSyncEvents();
-        auto b = MapCore_ptr->getAsyncEvents();
+        auto* a = GetAsyncEventsVector(MapCore_ptr);
+
+        int z = 0;
+        auto* b = EjectAsyncEventsFromVector(a, z);
+
+        ReleaseEventsVector(a);
     }
     auto elapsed = std::chrono::system_clock::now() - start;
 

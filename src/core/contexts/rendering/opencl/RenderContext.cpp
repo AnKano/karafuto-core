@@ -5,6 +5,8 @@
 #include "RenderContext.hpp"
 
 #include <iostream>
+#include <chrono>
+#include <future>
 
 #include "../../../worlds/BaseWorld.hpp"
 
@@ -44,12 +46,10 @@ namespace KCore::OpenCL {
             exit(1);
         }
 
-        for (int i = 0; i < 2; i++) {
-            mOutBuffer[i] = clCreateBuffer(mContext, CL_MEM_WRITE_ONLY, mOutImageBytes, nullptr, &err);
-            if (!mOutBuffer[i]) {
-                printf("Error: Failed to create image!\n");
-                exit(1);
-            }
+        mOutBuffer = clCreateBuffer(mContext, CL_MEM_WRITE_ONLY, mOutImageBytes, nullptr, &err);
+        if (!mOutBuffer) {
+            printf("Error: Failed to create image!\n");
+            exit(1);
         }
     }
 
@@ -85,10 +85,15 @@ namespace KCore::OpenCL {
     }
 
     void RenderContext::runRenderLoop() {
-        auto bufferIdx = 0;
-
         while (!mShouldClose) {
+
+            if (mWorldAdapter->getAsyncEventsLength() != 0) {
+                std::this_thread::sleep_for(350ms);
+                continue;
+            };
+
             auto metas = getCurrentTileState();
+
             for (const auto &meta: metas) {
 
                 for (const auto &item: meta->getChildQuadcodes()) {
@@ -98,12 +103,12 @@ namespace KCore::OpenCL {
                     auto rootQuadcode = meta->getTileDescription().getQuadcode();
                     childTransform(rootQuadcode, item, offsetX, offsetY, depth);
 
-                    auto& data = mInRAMNotConvertedTextures[item];
+                    auto &data = mInRAMNotConvertedTextures[item];
 
                     Tile tile(&mContext, 256, 256, data);
                     tile.setup(mOutImageWidth, mOutImageHeight, offsetX, offsetY, depth);
 
-                    performRenderKernel(tile, bufferIdx);
+                    performRenderKernel(tile);
 
                     tile.dispose();
                 }
@@ -113,28 +118,36 @@ namespace KCore::OpenCL {
                 auto results = std::vector<uint8_t>();
                 results.resize(mOutImageBytes);
 
-                int err = clEnqueueReadBuffer(mCommands, mOutBuffer[bufferIdx], CL_FALSE, 0,
+                int err = clEnqueueReadBuffer(mCommands, mOutBuffer, CL_FALSE, 0,
                                               mOutImageBytes, results.data(), 0, nullptr, nullptr);
                 if (err != CL_SUCCESS) {
                     printf("Error: Failed to read output array! %d\n", err);
                     exit(1);
                 }
 
-                performWipeKernel(bufferIdx);
+                performWipeKernel();
 
-                std::string compressed_data = gzip::compress(
-                        reinterpret_cast<const char *>(results.data()), mOutImageBytes, Z_BEST_SPEED
-                );
-                std::cout << mOutImageBytes << " to " << compressed_data.size() << std::endl;
+                std::async(std::launch::async, [results, this, meta]() {
+                    auto t0 = std::chrono::high_resolution_clock::now();
 
-                auto rawBuffer = new std::vector<uint8_t>{};
-                rawBuffer->resize(mOutImageBytes);
-                std::copy(compressed_data.begin(), compressed_data.end(), rawBuffer->data());
+                    std::string compressed_data = gzip::compress(
+                            reinterpret_cast<const char *>(results.data()), mOutImageBytes, Z_BEST_SPEED
+                    );
+                    std::cout << mOutImageBytes << " to " << compressed_data.size() << std::endl;
 
-                auto rootQuadcode = meta->getTileDescription().getQuadcode();
-                mWorldAdapter->pushToAsyncEvents(MapEvent::MakeRenderLoadedEvent(rootQuadcode, rawBuffer));
+                    auto rawBuffer = new std::vector<uint8_t>{};
+                    rawBuffer->resize(compressed_data.size());
+                    std::copy(compressed_data.begin(), compressed_data.end(), rawBuffer->data());
 
-                std::this_thread::sleep_for(100ms);
+                    auto rootQuadcode = meta->getTileDescription().getQuadcode();
+                    mWorldAdapter->pushToAsyncEvents(MapEvent::MakeRenderLoadedEvent(rootQuadcode, rawBuffer));
+                    auto t1 = std::chrono::high_resolution_clock::now();
+                    auto duration = t1 - t0;
+
+                    auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+                });
+
+                std::this_thread::sleep_for(10ms);
             }
         }
 
@@ -155,12 +168,12 @@ namespace KCore::OpenCL {
         renderKernelSetup = true;
     }
 
-    void RenderContext::performRenderKernel(const Tile &tile, unsigned int bufferIdx) {
+    void RenderContext::performRenderKernel(const Tile &tile) {
         if (!renderKernelSetup) setupRenderKernel();
 
         int err = 0;
         err |= clSetKernelArg(mRenderKernel, 0, sizeof(cl_mem), &tile.getImageMem());
-        err |= clSetKernelArg(mRenderKernel, 1, sizeof(cl_mem), &mOutBuffer[bufferIdx]);
+        err |= clSetKernelArg(mRenderKernel, 1, sizeof(cl_mem), &mOutBuffer);
         err |= clSetKernelArg(mRenderKernel, 2, sizeof(unsigned int), &tile.mPosX);
         err |= clSetKernelArg(mRenderKernel, 3, sizeof(unsigned int), &tile.mPosY);
         err |= clSetKernelArg(mRenderKernel, 4, sizeof(unsigned int), &tile.mTargetX);
@@ -193,14 +206,14 @@ namespace KCore::OpenCL {
         wipeKernelSetup = true;
     }
 
-    void RenderContext::performWipeKernel(unsigned int bufferIdx) {
+    void RenderContext::performWipeKernel() {
         if (!wipeKernelSetup) setupWipeKernel();
 
         size_t global[3] = {mOutImageWidth, mOutImageHeight};
         size_t local[3] = {1, 1};
 
         int err = 0;
-        err |= clSetKernelArg(mWipeKernel, 0, sizeof(cl_mem), &mOutBuffer[bufferIdx]);
+        err |= clSetKernelArg(mWipeKernel, 0, sizeof(cl_mem), &mOutBuffer);
         if (err != CL_SUCCESS) {
             printf("Error: Failed to set kernel arguments! %d\n", err);
             exit(1);
@@ -216,8 +229,7 @@ namespace KCore::OpenCL {
     }
 
     void RenderContext::dispose() {
-        clReleaseMemObject(mOutBuffer[0]);
-        clReleaseMemObject(mOutBuffer[1]);
+        clReleaseMemObject(mOutBuffer);
 
         clReleaseProgram(mProgram);
         clReleaseKernel(mRenderKernel);

@@ -68,6 +68,8 @@ namespace KCore {
     extern "C" {
     DllExport KCore::MapCore *CreateMapCore();
 
+    DllExport uint8_t *GetVectorMeta(std::vector<uint8_t> *data, int& length);
+
     DllExport void SetWorldAdapter(KCore::MapCore *core, KCore::BaseWorld *adapter);
 
     DllExport void UpdateMapCore(KCore::MapCore *mapCore,
@@ -75,15 +77,22 @@ namespace KCore {
                                  float *cameraViewMatrix,
                                  float *cameraPosition);
 
-    DllExport KCore::MapEvent *GetSyncEvents(KCore::MapCore *mapCore, int &length);
+    DllExport std::vector<MapEvent> *GetSyncEventsVector(KCore::MapCore *mapCore);
 
-    DllExport KCore::MapEvent *GetAsyncEvents(KCore::MapCore *mapCore, int &length);
+    DllExport KCore::MapEvent *EjectSyncEventsFromVector(std::vector<MapEvent> *vecPtr, int &length);
 
-    DllExport uint8_t* DecompressByPtr(std::vector<uint8_t>* data);
+    DllExport std::vector<MapEvent> *GetAsyncEventsVector(KCore::MapCore *mapCore);
+
+    DllExport KCore::MapEvent *EjectAsyncEventsFromVector(std::vector<MapEvent> *vecPtr, int &length);
+
+
+    DllExport uint8_t *DecompressArrayByPtr(uint8_t *data, int length);
+
+    DllExport uint8_t *DecompressVectorByPtr(std::vector<uint8_t> *data);
 
     DllExport void ReleaseArray(uint8_t *arrayPtr);
 
-    DllExport void ReleaseEvents(MapEvent *syncArrayPtr);
+    DllExport void ReleaseEventsVector(std::vector<MapEvent> *vecPtr);
 
     DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length);
     }

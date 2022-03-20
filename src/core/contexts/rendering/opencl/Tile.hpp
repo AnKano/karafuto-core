@@ -58,14 +58,6 @@ namespace KCore::OpenCL {
                 : mTextureHeight(height), mTextureWidth(width) {
             mContext = context;
 
-//            std::vector<uint8_t> convert;
-//            convert.resize(data.size());
-//            std::copy(data.begin(), data.end(), convert.data());
-
-//            auto *conv = reinterpret_cast<const char *>(data.data());
-//            std::string decompressed_data = gzip::decompress(conv, data.size());
-//            std::cout << "decompressed: " << decompressed_data.size() << std::endl;
-
             auto image = STBImageUtils::decodeImageBuffer(
                     reinterpret_cast<const uint8_t *>(data.data()),
                     data.size(),

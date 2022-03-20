@@ -162,7 +162,7 @@ namespace KCore {
     }
 
     void TerrainedWorld::createMetaTileResources(GenericTile *tile) {
-//        tile->registerImmediateResource("terrain", BuiltInResource::TerrainCalculate());
+        tile->registerImmediateResource("terrain", BuiltInResource::TerrainCalculate());
 //        tile->registerImmediateResource("json", BuiltInResource::JSONWithTerrainAdaptation());
     }
 
