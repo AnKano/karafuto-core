@@ -176,9 +176,7 @@ namespace KCore {
 
                             auto height = 10000.0f;
                             for (const auto &item: ref.mMainShapeCoords) {
-                                auto res = terrainSource->getElevationForLatLonPoint(
-                                        item[0], item[1], zoom
-                                );
+                                auto res = terrainSource->getElevationForLatLonPoint(item[0], item[1]);
                                 if (res < height) height = res;
                             }
                             obj.height = height;

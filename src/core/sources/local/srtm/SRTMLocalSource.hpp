@@ -10,30 +10,18 @@ namespace KCore {
     public:
         uint8_t *getDataForTile(uint8_t zoom, uint16_t x, uint16_t y, uint16_t slicesX, uint16_t slicesY) override;
 
-        uint16_t getElevationForLatLonPoint(float latitude, float longitude, int scale);
+        uint16_t getElevationForLatLonPoint(float latitude, float longitude);
 
     protected:
-        static void collectTileColumn(const std::vector<std::shared_ptr<BaseSourcePart>> &related,
-                                      uint16_t *package,
-                                      const float &minimalX, const float &maximalX,
-                                      const float &minimalY, const float &maximalY,
-                                      const double &offsetX, const double &offsetY,
-                                      const uint16_t &slicesX, const uint16_t &slicesY,
-                                      bool isWest);
+        void collectTileKernel(uint16_t *collectorPtr,
+                               const float &minimalX, const float &minimalY,
+                               const double &offsetX, const double &offsetY,
+                               const uint16_t &slicesX, const uint16_t &slicesY);
 
-        static void collectTileRow(const std::vector<std::shared_ptr<BaseSourcePart>> &related,
-                                   uint16_t *package,
-                                   const float &minimalX, const float &maximalX,
-                                   const float &minimalY, const float &maximalY,
-                                   const double &offsetX, const double &offsetY,
-                                   const uint16_t &slicesX, const uint16_t &slicesY,
-                                   bool isNorth);
+        uint16_t *getDataForXYZ(const uint8_t &zoom, const uint16_t &x, const uint16_t &y,
+                                const uint16_t &slicesX, const uint16_t &slicesY);
 
-        static void collectTileKernel(const std::vector<std::shared_ptr<BaseSourcePart>> &related,
-                                      uint16_t *package,
-                                      const float &minimalX, const float &minimalY,
-                                      const double &offsetX, const double &offsetY,
-                                      const uint16_t &slicesX, const uint16_t &slicesY);
+        uint16_t parsePoint(double pX, double pY);
 
         std::vector<std::shared_ptr<BaseSourcePart>> getRelatedPieces(uint8_t zoom, uint16_t x, uint16_t y) override;
 

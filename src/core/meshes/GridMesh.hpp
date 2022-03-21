@@ -22,12 +22,5 @@ namespace KCore {
         void createMesh(float width, float length, int segmentsX, int segmentsY);
 
         void createGeneralSurface(float width, float length, int segmentsX, int segmentsY);
-
-        void createBorderSurfaceX(float width, int segmentsX, float constraint,
-                                  float uvConstant, float uvInterpolatedConstant);
-
-        void createBorderSurfaceY(float length, int segmentsY, float constraint,
-                                  float uvConstant, float uvInterpolatedConstant,
-                                  bool reverseIndexes);
     };
 }
