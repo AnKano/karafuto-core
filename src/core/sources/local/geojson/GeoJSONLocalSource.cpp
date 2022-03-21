@@ -19,9 +19,9 @@ namespace KCore {
 
                 bool relate = false;
                 for (const auto &coord: coords) {
-                    if (minimalX > coord[0] || coord[0] > maximalX ||
-                        minimalY > coord[1] || coord[1] > maximalY)
-                        continue;
+                    if (!(minimalX <= coord[0] && coord[0] <= maximalX)) continue;
+                    if (!(minimalY <= coord[1] && coord[1] <= maximalY)) continue;
+
                     relate = true;
                     break;
                 }

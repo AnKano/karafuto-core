@@ -137,6 +137,10 @@ int main() {
     KCore::TerrainedWorldRegisterSource(World_ptr, TerrainSource_ptr, "terrain");
     KCore::TerrainedWorldRegisterSource(World_ptr, ImageSource_ptr, "base");
 
+    auto jsonSource = new KCore::GeoJSONLocalSource;
+    jsonSource->addSourcePart("assets/sources/points.geojson");
+    World_ptr->registerSource(jsonSource, "json");
+
     KCore::SetWorldAdapter(MapCore_ptr, World_ptr);
 
     auto start = std::chrono::system_clock::now();

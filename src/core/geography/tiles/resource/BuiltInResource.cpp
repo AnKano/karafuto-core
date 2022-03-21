@@ -64,12 +64,11 @@ namespace KCore {
                     [world, desc]() {
                         auto tilecode = desc.getTilecode();
                         auto zoom = tilecode.z, x = tilecode.x, y = tilecode.y;
-                        auto *result =
-                                (std::vector<KCore::GeoJSONObject> *) world->getSources()["json"]->getDataForTile(
-                                        zoom, x, y);
+                        auto *result = (std::vector<KCore::GeoJSONObject> *)
+                                world->getSources()["json"]->getDataForTile(zoom, x, y);
                         auto size = result->size();
                         auto *objects = new std::vector<KCore::GeoJSONTransObject>();
-                        for (int i = 0; i < size; i++) {
+                        for (std::size_t i = 0; i < size; i++) {
                             auto &ref = (*result)[i];
                             KCore::GeoJSONTransObject obj{
                                     ref.mType,
@@ -82,10 +81,10 @@ namespace KCore {
                             if (obj.mainShapeCoordsCount > 0) {
                                 obj.mainShapePositions = new glm::vec3[obj.mainShapeCoordsCount];
                                 for (int idx = 0; idx < obj.mainShapeCoordsCount; idx++) {
-                                    auto project = world->latLonToWorldPosition(
-                                            {ref.mMainShapeCoords[idx][1],
-                                             ref.mMainShapeCoords[idx][0]
-                                            });
+                                    auto project = world->latLonToWorldPosition({
+                                                                                        ref.mMainShapeCoords[idx][1],
+                                                                                        ref.mMainShapeCoords[idx][0]
+                                                                                });
                                     convertedMain.push_back({project.x, project.y});
                                     obj.mainShapePositions[idx] = {project.x, 0.0f, project.y};
                                 }
@@ -104,16 +103,13 @@ namespace KCore {
                             }
                             if (ref.mType == KCore::Polyline)
                                 obj.mesh = new KCore::PolylineMesh(ref, convertedMain);
-                            if (ref.mType == KCore::Polygon ||
-                                ref.mType == KCore::PolygonWithHole)
-                                obj.mesh = new KCore::PolygonMesh(ref, convertedMain,
-                                                                  convertedHole);
+                            if (ref.mType == KCore::Polygon || ref.mType == KCore::PolygonWithHole)
+                                obj.mesh = new KCore::PolygonMesh(ref, convertedMain, convertedHole);
                             objects->push_back(obj);
                         }
                         delete result;
                         if (objects->empty()) return;
-                        auto event = KCore::MapEvent::MakeGeoJSONEvent(desc.getQuadcode(),
-                                                                       objects);
+                        auto event = KCore::MapEvent::MakeGeoJSONEvent(desc.getQuadcode(), objects);
                         world->pushToAsyncEvents(event);
                     }
             };
@@ -162,10 +158,8 @@ namespace KCore {
                         auto *terrainSource = (KCore::SRTMLocalSource *) world->getSources()["terrain"];
                         auto *result = (std::vector<KCore::GeoJSONObject> *)
                                 world->getSources()["json"]->getDataForTile(zoom, x, y);
-                        auto size = result->size();
                         auto *objects = new std::vector<KCore::GeoJSONTransObject>();
-                        for (int i = 0; i < size; i++) {
-                            auto &ref = (*result)[i];
+                        for (auto &ref: *result) {
                             KCore::GeoJSONTransObject obj{
                                     ref.mType,
                                     (int) (ref.mMainShapeCoords.size()),
@@ -174,7 +168,7 @@ namespace KCore {
                                     nullptr, 0.0f
                             };
 
-                            auto height = 10000.0f;
+                            auto height = FLT_MAX;
                             for (const auto &item: ref.mMainShapeCoords) {
                                 auto res = terrainSource->getElevationForLatLonPoint(item[0], item[1]);
                                 if (res < height) height = res;
@@ -183,6 +177,7 @@ namespace KCore {
 
                             auto convertedMain = std::vector<std::array<double, 2>>{};
                             auto convertedHole = std::vector<std::array<double, 2>>{};
+
                             if (obj.mainShapeCoordsCount > 0) {
                                 obj.mainShapePositions = new glm::vec3[obj.mainShapeCoordsCount];
                                 for (int idx = 0; idx < obj.mainShapeCoordsCount; idx++) {
@@ -198,21 +193,21 @@ namespace KCore {
                                 obj.holeShapePositions = new glm::vec3[coordsCount];
                                 for (int idx = 0; idx < coordsCount; idx++) {
                                     auto project = world->latLonToWorldPosition(
-                                            {ref.mHoleShapeCoords[idx][1], ref.mHoleShapeCoords[idx][0]
-                                            });
+                                            {ref.mHoleShapeCoords[idx][1], ref.mHoleShapeCoords[idx][0]}
+                                    );
                                     convertedHole.push_back({project.x, project.y});
                                     obj.holeShapePositions[idx] = {project.x, 0.0f, project.y};
                                 }
                             }
-                            if (ref.mType == KCore::Polyline)
-                                obj.mesh = new KCore::PolylineMesh(ref, convertedMain);
+
+                            if (ref.mType == KCore::Polyline) obj.mesh = new KCore::PolylineMesh(ref, convertedMain);
                             if (ref.mType == KCore::Polygon || ref.mType == KCore::PolygonWithHole)
-                                obj.mesh = new KCore::PolygonMesh(
-                                        ref, convertedMain, convertedHole
-                                );
+                                obj.mesh = new KCore::PolygonMesh(ref, convertedMain, convertedHole);
                             objects->push_back(obj);
                         }
+
                         delete result;
+
                         if (objects->empty()) return;
                         auto event = KCore::MapEvent::MakeGeoJSONEvent(
                                 desc.getQuadcode(), objects
