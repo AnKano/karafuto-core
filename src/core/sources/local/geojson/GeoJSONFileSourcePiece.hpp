@@ -51,8 +51,13 @@ namespace KCore {
         }
 
         void parseCollection(const rapidjson::Value &collection) {
-            for (const auto &val: collection.GetArray())
-                processObject(val);
+            for (const auto &val: collection.GetArray()) {
+                try {
+                    processObject(val);
+                } catch (const std::exception &ex) {
+                    std::cerr << ex.what() << std::endl;
+                }
+            }
         }
 
         void processObject(const rapidjson::Value &object) {

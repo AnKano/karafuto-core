@@ -16,7 +16,9 @@
 namespace KCore {
     class PolygonMesh : public BaseMesh {
     private:
-        enum ShapeOrientation { CW, CCW, NONE };
+        enum ShapeOrientation {
+            CW, CCW, NONE
+        };
 
     public:
         PolygonMesh(const GeoJSONObject &object,
@@ -184,8 +186,8 @@ namespace KCore {
                                   const std::vector<std::array<double, 2>> &convertedMainCoords,
                                   const std::vector<std::array<double, 2>> &convertedHoleCoords) {
             std::vector<std::vector<std::array<double, 2>>> collector;
-            collector.push_back(convertedMainCoords);
-            collector.push_back(convertedHoleCoords);
+            collector.push_back(convertedMainCoords); // collector for main shape
+            collector.push_back(convertedHoleCoords); // collector for hole shape
 
             auto indices = mapbox::earcut<uint32_t>(collector);
             for (int i = 0; i < indices.size(); i += 3) {
@@ -195,16 +197,16 @@ namespace KCore {
                 mIndices.insert(mIndices.end(), {c, b, a});
             }
 
-            for (const auto &item: collector[0]) {
-                mVertices.insert(mVertices.end(), {item[0], 0.0f, item[1]});
-                mNormals.insert(mNormals.end(), {0.0f, 1.0f, 0.0f});
-                mUVs.insert(mUVs.end(), {0.0f, 0.0f});
-            }
+            for (const auto &constant: std::vector<float>{0.0f}) {
+                for (const auto &item: collector[0]) {
+                    mVertices.insert(mVertices.end(), {item[0], constant, item[1]});
+                    mUVs.insert(mUVs.end(), {0.0f, 0.0f});
+                }
 
-            for (const auto &item: collector[1]) {
-                mVertices.insert(mVertices.end(), {item[0], 0.0f, item[1]});
-                mNormals.insert(mNormals.end(), {0.0f, 1.0f, 0.0f});
-                mUVs.insert(mUVs.end(), {0.0f, 0.0f});
+                for (const auto &item: collector[1]) {
+                    mVertices.insert(mVertices.end(), {item[0], constant, item[1]});
+                    mUVs.insert(mUVs.end(), {0.0f, 0.0f});
+                }
             }
         }
 

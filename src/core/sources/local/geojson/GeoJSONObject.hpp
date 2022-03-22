@@ -82,7 +82,7 @@ namespace KCore {
 
                 if (shapesCount == 2) mType = PolygonWithHole;
 
-                for (int shape = 0; shape < shapesCount; shape++) {
+                for (std::size_t shape = 0; shape < shapesCount; shape++) {
                     const auto &shapeCoords = value[shape].GetArray();
                     for (const auto &coord: shapeCoords) {
                         if (coord.Size() != 2) throw std::runtime_error("Undefined file structure!");

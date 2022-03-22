@@ -163,7 +163,7 @@ namespace KCore {
 
     void TerrainedWorld::createMetaTileResources(GenericTile *tile) {
         tile->registerImmediateResource("terrain", BuiltInResource::TerrainCalculate());
-        tile->registerImmediateResource("json", BuiltInResource::JSONWithTerrainAdaptation());
+//        tile->registerImmediateResource("json", BuiltInResource::JSONWithTerrainAdaptation());
     }
 
     void TerrainedWorld::update() {
@@ -179,6 +179,10 @@ namespace KCore {
     extern "C" {
     DllExport KCore::TerrainedWorld *CreateTerrainedWorld(float latitude, float longitude) {
         return new KCore::TerrainedWorld(latitude, longitude);
+    }
+
+    DllExport void CommitTerrainedWorld(KCore::TerrainedWorld *world) {
+        world->commitWorldSetup();
     }
 
     DllExport void TerrainedWorldRegisterSource(KCore::TerrainedWorld *world, BaseSource *source, const char *tag) {

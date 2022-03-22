@@ -141,6 +141,8 @@ int main() {
     jsonSource->addSourcePart("assets/sources/points.geojson");
     World_ptr->registerSource(jsonSource, "json");
 
+    World_ptr->commitWorldSetup();
+
     KCore::SetWorldAdapter(MapCore_ptr, World_ptr);
 
     auto start = std::chrono::system_clock::now();

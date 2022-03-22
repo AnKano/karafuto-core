@@ -28,7 +28,13 @@ namespace KCore {
 
         IRenderContext *getRenderContext();
 
+        void commitWorldSetup() {
+            auto gen = GenericTile(this, createTile("0"));
+            BuiltInResource::JSONWithTerrainAdaptation()(this, &gen);
+        }
+
     private:
+
         std::vector<TileDescription> separateTileToDepth(const TileDescription &tile, uint8_t depth);
 
         void calculateMetaTiles();
@@ -49,6 +55,8 @@ namespace KCore {
 
     extern "C" {
     DllExport KCore::TerrainedWorld *CreateTerrainedWorld(float latitude, float longitude);
+
+    DllExport void CommitTerrainedWorld(KCore::TerrainedWorld *world);
 
     DllExport void TerrainedWorldRegisterSource(KCore::TerrainedWorld *world, BaseSource *source, const char *tag);
     }

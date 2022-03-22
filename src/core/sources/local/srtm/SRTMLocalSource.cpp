@@ -8,7 +8,8 @@ namespace KCore {
         return elevation;
     }
 
-    uint8_t *SRTMLocalSource::getDataForTile(uint8_t zoom, uint16_t x, uint16_t y, uint16_t slicesX, uint16_t slicesY) {
+    uint8_t *SRTMLocalSource::getDataForTile(uint8_t zoom, uint16_t x, uint16_t y,
+                                             uint16_t slicesX, uint16_t slicesY) {
         // collect tile core data
         const auto kernel = this->getDataForXYZ(zoom, x, y, slicesX, slicesY);
 

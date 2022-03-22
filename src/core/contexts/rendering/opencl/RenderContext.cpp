@@ -14,17 +14,17 @@
 
 namespace KCore::OpenCL {
     void RenderContext::initialize() {
-        int err;                            // error code returned from api calls
+        int err;
         cl_uint platforms_num;
-        cl_platform_id *platform_id;         // compute platform id
-        cl_device_id device_id;             // compute device id
+        cl_platform_id *platform_id;
+        cl_device_id device_id;
 
         clGetPlatformIDs(0, nullptr, &platforms_num);
         platform_id = (cl_platform_id *) malloc(sizeof(cl_platform_id) * platforms_num);
 
         clGetPlatformIDs(platforms_num, platform_id, nullptr);
 
-        // Connect to a compute device
+        // Connect to a GPU device
         err = clGetDeviceIDs(platform_id[0], CL_DEVICE_TYPE_GPU, 1, &device_id, nullptr);
         if (err != CL_SUCCESS) printf("Error: Failed to create a device group!\n");
 
@@ -93,7 +93,6 @@ namespace KCore::OpenCL {
 
     void RenderContext::runRenderLoop() {
         while (!mShouldClose) {
-
             if (mWorldAdapter->getAsyncEventsLength() != 0) {
                 std::this_thread::sleep_for(350ms);
                 continue;
@@ -102,8 +101,7 @@ namespace KCore::OpenCL {
             auto metas = getCurrentTileState();
 
             for (const auto &meta: metas) {
-
-                for (const auto &item: meta->getChildQuadcodes()) {
+                for (const auto item: meta->getChildQuadcodes()) {
                     if (mInRAMNotConvertedTextures.count(item) == 0) continue;
 
                     unsigned int offsetX, offsetY, depth;
@@ -125,8 +123,10 @@ namespace KCore::OpenCL {
                 auto results = std::vector<uint8_t>();
                 results.resize(mOutImageBytes);
 
-                int err = clEnqueueReadBuffer(mCommands, mOutBuffer, CL_FALSE, 0,
-                                              mOutImageBytes, results.data(), 0, nullptr, nullptr);
+                int err = clEnqueueReadBuffer(
+                        mCommands, mOutBuffer, CL_FALSE, 0,
+                        mOutImageBytes, results.data(), 0, nullptr, nullptr
+                );
                 if (err != CL_SUCCESS) {
                     printf("Error: Failed to read output array! %d\n", err);
                     exit(1);
@@ -140,7 +140,6 @@ namespace KCore::OpenCL {
                     std::string compressed_data = gzip::compress(
                             reinterpret_cast<const char *>(results.data()), mOutImageBytes, Z_BEST_SPEED
                     );
-                    std::cout << mOutImageBytes << " to " << compressed_data.size() << std::endl;
 
                     auto rawBuffer = new std::vector<uint8_t>{};
                     rawBuffer->resize(compressed_data.size());

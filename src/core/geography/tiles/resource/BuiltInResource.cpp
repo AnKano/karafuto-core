@@ -8,6 +8,8 @@
 #include "../../../meshes/GridMesh.hpp"
 #include "../../../worlds/TerrainedWorld.hpp"
 
+#include <future>
+
 namespace KCore {
     std::function<void(KCore::BaseWorld *, GenericTile *tile)> BuiltInResource::ImageCalculate() {
         auto processor = [](BaseWorld *world, GenericTile *tile) {
@@ -209,6 +211,7 @@ namespace KCore {
                         delete result;
 
                         if (objects->empty()) return;
+
                         auto event = KCore::MapEvent::MakeGeoJSONEvent(
                                 desc.getQuadcode(), objects
                         );

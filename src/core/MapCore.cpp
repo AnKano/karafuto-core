@@ -107,7 +107,6 @@ namespace KCore {
     }
 
     DllExport uint8_t *GetVectorMeta(std::vector<uint8_t> *data, int &length) {
-        std::cout << data->size() << std::endl;
         length = data->size();
         return data->data();
     }
