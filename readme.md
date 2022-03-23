@@ -1,13 +1,27 @@
-## KarafutoCore
+# KarafutoCore
 
-![Ubuntu Preview](github-assets/osm-tiles-ubuntu.png)
+<p align="center">
+    <img alt="Flowers" src="github-assets/logo.png" width="600" />
+</p>
 
-![Ubuntu Preview Sattelite](github-assets/satellite-tiles-ubuntu.png)
+## How it works:
 
-![MacOS Preview](github-assets/osm-tiles-macos.png)
+<p align="center">
+    <img alt="Flowers" src="github-assets/additional-1.png" width="600" />
+</p>
 
-![MacOS Preview Sattelite](github-assets/satellite-tiles-macos.png)
+[//]: # (![Ubuntu Preview]&#40;github-assets/osm-tiles-ubuntu.png&#41;)
 
-![Windows Preview](github-assets/osm-tiles-windows.png)
+[//]: # (![Ubuntu Preview Sattelite]&#40;github-assets/satellite-tiles-ubuntu.png&#41;)
 
-![Windows Preview Sattelite](github-assets/satellite-tiles-windows.png)
+[//]: # ()
+[//]: # (![MacOS Preview]&#40;github-assets/osm-tiles-macos.png&#41;)
+
+[//]: # ()
+[//]: # (![MacOS Preview Sattelite]&#40;github-assets/satellite-tiles-macos.png&#41;)
+
+[//]: # ()
+[//]: # (![Windows Preview]&#40;github-assets/osm-tiles-windows.png&#41;)
+
+[//]: # ()
+[//]: # (![Windows Preview Sattelite]&#40;github-assets/satellite-tiles-windows.png&#41;)
