@@ -1,4 +1,4 @@
-# KarafutoCore
+# Karafuto Core
 
 <p align="center">
     <img alt="Flowers" src="github-assets/logo.png" width="600" />
