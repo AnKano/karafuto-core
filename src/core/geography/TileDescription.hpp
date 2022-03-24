@@ -32,8 +32,8 @@ namespace KCore {
     };
 
     struct TilePayload {
-        glm::ivec3 Tilecode{0, 0, 0};      /* 00..04..08..12 bytes */
-        float Center[2]{0.0f, 0.0f};        /* 12..16..20     bytes */
+        glm::ivec3 Tilecode{0, 0, 0};              /* 00..04..08..12 bytes */
+        float Center[2]{0.0f, 0.0f};               /* 12..16..20     bytes */
         float SideLength{0.0f};                    /* 20..24         bytes */
         TileType Type{Leaf};                       /* 24..28         bytes */
         TileVisibility Visibility{Visible};        /* 28..32         bytes */

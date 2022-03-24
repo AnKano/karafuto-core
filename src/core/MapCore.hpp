@@ -39,7 +39,10 @@ namespace KCore {
 
         void update(const float *cameraProjectionMatrix_ptr,
                     const float *cameraViewMatrix_ptr,
-                    const float *cameraPosition_ptr);
+                    const float *cameraPosition_ptr,
+                    bool transposeProjectionMatrix = false,
+                    bool transposeViewMatrix = false
+        );
 
         void update2D(const float &aspectRatio, const float &zoom, const float &cameraPositionX,
                       const float &cameraPositionY);
@@ -68,7 +71,7 @@ namespace KCore {
     extern "C" {
     DllExport KCore::MapCore *CreateMapCore();
 
-    DllExport uint8_t *GetVectorMeta(std::vector<uint8_t> *data, int& length);
+    DllExport uint8_t *GetVectorMeta(std::vector<uint8_t> *data, int &length);
 
     DllExport void SetWorldAdapter(KCore::MapCore *core, KCore::BaseWorld *adapter);
 

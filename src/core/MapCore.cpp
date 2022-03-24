@@ -19,9 +19,17 @@ namespace KCore {
 
     void MapCore::update(const float *cameraProjectionMatrix_ptr,
                          const float *cameraViewMatrix_ptr,
-                         const float *cameraPosition_ptr) {
-        this->mCameraViewMatrix = glm::make_mat4x4(cameraViewMatrix_ptr);
-        this->mCameraProjectionMatrix = glm::make_mat4x4(cameraProjectionMatrix_ptr);
+                         const float *cameraPosition_ptr,
+                         bool transposeProjectionMatrix,
+                         bool transposeViewMatrix) {
+        auto viewMatrix = glm::make_mat4x4(cameraViewMatrix_ptr);
+        if (transposeViewMatrix) viewMatrix = glm::transpose(viewMatrix);
+
+        auto projectionMatrix = glm::make_mat4x4(cameraProjectionMatrix_ptr);
+        if (transposeProjectionMatrix) projectionMatrix = glm::transpose(projectionMatrix);
+
+        this->mCameraViewMatrix = viewMatrix;
+        this->mCameraProjectionMatrix = projectionMatrix;
         this->mCameraPosition = glm::make_vec3(cameraPosition_ptr);
 
         performUpdate();
@@ -113,7 +121,7 @@ namespace KCore {
 
     DllExport uint8_t *DecompressArrayByPtr(uint8_t *data, int length) {
         std::string decompressed_data = gzip::decompress(
-            reinterpret_cast<const char *>(data), length
+                reinterpret_cast<const char *>(data), length
         );
 
         auto *converted = new uint8_t[decompressed_data.size()];
@@ -138,7 +146,8 @@ namespace KCore {
                                  float *cameraPosition) {
         mapCore->update(cameraProjectionMatrix,
                         cameraViewMatrix,
-                        cameraPosition);
+                        cameraPosition,
+                        false, false);
     }
 
     DllExport std::vector<MapEvent> *GetSyncEventsVector(KCore::MapCore *corePtr) {

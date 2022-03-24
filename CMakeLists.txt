@@ -110,8 +110,6 @@ if (WIN32)
     add_subdirectory(${THIRD_PARTY_DIR}/curl)
     set(BUILD_SHARED_LIBS ON)
 
-    #    message("Windows: Added opencl as static library")
-    #    find_package(OpenCL REQUIRED)
 
     message("Windows: Added glm headers")
     set(BUILD_SHARED_LIBS OFF)
@@ -222,37 +220,3 @@ if (WIN32)
     target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
     target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
 endif ()
-
-#if (TEMP_IT_SHOULD_NEVER_WORK)
-#    # include described down libs as shared (.dll) dependencies
-#    set(BUILD_SHARED_LIBS ON)
-#    set(HTTP_ONLY ON)
-#    add_subdirectory(${THIRD_PARTY_DIR}/curl)
-#    add_subdirectory(${THIRD_PARTY_DIR}/glfw EXCLUDE_FROM_ALL)
-#    # rename libname for unifying
-#    set_target_properties(glfw PROPERTIES OUTPUT_NAME "libglfw3")
-#    set(BUILD_SHARED_LIBS ON)
-#
-#    # include described down libs as static (built-in general .dll) dependencies
-#    set(BUILD_SHARED_LIBS OFF)
-#    add_subdirectory(${THIRD_PARTY_DIR}/glew EXCLUDE_FROM_ALL)
-#    add_subdirectory(${THIRD_PARTY_DIR}/glm EXCLUDE_FROM_ALL)
-#    set(BUILD_SHARED_LIBS OFF)
-#
-#    add_library(libkcore-static STATIC ${CPP_HEADERS} ${CPP_SOURCES})
-#    target_link_libraries(libkcore-static PUBLIC glfw libglew_static libcurl glm)
-#
-#    add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
-#    target_link_libraries(libkcore PUBLIC glfw libglew_static libcurl glm)
-#
-#    add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
-#    target_link_libraries(karafuto_core PUBLIC glfw libglew_static libcurl glm)
-#
-#    set(INCLUDE_COMPOUND
-#            ${THIRD_PARTY_DIR}/rapidjson/include
-#            ${THIRD_PARTY_DIR}/earcut/include
-#            ${THIRD_PARTY_DIR}/stb-image)
-#    target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
-#    target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
-#    target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
-#endif ()
