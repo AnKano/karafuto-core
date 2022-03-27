@@ -7,7 +7,11 @@
 #include "../geography/TileDescription.hpp"
 #include "../cache/TimeoutCache.hpp"
 #include "../contexts/task/TaskContext.hpp"
+
+#ifndef __EMSCRIPTEN__
 #include "../contexts/network/NetworkContext.hpp"
+#endif
+
 #include "../sources/BaseSource.hpp"
 #include "../geography/tiles/GenericTile.hpp"
 #include "stages/Stage.hpp"
@@ -39,7 +43,10 @@ namespace KCore {
         std::map<std::string, bool> mCurrMetaTiles{}, mPrevMetaTiles{};
 
         TaskContext mTaskContext{};
+
+#ifndef EMSCRIPTEN
         NetworkContext mNetworkContext{};
+#endif
 
         std::mutex mSyncLock, mAsyncLock;
         std::vector<KCore::MapEvent> mSyncEvents, mAsyncEvents;
@@ -99,7 +106,9 @@ namespace KCore {
 
         TaskContext &getTaskContext();
 
+#ifndef __EMSCRIPTEN__
         NetworkContext &getNetworkContext();
+#endif
 
     protected:
         virtual void performStages() = 0;

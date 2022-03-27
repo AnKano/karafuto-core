@@ -19,6 +19,7 @@ namespace KCore {
         return mIndices;
     }
 
+#ifndef EMSCRIPTEN
     DllExport float *GetMeshVertices(KCore::BaseMesh *mesh, int &length) {
         auto &vertices = mesh->getVertices();
         length = 3 * (int) vertices.size();
@@ -42,4 +43,5 @@ namespace KCore {
         length = (int) indices.size();
         return const_cast<unsigned int *>(indices.data());
     }
+#endif
 }

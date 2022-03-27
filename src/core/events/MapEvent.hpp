@@ -6,13 +6,13 @@
 namespace KCore {
     enum EventType {
         InFrustum = 0,
-        NotInFrustum,
+        NotInFrustum = 1,
 
-        ContentLoadedRender,
-        ContentLoadedImage,
+        ContentLoadedRender = 2,
+        ContentLoadedImage = 3,
 
-        TerrainLoaded,
-        GeoJSONLoaded
+        TerrainLoaded = 4,
+        GeoJSONLoaded = 5
     };
 
     struct MapEvent {

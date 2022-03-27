@@ -22,6 +22,9 @@ namespace KCore {
         mPrevMetaTiles = std::move(mCurrMetaTiles);
         mCurrMetaTiles = {};
 
+//        std::cout << "old " << mPrevMetaTiles.size() << std::endl;
+//        std::cout << "new " << mCurrMetaTiles.size() << std::endl;
+
         auto depth = maximalCommonTilesDepth();
         auto preferDepth = depth - 4;
 
@@ -63,7 +66,7 @@ namespace KCore {
         auto toRenderContext = std::vector<GenericTile *>();
         for (const auto &[quadcode, _]: mCurrMetaTiles)
             toRenderContext.push_back(mCreatedMetaTiles[quadcode]);
-        mRenderContext->setCurrentTileState(toRenderContext);
+//        mRenderContext->setCurrentTileState(toRenderContext);
 
         postMetaTileCalculation();
     }
@@ -158,7 +161,7 @@ namespace KCore {
     }
 
     void TerrainedWorld::createBaseTileResources(GenericTile *tile) {
-        tile->registerImmediateResource("image", BuiltInResource::ImageCalculateMeta());
+//        tile->registerImmediateResource("image", BuiltInResource::ImageCalculateMeta());
     }
 
     void TerrainedWorld::createMetaTileResources(GenericTile *tile) {
@@ -172,10 +175,12 @@ namespace KCore {
         performStages();
     }
 
-    IRenderContext *TerrainedWorld::getRenderContext() {
-        return mRenderContext;
-    }
+//    IRenderContext *TerrainedWorld::getRenderContext() {
+//        return mRenderContext;
+//        return nullptr;
+//    }
 
+#ifndef __EMSCRIPTEN__
     extern "C" {
     DllExport KCore::TerrainedWorld *CreateTerrainedWorld(float latitude, float longitude) {
         return new KCore::TerrainedWorld(latitude, longitude);
@@ -189,4 +194,5 @@ namespace KCore {
         world->getSources()[tag] = source;
     }
     }
+#endif
 }

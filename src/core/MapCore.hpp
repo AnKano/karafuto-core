@@ -1,6 +1,5 @@
 #pragma once
 
-
 #include <vector>
 #include <thread>
 
@@ -9,8 +8,14 @@
 #include "geography/TileDescription.hpp"
 #include "worlds/TerrainedWorld.hpp"
 #include "meshes/GridMesh.hpp"
+
+#ifndef __EMSCRIPTEN__
+
 #include "contexts/rendering/IRenderContext.hpp"
 #include "contexts/network/NetworkContext.hpp"
+
+#endif
+
 #include "contexts/task/TaskContext.hpp"
 #include "cache/LimitedSpaceCache.hpp"
 #include "events/MapEvent.hpp"
@@ -53,21 +58,11 @@ namespace KCore {
 
         std::vector<MapEvent> getAsyncEvents();
 
-#ifdef __EMSCRIPTEN__
-        void update(intptr_t camera_projection_matrix_addr,
-            intptr_t camera_view_matrix_addr,
-            intptr_t camera_position_addr);
-
-        const std::vector<TileDescription>& emscripten_get_tiles();
-
-        const std::vector<TileDescription>& emscripten_get_meta_tiles();
-#endif
-
     private:
         void performUpdate();
-
     };
 
+#ifndef __EMSCRIPTEN__
     extern "C" {
     DllExport KCore::MapCore *CreateMapCore();
 
@@ -99,4 +94,6 @@ namespace KCore {
 
     DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length);
     }
+#endif
 }
+

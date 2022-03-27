@@ -4,7 +4,9 @@
 
 namespace KCore {
     TaskContext::TaskContext() {
-        mTaskThread = std::make_unique<std::thread>([this]() {
+        std::cout << "Main Thread ID: " << std::this_thread::get_id() << std::endl;
+        mTaskThread = std::make_unique<std::thread>([this] {
+            std::cout << "Task Thread ID: " << std::this_thread::get_id() << std::endl;
             runTaskLoop();
         });
         mTaskThread->detach();
@@ -36,14 +38,13 @@ namespace KCore {
 
     void TaskContext::runTaskLoop() {
         while (!mShouldClose) {
+//            std::cout << "task thread ping!" << std::endl;
             auto task = mTaskQueue.popTask();
             while (task) {
                 task->invoke();
 
                 // get next task or nullptr
                 task = mTaskQueue.popTask();
-
-//                glfwPollEvents();
             }
 
             std::this_thread::sleep_for(mWaitInterval);

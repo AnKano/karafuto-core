@@ -3,7 +3,9 @@
 #include "../GenericTile.hpp"
 #include "../../../sources/RemoteSource.hpp"
 #include "../../../sources/local/srtm/SRTMLocalSource.hpp"
+#ifndef __EMSCRIPTEN__
 #include "../../../contexts/network/NetworkRequest.hpp"
+#endif
 #include "../../../worlds/BaseWorld.hpp"
 #include "../../../meshes/GridMesh.hpp"
 #include "../../../worlds/TerrainedWorld.hpp"
@@ -13,6 +15,7 @@
 namespace KCore {
     std::function<void(KCore::BaseWorld *, GenericTile *tile)> BuiltInResource::ImageCalculate() {
         auto processor = [](BaseWorld *world, GenericTile *tile) {
+#ifndef __EMSCRIPTEN__
             auto desc = tile->getTileDescription();
             auto url = ((RemoteSource *) world->getSources()["base"])->bakeUrl(desc);
             auto request = new KCore::NetworkRequest{
@@ -31,12 +34,14 @@ namespace KCore {
             world->getNetworkContext().pushRequestToQueue(request);
 
             tile->commitTag("image");
+#endif
         };
         return processor;
     }
 
     std::function<void(KCore::BaseWorld *, GenericTile *tile)> BuiltInResource::ImageCalculateMeta() {
         auto processor = [](BaseWorld *world, GenericTile *tile) {
+#ifndef __EMSCRIPTEN__
             auto desc = tile->getTileDescription();
             auto url = ((RemoteSource *) world->getSources()["base"])->bakeUrl(desc);
             auto request = new KCore::NetworkRequest{
@@ -49,12 +54,13 @@ namespace KCore {
                         if (image.size() != 256 * 256 * 3) return;
 
                         // but anyway store raw data (we will compress and use it after)
-                        convWorld->getRenderContext()->storeTextureInContext(data, desc.getQuadcode());
+//                        convWorld->getRenderContext()->storeTextureInContext(data, desc.getQuadcode());
                     }, nullptr
             };
-            world->getNetworkContext().pushRequestToQueue(request);
+//            world->getNetworkContext().pushRequestToQueue(request);
 
             tile->commitTag("image");
+#endif
         };
         return processor;
     }

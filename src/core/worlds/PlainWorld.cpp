@@ -21,8 +21,8 @@ namespace KCore {
     }
 
     void PlainWorld::createBaseTileResources(GenericTile *tile) {
-        tile->registerImmediateResource("image", BuiltInResource::ImageCalculate());
-        tile->registerImmediateResource("json", BuiltInResource::JSONCalculate());
+//        tile->registerImmediateResource("image", BuiltInResource::ImageCalculate());
+//        tile->registerImmediateResource("json", BuiltInResource::JSONCalculate());
     }
 
     void PlainWorld::postTileCalculation(const std::vector<TileDescription> &tiles) {
@@ -49,9 +49,11 @@ namespace KCore {
 
     void PlainWorld::postMetaTileCalculation() {}
 
+#ifndef EMSCRIPTEN
     extern "C" {
     DllExport KCore::PlainWorld *CreatePlainWorld(float latitude, float longitude) {
         return new KCore::PlainWorld(latitude, longitude);
     }
     }
+#endif
 }

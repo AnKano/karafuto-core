@@ -17,9 +17,11 @@ namespace KCore {
         void createPartFile(const std::string &path) override;
     };
 
+#ifndef EMSCRIPTEN
     extern "C" {
     DllExport KCore::GeoJSONLocalSource *CreateGeoJSONLocalSource();
 
     DllExport void GeoJSONAddPartFile(KCore::GeoJSONLocalSource *sourcePtr, const char *path);
     }
+#endif
 }

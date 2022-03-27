@@ -3,9 +3,11 @@
 ////
 
 
+#include <chrono>
+#include <glm/glm.hpp>
+
 #include "core/MapCore.hpp"
 #include "core/worlds/PlainWorld.hpp"
-#include "core/sources/RemoteSource.hpp"
 #include "core/meshes/PolylineMesh.hpp"
 
 #ifdef __EMSCRIPTEN__
@@ -14,57 +16,157 @@
 
 using namespace emscripten;
 
-EMSCRIPTEN_BINDINGS(karafuto) {
-    register_vector<KCore::TileDescription>("kcore_tile_vector");    register_vector<glm::vec3>("glm_vec3_vector");
-    register_vector<glm::vec2>("glm_vec2_vector");
-    register_vector<uint32_t>("unsigned_int_vector");
-    register_vector<float>("float_vector");
-    register_vector<std::string>("string_vector");
 
-    value_object<glm::vec2>("vec2")
-            .field("x", &glm::vec2::x)
-            .field("y", &glm::vec2::y);
+uintptr_t createWorld(float lat, float lon) {
+    auto *mapCoreInstance = new KCore::MapCore;
+    auto *world = new KCore::TerrainedWorld(lat, lon);
 
-    function("lat_lon_to_point", &KCore::geo_converter::lat_lon_to_point);
-    function("point_to_lat_lon", &KCore::geo_converter::point_to_lat_lon);
+    auto TerrainSource_ptr = new KCore::SRTMLocalSource();
+    TerrainSource_ptr->addSourcePart("/assets/sources", ".hgt");
 
-    class_<KCore::GridMesh>("mesh")
-            .constructor<float, float, int>()
-            .constructor<float, float, int, int>()
+    auto jsonSource = new KCore::GeoJSONLocalSource;
+    jsonSource->addSourcePart("assets/sources/few.geojson");
 
-            .function("emscripten_get_indices_ptr", &KCore::GridMesh::emscripten_get_indices_ptr)
-            .function("emscripten_get_uvs_ptr", &KCore::GridMesh::emscripten_get_uvs_ptr)
-            .function("emscripten_get_normals_ptr", &KCore::GridMesh::emscripten_get_normals_ptr)
-            .function("emscripten_get_vertices_ptr", &KCore::GridMesh::emscripten_get_vertices_ptr)
-            .function("emscripten_get_constant_ptr", &KCore::GridMesh::emscripten_get_constant_ptr)
+    world->registerSource(TerrainSource_ptr, "terrain");
+    world->registerSource(jsonSource, "json");
 
-            .function("emscripten_get_indices_count", &KCore::GridMesh::emscripten_get_indices_count)
-            .function("emscripten_get_uvs_count", &KCore::GridMesh::emscripten_get_uvs_count)
-            .function("emscripten_get_normals_count", &KCore::GridMesh::emscripten_get_normals_count)
-            .function("emscripten_get_vertices_count", &KCore::GridMesh::emscripten_get_vertices_count)
-            .function("emscripten_get_constant_count", &KCore::GridMesh::emscripten_get_constant_count);
+    world->commitWorldSetup();
 
-    class_<KCore::TileDescription>("TileDescription")
-            .property("Quadcode", &KCore::TileDescription::get_quadcode)
-            .property("side_length", &KCore::TileDescription::get_side_length);
+    mapCoreInstance->setWorldAdapter((KCore::BaseWorld *) world);
 
-    class_<KCore::map_core>("map_core")
-            .constructor<float, float>()
-            .function("update", select_overload<void(intptr_t, intptr_t, intptr_t)>(&KCore::map_core::update))
-            .function("get_tiles", &KCore::map_core::get_tiles)
-            .function("emscripten_get_tiles", &KCore::map_core::emscripten_get_tiles)
-            .function("emscripten_get_meta_tiles", &KCore::map_core::emscripten_get_meta_tiles);
+    return reinterpret_cast<uintptr_t>(mapCoreInstance);
 }
 
-#endif
+void update(uintptr_t instancePtr,
+            float camPosX, float camPosY, float camPosZ,
+            float targetPosX, float targetPosY, float targetPosZ,
+            float upX, float upY, float upZ,
+            float sceneWidth, float sceneHeight) {
+    auto mapInstance = reinterpret_cast<KCore::MapCore *>(instancePtr);
 
-#include <iostream>
-#include <chrono>
+    const float aspectRatio{sceneWidth / sceneHeight};
 
-#include <glm/glm.hpp>
+    // create camera that describe point of view and matrix
+    glm::mat4 cameraProjectionMatrix;
+    glm::mat4 cameraViewMatrix;
+
+    glm::vec3 cameraOpenGlSpacePosition{camPosX, camPosY, camPosZ};
+    glm::vec3 cameraOpenGlSpaceTarget{targetPosX, targetPosY, targetPosZ};
+    glm::vec3 cameraOpenGlSpaceUp{upX, upY, upZ};
+
+    // setup matrices
+    {
+        cameraViewMatrix = glm::lookAt(
+                cameraOpenGlSpacePosition,
+                cameraOpenGlSpaceTarget,
+                cameraOpenGlSpaceUp
+        );
+
+        cameraProjectionMatrix = glm::perspective(
+                glm::radians(60.0f), aspectRatio,
+                0.1f, 2500000.0f
+        );
+    }
+
+    mapInstance->update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
+}
+
+uintptr_t getSyncEvents(uintptr_t instancePtr, uintptr_t lengthPtr) {
+    auto mapInstance = reinterpret_cast<KCore::MapCore *>(instancePtr);
+
+    auto *syncs = new std::vector<KCore::MapEvent>(mapInstance->getSyncEvents());
+    auto *length = reinterpret_cast<int *>(lengthPtr);
+    *length = syncs->size();
+    return reinterpret_cast<uintptr_t>(syncs->data());
+}
+
+uintptr_t getAsyncEvents(uintptr_t instancePtr, uintptr_t lengthPtr) {
+    auto mapInstance = reinterpret_cast<KCore::MapCore *>(instancePtr);
+
+    auto *asyncs = new std::vector<KCore::MapEvent>(mapInstance->getAsyncEvents());
+    auto *length = reinterpret_cast<int *>(lengthPtr);
+    *length = asyncs->size();
+    return reinterpret_cast<uintptr_t>(asyncs->data());
+}
+
+void releaseEvents(uintptr_t ptr) {
+    auto *conv = reinterpret_cast<std::vector<KCore::MapEvent> *>(ptr);
+    delete conv;
+}
+
+uintptr_t getMeshVertices(uintptr_t meshPtr, uintptr_t lengthPtr) {
+    auto *mesh = reinterpret_cast<KCore::BaseMesh *>(meshPtr);
+    auto *length = reinterpret_cast<int *>(lengthPtr);
+
+    auto &vertices = mesh->getVertices();
+    *length = (int) vertices.size() * 3;
+    return reinterpret_cast<uintptr_t>(glm::value_ptr(vertices[0]));
+}
+
+uintptr_t getMeshNormals(uintptr_t meshPtr, uintptr_t lengthPtr) {
+    auto *mesh = reinterpret_cast<KCore::BaseMesh *>(meshPtr);
+    auto *length = reinterpret_cast<int *>(lengthPtr);
+
+    auto &normals = mesh->getNormals();
+    *length = (int) normals.size() * 3;
+    return reinterpret_cast<uintptr_t>(glm::value_ptr(normals[0]));
+}
+
+uintptr_t getMeshUVs(uintptr_t meshPtr, uintptr_t lengthPtr) {
+    auto *mesh = reinterpret_cast<KCore::BaseMesh *>(meshPtr);
+    auto *length = reinterpret_cast<int *>(lengthPtr);
+
+    auto &uvs = mesh->getUVs();
+    *length = (int) uvs.size() * 2;
+    return reinterpret_cast<uintptr_t>(glm::value_ptr(uvs[0]));
+}
+
+uintptr_t getMeshIndices(uintptr_t meshPtr, uintptr_t lengthPtr) {
+    auto *mesh = reinterpret_cast<KCore::BaseMesh *>(meshPtr);
+    auto *length = reinterpret_cast<int *>(lengthPtr);
+
+    auto &indices = mesh->getIndices();
+    *length = (int) indices.size();
+    return reinterpret_cast<uintptr_t>(indices.data());
+}
+
+uintptr_t getJSONTransObjects(uintptr_t vectorPtr, uintptr_t lengthPtr) {
+    auto *vector = reinterpret_cast<std::vector<KCore::GeoJSONTransObject> *>(vectorPtr);
+    auto *length = reinterpret_cast<int *>(lengthPtr);
+
+    *length = (int) vector->size();
+    return reinterpret_cast<uintptr_t>(vector->data());
+}
+
+uintptr_t getPointerToMeshFromTransObject(uintptr_t meshPtr) {
+    auto *obj = reinterpret_cast<KCore::GeoJSONTransObject *>(meshPtr);
+    return reinterpret_cast<uintptr_t>(obj->mesh);
+}
+
+EMSCRIPTEN_BINDINGS(KarafutoCore) {
+    function("createWorld", &createWorld);
+    function("update", &update);
+
+    // Event vector interaction
+    function("getSyncEvents", &getSyncEvents, emscripten::allow_raw_pointers());
+    function("getAsyncEvents", &getAsyncEvents, emscripten::allow_raw_pointers());
+    function("releaseEvents", &releaseEvents);
+
+    // BaseMesh* interaction
+    function("getMeshVertices", &getMeshVertices, emscripten::allow_raw_pointers());
+    function("getMeshUVs", &getMeshUVs, emscripten::allow_raw_pointers());
+    function("getMeshNormals", &getMeshNormals, emscripten::allow_raw_pointers());
+    function("getMeshIndices", &getMeshIndices, emscripten::allow_raw_pointers());
+
+    // GeoJSON interaction
+    function("getJSONTransObjects", &getJSONTransObjects, emscripten::allow_raw_pointers());
+    function("getPointerToMeshFromTransObject", &getPointerToMeshFromTransObject, emscripten::allow_raw_pointers());
+}
+
+#else
 
 int main() {
-    const uint16_t viewportWidth{2560}, viewportHeight{1280};
+    const uint16_t viewportWidth{1920}, viewportHeight{1080};
     const float aspectRatio{(float) viewportWidth / viewportHeight};
 
     // create camera that describe point of view and matrix
@@ -89,7 +191,7 @@ int main() {
         );
     }
 
-    const uint16_t iterations{50000};
+    const uint16_t iterations{100};
 
     // 46.9181f, 142.7189f is latitude and longitude of
     // the surroundings of the city of Yuzhno-Sakhalinsk
@@ -126,35 +228,48 @@ int main() {
 //    KCore::MapCore core;
 //    core.setWorldAdapter(world);
 
-    auto MapCore_ptr = KCore::CreateMapCore();
-    auto World_ptr = KCore::CreateTerrainedWorld(46.9181f, 142.7189f);
+    KCore::MapCore core;
+    auto *world = new KCore::TerrainedWorld(46.7197f, 142.5233f);
 
-    auto TerrainSource_ptr = KCore::CreateSRTMLocalSource();
-    SRTMAddFileGlob(TerrainSource_ptr, "../build/assets/sources", ".hgt");
+    auto TerrainSource_ptr = new KCore::SRTMLocalSource();
 
-    auto ImageSource_ptr = KCore::CreateRemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
+#ifdef __EMSCRIPTEN__
+    TerrainSource_ptr->addSourcePart("/assets/sources", ".hgt");
+#else
+    TerrainSource_ptr->addSourcePart("../build/assets/sources", ".hgt");
+#endif
+//    auto ImageSource_ptr = KCore::CreateRemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
 
-    KCore::TerrainedWorldRegisterSource(World_ptr, TerrainSource_ptr, "terrain");
-    KCore::TerrainedWorldRegisterSource(World_ptr, ImageSource_ptr, "base");
+    world->registerSource(TerrainSource_ptr, "terrain");
 
     auto jsonSource = new KCore::GeoJSONLocalSource;
-    jsonSource->addSourcePart("assets/sources/points.geojson");
-    World_ptr->registerSource(jsonSource, "json");
+    jsonSource->addSourcePart("assets/sources/few.geojson");
+    world->registerSource(jsonSource, "json");
 
-    World_ptr->commitWorldSetup();
+    world->commitWorldSetup();
 
-    KCore::SetWorldAdapter(MapCore_ptr, World_ptr);
+    core.setWorldAdapter((KCore::BaseWorld *) world);
 
     auto start = std::chrono::system_clock::now();
     for (auto i = 0; i < iterations; i++) {
-        cameraOpenGlSpacePosition.x += 10;
-        MapCore_ptr->update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
-        auto* a = GetAsyncEventsVector(MapCore_ptr);
+        core.update(cameraProjectionMatrix, cameraViewMatrix, cameraOpenGlSpacePosition);
 
-        int z = 0;
-        auto* b = EjectAsyncEventsFromVector(a, z);
+        auto a = core.getSyncEvents();
+        auto b = core.getAsyncEvents();
 
-        ReleaseEventsVector(a);
+        for (const auto &item: a) {
+            switch (item.type) {
+                case KCore::InFrustum:
+                    std::cout << "In frustum " << item.quadcode << std::endl;
+                    break;
+                case KCore::NotInFrustum:
+                    std::cout << "Not In frustum " << item.quadcode << std::endl;
+                    break;
+                default:
+                    break;
+            }
+            std::cout << std::endl;
+        }
     }
     auto elapsed = std::chrono::system_clock::now() - start;
 
@@ -163,3 +278,5 @@ int main() {
 
     return 0;
 }
+
+#endif

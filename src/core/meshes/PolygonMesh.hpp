@@ -23,7 +23,7 @@ namespace KCore {
     public:
         PolygonMesh(const GeoJSONObject &object,
                     const std::vector<std::array<double, 2>> &convertedMainCoords,
-                    const std::vector<std::array<double, 2>> &convertedHoleCoords) {
+                    const std::vector<std::array<double, 2>> &convertedHoleCoords) : BaseMesh() {
             if (object.mType != Polygon && object.mType != PolygonWithHole)
                 throw std::runtime_error("Can't instantiate mesh using object of different type!");
 

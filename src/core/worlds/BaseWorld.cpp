@@ -148,9 +148,11 @@ namespace KCore {
         return mTaskContext;
     }
 
+#ifndef __EMSCRIPTEN__
     NetworkContext &BaseWorld::getNetworkContext() {
         return mNetworkContext;
     }
+#endif
 
     void BaseWorld::calculateTiles() {
         // store old tiles and clear up current

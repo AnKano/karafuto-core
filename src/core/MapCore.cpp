@@ -5,10 +5,12 @@
 #include "worlds/PlainWorld.hpp"
 #include "queue/tasks/CallbackTask.hpp"
 #include "misc/Utils.hpp"
-#include "misc/STBImageUtils.hpp"
 #include "meshes/PolylineMesh.hpp"
 #include "meshes/PolygonMesh.hpp"
+
+#ifndef __EMSCRIPTEN__
 #include "gzip/decompress.hpp"
+#endif
 
 namespace KCore {
     MapCore::MapCore() = default;
@@ -78,34 +80,7 @@ namespace KCore {
         return mWorldAdapter->getAsyncEvents();
     }
 
-#ifdef __EMSCRIPTEN__
-    void map_core::update(intptr_t camera_projection_matrix_addr,
-        intptr_t camera_view_matrix_addr,
-        intptr_t camera_position_addr) {
-        return update(reinterpret_cast<float*>(camera_projection_matrix_addr),
-            reinterpret_cast<float*>(camera_view_matrix_addr),
-            reinterpret_cast<float*>(camera_position_addr));
-    }
-
-
-    const std::vector<TileDescription>& map_core::emscripten_get_tiles() {
-        mBaseTiles.clear();
-
-        for (const auto& item : get_tiles())
-            mBaseTiles.push_back(*item);
-
-        return std::move(mBaseTiles);
-    }
-    const std::vector<TileDescription>& map_core::emscripten_get_meta_tiles() {
-        mMetaTiles.clear();
-
-        for (const auto& item : get_height_tiles())
-            mMetaTiles.push_back(*item);
-
-        return std::move(mMetaTiles);
-    }
-#endif
-
+#ifndef __EMSCRIPTEN__
     DllExport KCore::MapCore *CreateMapCore() {
         return new KCore::MapCore();
     }
@@ -190,4 +165,5 @@ namespace KCore {
 
         return points->data();
     }
+#endif
 }

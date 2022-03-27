@@ -28,6 +28,7 @@ namespace KCore {
         void createPartFile(const std::string &path) override;
     };
 
+#ifndef EMSCRIPTEN
     extern "C" {
     DllExport KCore::SRTMLocalSource *CreateSRTMLocalSource();
 
@@ -35,4 +36,5 @@ namespace KCore {
 
     DllExport void SRTMAddFileGlob(KCore::SRTMLocalSource *sourcePtr, const char *directory, const char *postfix);
     }
+#endif
 }

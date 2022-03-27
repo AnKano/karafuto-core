@@ -4,7 +4,7 @@
 #include <utility>
 #include <iostream>
 
-#include <curl/curl.h>
+//#include <curl/curl.h>
 
 #include "BaseTask.hpp"
 

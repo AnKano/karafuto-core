@@ -11,8 +11,12 @@ namespace KCore {
             auto currTiles = world->getCurrentBaseTiles();
             auto prevTiles = world->getPreviousBaseTiles();
 
+//            std::cout << "old " << prevTiles.size() << std::endl;
+//            std::cout << "new " << currTiles.size() << std::endl;
+
             auto diff = mapKeysDifference<std::string>(currTiles, prevTiles);
             auto inter = mapKeysIntersection<std::string>(currTiles, prevTiles);
+
 
             for (auto &item: diff) {
                 bool inPrev = prevTiles.count(item) > 0;

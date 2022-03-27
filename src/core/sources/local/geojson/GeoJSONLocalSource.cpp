@@ -24,6 +24,7 @@ namespace KCore {
         mPieces.push_back(static_cast<const std::shared_ptr<BaseSourcePart>>(new GeoJSONFileSourcePiece(path)));
     }
 
+#ifndef EMSCRIPTEN
     DllExport KCore::GeoJSONLocalSource *CreateGeoJSONLocalSource() {
         return new GeoJSONLocalSource;
     }
@@ -31,4 +32,5 @@ namespace KCore {
     DllExport void GeoJSONAddPartFile(KCore::GeoJSONLocalSource *sourcePtr, const char *path) {
         sourcePtr->addSourcePart(path);
     }
+#endif
 }

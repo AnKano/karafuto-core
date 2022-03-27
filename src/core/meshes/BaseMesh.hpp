@@ -67,6 +67,7 @@ namespace KCore {
 #endif
     };
 
+#ifndef EMSCRIPTEN
     extern "C" {
     DllExport float *GetMeshVertices(KCore::BaseMesh *mesh, int &length);
 
@@ -76,4 +77,5 @@ namespace KCore {
 
     DllExport unsigned int *GetMeshIndices(KCore::BaseMesh *mesh, int &length);
     }
+#endif
 }
