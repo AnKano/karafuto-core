@@ -16,7 +16,6 @@
 
 using namespace emscripten;
 
-
 uintptr_t createWorld(float lat, float lon) {
     auto *mapCoreInstance = new KCore::MapCore;
     auto *world = new KCore::TerrainedWorld(lat, lon);

@@ -18,7 +18,8 @@ set(CPP_HEADERS_EXCLUDE "")
 set(CPP_SOURCES_EXCLUDE "")
 
 if (EMSCRIPTEN)
-    set(CMAKE_EXECUTABLE_SUFFIX .html)
+    set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/ems-server/static)
+    set(CMAKE_EXECUTABLE_SUFFIX .js)
 
     file(GLOB_RECURSE CPP_HEADERS_EXCLUDE
             ${MAIN_SOURCE_DIR}/core/contexts/network/*.hpp

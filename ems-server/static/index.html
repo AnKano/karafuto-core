@@ -1,5 +1,6 @@
 <!doctype html>
 <html>
+<h1>test</h1>
 <script>
     const parseQuadcode = (string) => {
         let accum = [];
@@ -182,14 +183,14 @@
         }
     }
 
-    const parseEventsArrayFromPtr = (Module, functor) => {
+    const parseEventsArrayFromPtr = (Module, mapPtr, functor) => {
         let eventObjects = [];
 
         // get length
         let lengthPtr = Module._malloc(4);
         Module.setValue(lengthPtr, 0, 'i32');
 
-        let eventsPtr = functor(lengthPtr);
+        let eventsPtr = functor(mapPtr, lengthPtr);
         let length = Module.getValue(lengthPtr, 'i32');
 
         Module._free(lengthPtr);
@@ -202,18 +203,19 @@
         return eventObjects;
     }
 
-    const parseAsyncEventsArrayFromPtr = (Module) => {
-        return parseEventsArrayFromPtr(Module, Module.getAsyncEvents);
+    const parseAsyncEventsArrayFromPtr = (mapPtr, Module) => {
+        return parseEventsArrayFromPtr(Module, mapPtr, Module.getAsyncEvents);
     }
 
-    const parseSyncEventsArrayFromPtr = (Module) => {
-        return parseEventsArrayFromPtr(Module, Module.getSyncEvents);
+    const parseSyncEventsArrayFromPtr = (mapPtr, Module) => {
+        return parseEventsArrayFromPtr(Module, mapPtr, Module.getSyncEvents);
     }
 
     var Module = {
         onRuntimeInitialized: () => {
-            Module.start(46.7197, 142.5233);
+            const mapPtr = Module.createWorld(46.7197, 142.5233);
             Module.update(
+                mapPtr,
                 1000.0, 10000.0, 10000.0,
                 0.0, 0.0, 0.0,
                 0.0, 1.0, 0.0,
@@ -221,12 +223,12 @@
             );
 
             setTimeout(() => {
-                let syncEventsObjects = parseSyncEventsArrayFromPtr(Module);
+                let syncEventsObjects = parseSyncEventsArrayFromPtr(mapPtr, Module);
                 console.log(syncEventsObjects);
             }, 0);
 
             setTimeout(() => {
-                let asyncEventsObjects = parseAsyncEventsArrayFromPtr(Module);
+                let asyncEventsObjects = parseAsyncEventsArrayFromPtr(mapPtr, Module);
                 console.log(asyncEventsObjects);
             }, 5000);
         }
