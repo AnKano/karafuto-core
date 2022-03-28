@@ -38,7 +38,7 @@ namespace KCore {
 
     void TaskContext::runTaskLoop() {
         while (!mShouldClose) {
-//            std::cout << "task thread ping!" << std::endl;
+//            std::cout << "Task ping!" << std::endl;
             auto task = mTaskQueue.popTask();
             while (task) {
                 task->invoke();

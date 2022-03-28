@@ -18,6 +18,12 @@ app.use((req, res, next) => {
 });
 app.use(express.static(path.resolve(__dirname, 'static')));
 
+app.get('/', function(req,res) {
+    //modify the url in any way you want
+    var newurl = 'http://google.com/';
+    request(newurl).pipe(res);
+});
+
 server.listen(4000, () => {
     console.log('server is running at port 4000')
 });

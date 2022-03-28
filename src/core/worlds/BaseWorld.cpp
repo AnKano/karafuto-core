@@ -1,5 +1,14 @@
 #include "BaseWorld.hpp"
 
+
+#if defined(EMSCRIPTEN)
+#include "../contexts/network/emscripten-fetch/EmscriptenFetchNetworkContext.hpp"
+#elif defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
+#include "../contexts/network/curl/CURLNetworkContext.hpp"
+#else
+#include "../contexts/network/fallback/FallbackNetworkContext.hpp"
+#endif
+
 namespace KCore {
     BaseWorld::BaseWorld() : BaseWorld(0.0f, 0.0f) {}
 
@@ -7,6 +16,14 @@ namespace KCore {
         glm::vec2 originPoint{GeographyConverter::latLonToPoint({latitude, longitude})};
         mOriginLatLon = originPoint;
         mOriginPosition = {latitude, 0.0f, longitude};
+
+#if defined(EMSCRIPTEN)
+        mNetworkContext = new EmscriptenFetchNetworkContext{};
+#elif defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
+        mNetworkContext = new CURLNetworkContext{};
+#else
+        mNetworkContext = new FallbackNetworkContext{};
+#endif
     }
 
     std::map<std::string, GenericTile *> &BaseWorld::getCreatedBaseTiles() {
@@ -48,6 +65,10 @@ namespace KCore {
     void BaseWorld::update() {
         calculateTiles();
         performStages();
+
+#if defined(EMSCRIPTEN)
+        mNetworkContext->synchronousStep();
+#endif
     }
 
     const std::map<std::string, BaseSource *> &BaseWorld::getSources() const {
@@ -148,11 +169,9 @@ namespace KCore {
         return mTaskContext;
     }
 
-#ifndef __EMSCRIPTEN__
-    NetworkContext &BaseWorld::getNetworkContext() {
+    INetworkContext *BaseWorld::getNetworkContext() {
         return mNetworkContext;
     }
-#endif
 
     void BaseWorld::calculateTiles() {
         // store old tiles and clear up current

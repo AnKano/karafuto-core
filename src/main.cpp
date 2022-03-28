@@ -26,6 +26,8 @@ uintptr_t createWorld(float lat, float lon) {
     auto jsonSource = new KCore::GeoJSONLocalSource;
     jsonSource->addSourcePart("assets/sources/few.geojson");
 
+    auto imageSource = new KCore::RemoteSource("https://tile.openstreetmap.org/{z}/{x}/{y}.png");
+    world->registerSource(imageSource, "base");
     world->registerSource(TerrainSource_ptr, "terrain");
     world->registerSource(jsonSource, "json");
 

@@ -22,11 +22,11 @@ if (EMSCRIPTEN)
     set(CMAKE_EXECUTABLE_SUFFIX .js)
 
     file(GLOB_RECURSE CPP_HEADERS_EXCLUDE
-            ${MAIN_SOURCE_DIR}/core/contexts/network/*.hpp
+            ${MAIN_SOURCE_DIR}/core/contexts/network/curl/*.hpp
             ${MAIN_SOURCE_DIR}/core/contexts/rendering/*.hpp
             ${MAIN_SOURCE_DIR}/core/contexts/rendering/*.inl)
     file(GLOB_RECURSE CPP_SOURCES_EXCLUDE
-            ${MAIN_SOURCE_DIR}/core/contexts/network/*.cpp
+            ${MAIN_SOURCE_DIR}/core/contexts/network/curl/*.cpp
             ${MAIN_SOURCE_DIR}/core/contexts/rendering/*.cpp)
 
     list(REMOVE_ITEM CPP_HEADERS ${CPP_HEADERS_EXCLUDE})
@@ -47,7 +47,7 @@ if (EMSCRIPTEN)
 
     set(CMAKE_CXX_FLAGS "-pthread")
     add_link_options(-pthread)
-    target_link_options(karafuto_core PUBLIC "SHELL: -s EXPORTED_RUNTIME_METHODS=[\"setValue\",\"getValue\"] -lembind -s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/build/assets@/assets")
+    target_link_options(karafuto_core PUBLIC "SHELL: -s EXPORTED_RUNTIME_METHODS=[\"setValue\",\"getValue\"] -lembind -s FETCH=1 -s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/build/assets@/assets")
 else ()
     # select correct sources for current platform
     if (APPLE OR UNIX OR WIN32)

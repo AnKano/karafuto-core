@@ -22,9 +22,6 @@ namespace KCore {
         mPrevMetaTiles = std::move(mCurrMetaTiles);
         mCurrMetaTiles = {};
 
-//        std::cout << "old " << mPrevMetaTiles.size() << std::endl;
-//        std::cout << "new " << mCurrMetaTiles.size() << std::endl;
-
         auto depth = maximalCommonTilesDepth();
         auto preferDepth = depth - 4;
 
@@ -161,7 +158,7 @@ namespace KCore {
     }
 
     void TerrainedWorld::createBaseTileResources(GenericTile *tile) {
-//        tile->registerImmediateResource("image", BuiltInResource::ImageCalculateMeta());
+        tile->registerImmediateResource("image", BuiltInResource::ImageCalculateMeta());
     }
 
     void TerrainedWorld::createMetaTileResources(GenericTile *tile) {

@@ -18,7 +18,7 @@ namespace KCore {
         auto converted = reinterpret_cast<uint16_t *>(heights);
 
         for (int i = 0; i < (segmentsX + 1) * (segmentsY + 1); i++)
-            mVertices[i].y = converted[i];
+            mVertices[i].y = (converted[i] > 7000.0f) ? 0.0f : converted[i];
     }
 
     void GridMesh::createMesh() {
@@ -44,7 +44,7 @@ namespace KCore {
                 float x = ((float) ix * segmentWidth) - widthHalf;
                 float y = ((float) iy * segmentHeight) - heightHalf;
 
-                mVertices.emplace_back(-1 * x, 0.0f, -1 * y);
+                mVertices.emplace_back(-1 * x, 0.0f, 1 * y);
                 mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
                 float uvX = (float) ix / ((float) segmentsX);

@@ -6,12 +6,11 @@
 #include <iostream>
 #include <map>
 
-#include <curl/curl.h>
-
 #include "../../queue/Queue.hpp"
 #include "../../geography/TileDescription.hpp"
 #include "../../queue/tasks/NetworkTask.hpp"
 #include "../../cache/BaseCache.hpp"
+
 #include "NetworkRequest.hpp"
 
 using namespace std::chrono_literals;
@@ -19,11 +18,8 @@ using namespace std::chrono_literals;
 namespace KCore {
     class MapCore;
 
-    class NetworkContext {
-    private:
-        CURLM *mCurlMultiContext{};
-
-        Queue<NetworkTask> mQueue;
+    class INetworkContext {
+    protected:
         std::deque<NetworkRequest *> mRequestQueue;
 
         std::unique_ptr<std::thread> mRenderThread;
@@ -32,9 +28,9 @@ namespace KCore {
         bool mReadyToBeDead = false;
 
     public:
-        NetworkContext();
+        INetworkContext();
 
-        ~NetworkContext();
+        ~INetworkContext();
 
         [[maybe_unused]]
         void setWaitInterval(const uint64_t &value);
@@ -47,19 +43,19 @@ namespace KCore {
         [[nodiscard]]
         bool getWorkingStatus() const;
 
-        void pushRequestToQueue(NetworkRequest *task);
+        void pushRequestToQueue(NetworkRequest* request);
+
+        virtual void synchronousStep() = 0;
 
     private:
-        void runRenderLoop();
+        void runLoop();
+
+        virtual void init() = 0;
+
+        virtual void onEachStep() = 0;
+
+        virtual void dispose() = 0;
 
         void disposeContext();
-
-        void initCURL();
-
-        void putTaskToCURL(NetworkRequest* task);
-
-        void disposeCURL();
-
-        static size_t writeCallbackCURL(char *data, size_t size, size_t nmemb, void *payloadPtr);
     };
 }
