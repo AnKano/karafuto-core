@@ -3,11 +3,12 @@
 //
 
 #include "IRenderContext.hpp"
+#include "../../worlds/TerrainedWorld.hpp"
 
 #include <gzip/compress.hpp>
 
 namespace KCore {
-    IRenderContext::IRenderContext(BaseWorld *world) : mWorldAdapter(world) {
+    IRenderContext::IRenderContext(TerrainedWorld *world) : mWorldAdapter(world) {
         mRenderThread = std::make_unique<std::thread>([this]() {
             initialize();
             runRenderLoop();
@@ -44,9 +45,23 @@ namespace KCore {
         std::vector<uint8_t> conv;
         std::copy(compressed_data.begin(), compressed_data.end(), std::back_inserter(conv));
 
-//        std::cout << "compressed: " << conv.size() << std::endl;
+        std::cout << "compressed: " << conv.size() << std::endl;
 
         mInRAMNotConvertedTextures[quadcode] = data;
+    }
+
+    void IRenderContext::runRenderLoop() {
+        while (!mShouldClose) {
+            if (mWorldAdapter->getAsyncEventsLength() != 0) {
+                std::this_thread::sleep_for(350ms);
+                continue;
+            }
+
+            performLoopStep();
+        }
+
+        dispose();
+        mReadyToBeDead = true;
     }
 
     void IRenderContext::setCurrentTileState(const std::vector<KCore::GenericTile *> &tiles) {

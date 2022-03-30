@@ -14,12 +14,12 @@
 using namespace std::chrono_literals;
 
 namespace KCore {
-    class BaseWorld;
+    class TerrainedWorld;
     class GenericTile;
 
     class IRenderContext {
     protected:
-        BaseWorld *mWorldAdapter;
+        TerrainedWorld *mWorldAdapter;
 
         std::mutex mTexturesLock, mTileStateLock;
         std::vector<KCore::GenericTile *> mCurrentTileState;
@@ -33,7 +33,7 @@ namespace KCore {
         bool mReadyToBeDead = false;
 
     public:
-        IRenderContext(BaseWorld* world);
+        IRenderContext(TerrainedWorld* world);
 
         ~IRenderContext();
 
@@ -52,12 +52,16 @@ namespace KCore {
 
         void setCurrentTileState(const std::vector<KCore::GenericTile *> &tiles);
 
+        void runRenderLoop();
+
     protected:
         const std::vector<KCore::GenericTile *> &getCurrentTileState();
 
         virtual void initialize() = 0;
 
-        virtual void runRenderLoop() = 0;
+        virtual void performLoopStep() = 0;
+
+        virtual void dispose() = 0;
     };
 }
 

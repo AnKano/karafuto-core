@@ -12,16 +12,13 @@
 #include "../misc/FrustumCulling.hpp"
 #include "../cache/TimeoutCache.hpp"
 #include "../geography/tiles/MetaTile.hpp"
-#ifndef __EMSCRIPTEN__
 #include "../contexts/rendering/IRenderContext.hpp"
-#endif
 
 namespace KCore {
     class TerrainedWorld : public BaseWorld {
     private:
-#ifndef __EMSCRIPTEN__
         IRenderContext *mRenderContext;
-#endif
+
     public:
         TerrainedWorld();
 
@@ -29,9 +26,7 @@ namespace KCore {
 
         void update() override;
 
-#ifndef __EMSCRIPTEN__
         IRenderContext *getRenderContext();
-#endif
 
         void commitWorldSetup() {
             auto gen = GenericTile(this, createTile("0"));

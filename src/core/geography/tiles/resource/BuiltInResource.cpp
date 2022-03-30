@@ -50,7 +50,7 @@ namespace KCore {
                         if (image.size() != 256 * 256 * 3) return;
 
                         // but anyway store raw data (we will compress and use it after)
-//                        convWorld->getRenderContext()->storeTextureInContext(data, desc.getQuadcode());
+                        convWorld->getRenderContext()->storeTextureInContext(data, desc.getQuadcode());
                     }, nullptr
             };
             world->getNetworkContext()->pushRequestToQueue(request);

@@ -1,7 +1,7 @@
 #include "FallbackNetworkContext.hpp"
 
 namespace KCore {
-    void FallbackNetworkContext::onEachStep() {
+    void FallbackNetworkContext::performLoopStep() {
         std::this_thread::sleep_for(100ms);
         while (!mRequestQueue.empty()) {
             // get next task or nullptr
@@ -11,7 +11,7 @@ namespace KCore {
         }
     }
 
-    void FallbackNetworkContext::init() {
+    void FallbackNetworkContext::initialize() {
         std::cout << "Network Thread ID: " << std::this_thread::get_id() << std::endl;
     }
 

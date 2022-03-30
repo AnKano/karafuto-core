@@ -3,7 +3,7 @@
 namespace KCore {
     INetworkContext::INetworkContext() {
         mRenderThread = std::make_unique<std::thread>([this]() {
-            init();
+            initialize();
             runLoop();
         });
         mRenderThread->detach();
@@ -31,7 +31,7 @@ namespace KCore {
 
     void INetworkContext::runLoop() {
         while (!mShouldClose)
-            onEachStep();
+            performLoopStep();
 
         disposeContext();
 

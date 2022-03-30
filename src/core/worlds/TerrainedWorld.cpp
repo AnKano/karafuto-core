@@ -3,6 +3,10 @@
 
 #if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
 #include "../contexts/rendering/opencl/RenderContext.hpp"
+#elif defined(__EMSCRIPTEN__)
+#include "../contexts/rendering/emscripten-webgl/WebGLRenderContext.hpp"
+#else
+#include "../contexts/rendering/fallback/FallbackRenderContext.hpp"
 #endif
 
 #include <algorithm>
@@ -11,9 +15,15 @@ namespace KCore {
     TerrainedWorld::TerrainedWorld() : BaseWorld(0.0f, 0.0f) {}
 
     TerrainedWorld::TerrainedWorld(float latitude, float longitude) : BaseWorld(latitude, longitude) {
+
 #if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
-        mRenderContext = new KCore::OpenCL::RenderContext((BaseWorld *) this);
+        mRenderContext = new KCore::OpenCL::RenderContext(this);
+#elif defined(__EMSCRIPTEN__)
+        mRenderContext = new KCore::WebGL::WebGLRenderContext(this);
+#else
+        mRenderContext = new KCore::Fallback::FallbackRenderContext(this);
 #endif
+
         registerStage(KCore::BuiltInStages::MetaCalculate());
     }
 
@@ -63,7 +73,7 @@ namespace KCore {
         auto toRenderContext = std::vector<GenericTile *>();
         for (const auto &[quadcode, _]: mCurrMetaTiles)
             toRenderContext.push_back(mCreatedMetaTiles[quadcode]);
-//        mRenderContext->setCurrentTileState(toRenderContext);
+        mRenderContext->setCurrentTileState(toRenderContext);
 
         postMetaTileCalculation();
     }
@@ -172,10 +182,9 @@ namespace KCore {
         performStages();
     }
 
-//    IRenderContext *TerrainedWorld::getRenderContext() {
-//        return mRenderContext;
-//        return nullptr;
-//    }
+    IRenderContext *TerrainedWorld::getRenderContext() {
+        return mRenderContext;
+    }
 
 #ifndef __EMSCRIPTEN__
     extern "C" {

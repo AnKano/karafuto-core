@@ -14,8 +14,8 @@ namespace KCore {
 
         void dispose() override;
 
-        void init() override;
+        void initialize() override;
 
-        void onEachStep() override;
+        void performLoopStep() override;
     };
 }

@@ -50,9 +50,9 @@ namespace KCore {
     private:
         void runLoop();
 
-        virtual void init() = 0;
+        virtual void initialize() = 0;
 
-        virtual void onEachStep() = 0;
+        virtual void performLoopStep() = 0;
 
         virtual void dispose() = 0;
 

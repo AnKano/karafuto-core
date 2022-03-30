@@ -32,17 +32,20 @@ namespace KCore::STBImageUtils {
 //        return result;
 //    }
 
-    static std::vector<uint8_t> decodeImageBuffer(const void* buffer, const std::size_t& length, unsigned int ch = 3) {
+    static std::vector<uint8_t> decodeImageBuffer(const void *buffer, const std::size_t &length, unsigned int ch = 3) {
         int width = 0, height = 0, channels = 0;
         unsigned char *data = stbi_load_from_memory(
                 (const stbi_uc *) buffer, length,
                 &width, &height, &channels, ch
         );
 
+
+        std::cout << "len " << length << " width " << width << " he " << height << " ch " << channels << std::endl;
+
         auto resultSize = width * height * channels;
 
         auto result = std::vector<uint8_t>();
-        if (width * height < 0 || channels < 0 || resultSize > result.max_size())
+        if (width * height < 0 || channels <= 0 || resultSize > result.max_size())
             throw std::runtime_error("can't decode image");
 
         result.reserve(resultSize);

@@ -23,11 +23,20 @@ if (EMSCRIPTEN)
 
     file(GLOB_RECURSE CPP_HEADERS_EXCLUDE
             ${MAIN_SOURCE_DIR}/core/contexts/network/curl/*.hpp
-            ${MAIN_SOURCE_DIR}/core/contexts/rendering/*.hpp
-            ${MAIN_SOURCE_DIR}/core/contexts/rendering/*.inl)
+
+            ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.hpp
+            ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.inl
+
+            ${MAIN_SOURCE_DIR}/core/contexts/rendering/opengl/*.hpp
+            ${MAIN_SOURCE_DIR}/core/contexts/rendering/opengl/*.inl
+            )
     file(GLOB_RECURSE CPP_SOURCES_EXCLUDE
             ${MAIN_SOURCE_DIR}/core/contexts/network/curl/*.cpp
-            ${MAIN_SOURCE_DIR}/core/contexts/rendering/*.cpp)
+
+            ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.cpp
+
+            ${MAIN_SOURCE_DIR}/core/contexts/rendering/opengl/*.cpp
+            )
 
     list(REMOVE_ITEM CPP_HEADERS ${CPP_HEADERS_EXCLUDE})
     list(REMOVE_ITEM CPP_SOURCES ${CPP_SOURCES_EXCLUDE})
@@ -37,6 +46,7 @@ if (EMSCRIPTEN)
     add_subdirectory(${THIRD_PARTY_DIR}/glm EXCLUDE_FROM_ALL)
 
     set(INCLUDE_COMPOUND
+            ${THIRD_PARTY_DIR}/gzip-hpp/include
             ${THIRD_PARTY_DIR}/rapidjson/include
             ${THIRD_PARTY_DIR}/earcut/include
             ${THIRD_PARTY_DIR}/stb-image)
@@ -47,7 +57,7 @@ if (EMSCRIPTEN)
 
     set(CMAKE_CXX_FLAGS "-pthread")
     add_link_options(-pthread)
-    target_link_options(karafuto_core PUBLIC "SHELL: -s EXPORTED_RUNTIME_METHODS=[\"setValue\",\"getValue\"] -lembind -s FETCH=1 -s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/build/assets@/assets")
+    target_link_options(karafuto_core PUBLIC "SHELL: -s USE_ZLIB=1 -s EXPORTED_RUNTIME_METHODS=[\"setValue\",\"getValue\"] -lembind -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s OFFSCREEN_FRAMEBUFFER=1 -s WASM=1 -s OFFSCREENCANVAS_SUPPORT=1 -s USE_WEBGL2=1 -s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/build/assets@/assets")
 else ()
     # select correct sources for current platform
     if (APPLE OR UNIX OR WIN32)

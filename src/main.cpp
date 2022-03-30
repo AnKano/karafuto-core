@@ -26,7 +26,12 @@ uintptr_t createWorld(float lat, float lon) {
     auto jsonSource = new KCore::GeoJSONLocalSource;
     jsonSource->addSourcePart("assets/sources/few.geojson");
 
-    auto imageSource = new KCore::RemoteSource("https://tile.openstreetmap.org/{z}/{x}/{y}.png");
+    std::string token = "pk.eyJ1IjoiYW5rYW5vIiwiYSI6ImNqeWVocmNnYTAxaWIzaGxoeGd4ejExN3MifQ.8QQWwjxjyoIH8ma0McKeNA";
+    auto sourceUrl = "https://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token=" + token;
+    auto imageSource = new KCore::RemoteSource(sourceUrl);
+
+//    auto imageSource = new KCore::RemoteSource("https://tile.openstreetmap.org/{z}/{x}/{y}.png");
+//    auto imageSource = new KCore::RemoteSource("https://a.basemaps.cartocdn.com/dark_all/{z}/{x}/{y}.png");
     world->registerSource(imageSource, "base");
     world->registerSource(TerrainSource_ptr, "terrain");
     world->registerSource(jsonSource, "json");
@@ -144,6 +149,11 @@ uintptr_t getPointerToMeshFromTransObject(uintptr_t meshPtr) {
     return reinterpret_cast<uintptr_t>(obj->mesh);
 }
 
+uintptr_t getByteVectorData(uintptr_t vectorPtr) {
+    auto *vec = reinterpret_cast<std::vector<uint8_t> *>(vectorPtr);
+    return reinterpret_cast<uintptr_t>(vec->data());
+}
+
 EMSCRIPTEN_BINDINGS(KarafutoCore) {
     function("createWorld", &createWorld);
     function("update", &update);
@@ -162,6 +172,9 @@ EMSCRIPTEN_BINDINGS(KarafutoCore) {
     // GeoJSON interaction
     function("getJSONTransObjects", &getJSONTransObjects, emscripten::allow_raw_pointers());
     function("getPointerToMeshFromTransObject", &getPointerToMeshFromTransObject, emscripten::allow_raw_pointers());
+
+    // Vector interaction
+    function("getByteVectorData", &getByteVectorData, emscripten::allow_raw_pointers());
 }
 
 #else
