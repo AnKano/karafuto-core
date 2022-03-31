@@ -37,6 +37,11 @@ namespace KCore::WebGL {
 
         void unloadTexturesFromGPU();
 
+        static void prepareTransformForParent(const std::string &rootQuadcode,
+                                             const std::string &parentQuadcode,
+                                             glm::mat4 &scaleMatrix,
+                                             glm::mat4 &translationMatrix);
+
         static void prepareTransformForChild(const std::string &rootQuadcode,
                                       const std::string &childQuadcode,
                                       glm::mat4 &scaleMatrix,

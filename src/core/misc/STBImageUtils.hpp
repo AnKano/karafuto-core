@@ -40,7 +40,7 @@ namespace KCore::STBImageUtils {
         );
 
 
-        std::cout << "len " << length << " width " << width << " he " << height << " ch " << channels << std::endl;
+//        std::cout << "len " << length << " width " << width << " he " << height << " ch " << channels << std::endl;
 
         auto resultSize = width * height * channels;
 

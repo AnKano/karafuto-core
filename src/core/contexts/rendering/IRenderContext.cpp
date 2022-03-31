@@ -45,7 +45,7 @@ namespace KCore {
         std::vector<uint8_t> conv;
         std::copy(compressed_data.begin(), compressed_data.end(), std::back_inserter(conv));
 
-        std::cout << "compressed: " << conv.size() << std::endl;
+//        std::cout << "compressed: " << conv.size() << std::endl;
 
         mInRAMNotConvertedTextures[quadcode] = data;
     }

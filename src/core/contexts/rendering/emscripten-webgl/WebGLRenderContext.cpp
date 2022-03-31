@@ -55,15 +55,15 @@ namespace KCore::WebGL {
             glm::mat4 scaleMatrix, translationMatrix;
             for (const auto &item: tile->getChildQuadcodes()) {
                 if (mInGPUTextures.count(item) == 0) continue;
-                std::cout << state.size() << std::endl;
+//                std::cout << state.size() << std::endl;
                 prepareTransformForChild(rootQuadcode, item, scaleMatrix, translationMatrix);
                 drawTileToTexture(item, scaleMatrix, translationMatrix);
             }
-//            for (const auto &item: tile->getParentQuadcodes()) {
-//                if (mInGPUTextures.count(item) == 0) continue;
-//                prepareTransformForParent(rootQuadcode, item, scaleMatrix, translationMatrix);
-//                drawTileToTexture(item, scaleMatrix, translationMatrix);
-//            }
+            for (const auto &item: tile->getParentQuadcodes()) {
+                if (mInGPUTextures.count(item) == 0) continue;
+                prepareTransformForParent(rootQuadcode, item, scaleMatrix, translationMatrix);
+                drawTileToTexture(item, scaleMatrix, translationMatrix);
+            }
 
             auto buffer = mFramebuffer->getColorAttachTexture()->getTextureData();
 
@@ -108,8 +108,6 @@ namespace KCore::WebGL {
     }
 
     void WebGLRenderContext::loadTileTexturesToGPU(GenericTile *tile) {
-        std::cout << "load one texture for " << tile->getTileDescription().getQuadcode() << std::endl;
-
         for (const auto &item: tile->getChildQuadcodes()) {
             if (mInRAMNotConvertedTextures.count(item) == 0)
                 continue;
@@ -128,15 +126,20 @@ namespace KCore::WebGL {
             mInGPUTextures[item] = texture;
         }
 
-//        for (const auto &item: tile->getParentQuadcodes()) {
-//            if (mInRAMNotConvertedTextures.count(item) == 0) continue;
-//            auto &raw = mInRAMNotConvertedTextures[item];
-//
-//            auto texture = std::make_shared<KCore::WebGL::Texture>();
-//            texture->setData(256, 256, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE,
-//                             raw.data());
-//            mInGPUTextures[item] = texture;
-//        }
+        for (const auto &item: tile->getParentQuadcodes()) {
+            if (mInRAMNotConvertedTextures.count(item) == 0) continue;
+            auto &raw = mInRAMNotConvertedTextures[item];
+
+            auto image = STBImageUtils::decodeImageBuffer(
+                    reinterpret_cast<const uint8_t *>(raw.data()),
+                    raw.size(), 0
+            );
+
+            auto texture = std::make_shared<KCore::WebGL::Texture>();
+            texture->setData(256, 256, GL_RGB, GL_RGB, GL_UNSIGNED_BYTE,
+                             raw.data());
+            mInGPUTextures[item] = texture;
+        }
     }
 
     void WebGLRenderContext::prepareTransformForChild(
@@ -165,6 +168,39 @@ namespace KCore::WebGL {
                 position.y += step;
             }
             step /= 2.0f;
+        }
+
+        scaleMatrix = glm::scale(glm::vec3{scale});
+        translationMatrix = glm::translate(glm::vec3{position.x, position.y, 0.0f});
+    }
+
+    void WebGLRenderContext::prepareTransformForParent(
+            const std::string &rootQuadcode, const std::string &parentQuadcode,
+            glm::mat4 &scaleMatrix, glm::mat4 &translationMatrix
+    ) {
+        auto reverseFormulae = rootQuadcode.substr(parentQuadcode.length(),
+                                                   rootQuadcode.length() - parentQuadcode.length());
+
+        auto difference = (float) reverseFormulae.size();
+        float scale = 1.0f * powf(2.0f, difference);
+
+        float step = 0.5f;
+        glm::vec3 position{0.0f};
+        for (const auto &in: reverseFormulae) {
+            if (in == '0') {
+                position.x -= step;
+                position.y -= step;
+            } else if (in == '1') {
+                position.x += step;
+                position.y -= step;
+            } else if (in == '2') {
+                position.x -= step;
+                position.y += step;
+            } else if (in == '3') {
+                position.x += step;
+                position.y += step;
+            }
+            step *= 2.0f;
         }
 
         scaleMatrix = glm::scale(glm::vec3{scale});

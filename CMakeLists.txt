@@ -57,7 +57,7 @@ if (EMSCRIPTEN)
 
     set(CMAKE_CXX_FLAGS "-pthread")
     add_link_options(-pthread)
-    target_link_options(karafuto_core PUBLIC "SHELL: -s USE_ZLIB=1 -s EXPORTED_RUNTIME_METHODS=[\"setValue\",\"getValue\"] -lembind -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s OFFSCREEN_FRAMEBUFFER=1 -s WASM=1 -s OFFSCREENCANVAS_SUPPORT=1 -s USE_WEBGL2=1 -s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/build/assets@/assets")
+    target_link_options(karafuto_core PUBLIC "SHELL: -O3 -s INITIAL_MEMORY=2Gb -s USE_ZLIB=1 -s EXPORTED_RUNTIME_METHODS=[\"setValue\",\"getValue\"] -lembind -s FETCH=1 -s MIN_WEBGL_VERSION=2 -s OFFSCREEN_FRAMEBUFFER=1 -s WASM=1 -s OFFSCREENCANVAS_SUPPORT=1 -s USE_WEBGL2=1 -s ALLOW_MEMORY_GROWTH=1 -s USE_PTHREADS=1 -s PTHREAD_POOL_SIZE=4 --preload-file ${CMAKE_CURRENT_SOURCE_DIR}/build/assets@/assets")
 else ()
     # select correct sources for current platform
     if (APPLE OR UNIX OR WIN32)

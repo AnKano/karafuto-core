@@ -11,9 +11,7 @@ void downloadSucceeded(emscripten_fetch_t *fetch) {
             fetch->data + fetch->numBytes
     );
 
-    std::cout << transmissionBuffer->size() << std::endl;
     emscripten_fetch_close(fetch);
-
     task->Finalize();
 }
 
