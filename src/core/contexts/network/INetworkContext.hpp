@@ -45,7 +45,7 @@ namespace KCore {
 
         void pushRequestToQueue(NetworkRequest* request);
 
-        virtual void synchronousStep() = 0;
+        virtual void synchronousStep();
 
     private:
         void runLoop();

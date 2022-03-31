@@ -3,6 +3,7 @@
 #include <functional>
 #include <utility>
 #include <iostream>
+#include <vector>
 
 namespace KCore {
     class NetworkRequest {

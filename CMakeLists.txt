@@ -75,12 +75,29 @@ else ()
             message("Windows: Select OpenCL Rendering backend")
         endif ()
 
-        #exclude OpenGL ES directories
-        file(GLOB_RECURSE CPP_HEADERS_EXCLUDE
+        #exclude OpenGL and Emscripten WebGL directories & Emscripten fetch
+        file(
+                GLOB_RECURSE CPP_HEADERS_EXCLUDE
+
+                ${MAIN_SOURCE_DIR}/core/contexts/network/emscripten-fetch/*.hpp
+
                 ${MAIN_SOURCE_DIR}/core/contexts/rendering/opengl/*.hpp
-                ${MAIN_SOURCE_DIR}/core/contexts/rendering/opengl/*.inl)
-        file(GLOB_RECURSE CPP_SOURCES_EXCLUDE
-                ${MAIN_SOURCE_DIR}/core/contexts/rendering/opengl/*.cpp)
+                ${MAIN_SOURCE_DIR}/core/contexts/rendering/opengl/*.inl
+
+                ${MAIN_SOURCE_DIR}/core/contexts/rendering/emscripten-webgl/*.hpp
+                ${MAIN_SOURCE_DIR}/core/contexts/rendering/emscripten-webgl/*.inl
+        )
+
+        file(
+                GLOB_RECURSE CPP_SOURCES_EXCLUDE
+
+                ${MAIN_SOURCE_DIR}/core/contexts/network/emscripten-fetch/*.cpp
+
+                ${MAIN_SOURCE_DIR}/core/contexts/rendering/opengl/*.cpp
+
+                ${MAIN_SOURCE_DIR}/core/contexts/rendering/emscripten-webgl/*.cpp
+        )
+
     endif ()
 
     # remove unrelated sources

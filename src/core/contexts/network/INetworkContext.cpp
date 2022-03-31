@@ -49,4 +49,8 @@ namespace KCore {
     void INetworkContext::pushRequestToQueue(NetworkRequest *task) {
         mRequestQueue.push_back(task);
     }
+
+    void INetworkContext::synchronousStep() {
+        // do nothing by default
+    }
 }

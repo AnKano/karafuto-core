@@ -12,7 +12,7 @@
 #ifndef __EMSCRIPTEN__
 
 #include "contexts/rendering/IRenderContext.hpp"
-#include "contexts/network/NetworkContext.hpp"
+#include "contexts/network/INetworkContext.hpp"
 
 #endif
 

@@ -8,7 +8,7 @@
 #include <chrono>
 #include <future>
 
-#include "../../../worlds/BaseWorld.hpp"
+#include "../../../worlds/TerrainedWorld.hpp"
 
 #include <gzip/compress.hpp>
 
@@ -91,75 +91,70 @@ namespace KCore::OpenCL {
         depth = difference;
     }
 
-    void RenderContext::runRenderLoop() {
-        while (!mShouldClose) {
-            if (mWorldAdapter->getAsyncEventsLength() != 0) {
-                std::this_thread::sleep_for(350ms);
-                continue;
-            };
+    void RenderContext::performLoopStep() {
+        if (mWorldAdapter->getAsyncEventsLength() != 0) {
+            std::this_thread::sleep_for(350ms);
+            return;
+        };
 
-            auto metas = getCurrentTileState();
+        auto metas = getCurrentTileState();
 
-            for (const auto &meta: metas) {
-                auto items = meta->getChildQuadcodes();
-                for (const auto item: items) {
-                    if (mInRAMNotConvertedTextures.count(item) == 0) continue;
+        for (const auto &meta: metas) {
+            auto items = meta->getChildQuadcodes();
+            for (const auto item: items) {
+                if (mInRAMNotConvertedTextures.count(item) == 0) continue;
 
-                    unsigned int offsetX, offsetY, depth;
-                    auto rootQuadcode = meta->getTileDescription().getQuadcode();
-                    childTransform(rootQuadcode, item, offsetX, offsetY, depth);
+                unsigned int offsetX, offsetY, depth;
+                auto rootQuadcode = meta->getTileDescription().getQuadcode();
+                childTransform(rootQuadcode, item, offsetX, offsetY, depth);
 
-                    auto &data = mInRAMNotConvertedTextures[item];
+                auto &data = mInRAMNotConvertedTextures[item];
 
-                    Tile tile(&mContext, 256, 256, data);
-                    tile.setup(mOutImageWidth, mOutImageHeight, offsetX, offsetY, depth);
+                Tile tile(&mContext, 256, 256, data);
+                tile.setup(mOutImageWidth, mOutImageHeight, offsetX, offsetY, depth);
 
-                    performRenderKernel(tile);
+                performRenderKernel(tile);
 
-                    tile.dispose();
-                }
-
-                clFinish(mCommands);
-
-                auto results = std::vector<uint8_t>();
-                results.resize(mOutImageBytes);
-
-                int err = clEnqueueReadBuffer(
-                        mCommands, mOutBuffer, CL_FALSE, 0,
-                        mOutImageBytes, results.data(), 0, nullptr, nullptr
-                );
-                if (err != CL_SUCCESS) {
-                    printf("Error: Failed to read output array! %d\n", err);
-                    exit(1);
-                }
-
-                performWipeKernel();
-
-                std::async(std::launch::async, [results, this, meta]() {
-                    auto t0 = std::chrono::high_resolution_clock::now();
-
-                    std::string compressed_data = gzip::compress(
-                            reinterpret_cast<const char *>(results.data()), mOutImageBytes, Z_BEST_SPEED
-                    );
-
-                    auto rawBuffer = new std::vector<uint8_t>{};
-                    rawBuffer->resize(compressed_data.size());
-                    std::copy(compressed_data.begin(), compressed_data.end(), rawBuffer->data());
-
-                    auto rootQuadcode = meta->getTileDescription().getQuadcode();
-                    mWorldAdapter->pushToAsyncEvents(MapEvent::MakeRenderLoadedEvent(rootQuadcode, rawBuffer));
-                    auto t1 = std::chrono::high_resolution_clock::now();
-                    auto duration = t1 - t0;
-
-                    auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
-                });
-
-                std::this_thread::sleep_for(10ms);
+                tile.dispose();
             }
-        }
 
-        dispose();
-        mReadyToBeDead = true;
+            clFinish(mCommands);
+
+            auto results = std::vector<uint8_t>();
+            results.resize(mOutImageBytes);
+
+            int err = clEnqueueReadBuffer(
+                    mCommands, mOutBuffer, CL_FALSE, 0,
+                    mOutImageBytes, results.data(), 0, nullptr, nullptr
+            );
+            if (err != CL_SUCCESS) {
+                printf("Error: Failed to read output array! %d\n", err);
+                exit(1);
+            }
+
+            performWipeKernel();
+
+            std::async(std::launch::async, [results, this, meta]() {
+                auto t0 = std::chrono::high_resolution_clock::now();
+
+                std::string compressed_data = gzip::compress(
+                        reinterpret_cast<const char *>(results.data()), mOutImageBytes, Z_BEST_SPEED
+                );
+
+                auto rawBuffer = new std::vector<uint8_t>{};
+                rawBuffer->resize(compressed_data.size());
+                std::copy(compressed_data.begin(), compressed_data.end(), rawBuffer->data());
+
+                auto rootQuadcode = meta->getTileDescription().getQuadcode();
+                mWorldAdapter->pushToAsyncEvents(MapEvent::MakeRenderLoadedEvent(rootQuadcode, rawBuffer));
+                auto t1 = std::chrono::high_resolution_clock::now();
+                auto duration = t1 - t0;
+
+                auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+            });
+
+            std::this_thread::sleep_for(10ms);
+        }
     }
 
     void RenderContext::setupRenderKernel() {

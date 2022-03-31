@@ -38,14 +38,15 @@ namespace KCore::OpenCL {
         std::size_t mOutImageBytes = mOutImageHeight * mOutImageWidth * mOutImagePixelBytes;
 
     public:
-        RenderContext(BaseWorld *world) : IRenderContext(world) {}
+        RenderContext(TerrainedWorld *world) : IRenderContext(world) {}
+
+    protected:
+        void performLoopStep() override;
 
     private:
-        void runRenderLoop() override;
-
         void initialize() override;
 
-        void dispose();
+        void dispose() override;
 
         void childTransform(const std::string &rootQuadcode, const std::string &childQuadcode,
                             unsigned int &offsetX, unsigned int &offsetY, unsigned int &depth);

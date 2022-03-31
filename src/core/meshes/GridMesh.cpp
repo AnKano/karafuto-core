@@ -44,7 +44,7 @@ namespace KCore {
                 float x = ((float) ix * segmentWidth) - widthHalf;
                 float y = ((float) iy * segmentHeight) - heightHalf;
 
-                mVertices.emplace_back(-1 * x, 0.0f, 1 * y);
+                mVertices.emplace_back(-1 * x, 0.0f, -1 * y);
                 mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
                 float uvX = (float) ix / ((float) segmentsX);
