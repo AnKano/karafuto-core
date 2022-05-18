@@ -1,4 +1,7 @@
 # Karafuto Core
+<p align="left">
+    <img alt="Flowers" src="https://user-images.githubusercontent.com/29543380/169096780-0d13571f-789d-4930-8c4d-137a5108f762.png" width="25" /> #StandWithUkraine
+</p>
 
 <p align="center">
     <img alt="Flowers" src="github-assets/logo.png" width="600" />
