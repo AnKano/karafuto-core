@@ -26,8 +26,8 @@ if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
 
     if (WIN32)
         set(PLATFORM "Windows")
-#        set(BACKEND "Vulkan")
-        set(BACKEND "OpenCL")
+        set(BACKEND "Vulkan")
+#        set(BACKEND "OpenCL")
     endif ()
 endif ()
 
