@@ -9,33 +9,11 @@
 
 namespace KCore {
     IRenderContext::IRenderContext(TerrainedWorld *world) : mWorldAdapter(world) {
-        mRenderThread = std::make_unique<std::thread>([this]() {
+        mThread = std::make_unique<std::thread>([this]() {
             initialize();
             runRenderLoop();
         });
-        mRenderThread->detach();
-    }
-
-    IRenderContext::~IRenderContext() {
-        setShouldClose(true);
-        // await to thread stop working
-        while (getWorkingStatus()) std::this_thread::sleep_for(10ms);
-    }
-
-    void IRenderContext::setCheckInterval(const uint64_t &value) {
-        mCheckInterval = std::chrono::milliseconds(value);
-    }
-
-    void IRenderContext::setCheckInterval(const std::chrono::milliseconds &value) {
-        mCheckInterval = value;
-    }
-
-    void IRenderContext::setShouldClose(const bool &value) {
-        mShouldClose = value;
-    }
-
-    bool IRenderContext::getWorkingStatus() const {
-        return mReadyToBeDead;
+        mThread->detach();
     }
 
     void IRenderContext::storeTextureInContext(const std::vector<uint8_t> &data, const std::string &quadcode) {

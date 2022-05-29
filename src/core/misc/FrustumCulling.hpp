@@ -57,24 +57,14 @@ namespace KCore {
 
         [[nodiscard]]
         bool testAABB(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) const {
-            return nxX * (nxX < 0 ? minX : maxX) +
-                   nxY * (nxY < 0 ? minY : maxY) +
-                   nxZ * (nxZ < 0 ? minZ : maxZ) >= -nxW &&
-                   pxX * (pxX < 0 ? minX : maxX) +
-                   pxY * (pxY < 0 ? minY : maxY) +
-                   pxZ * (pxZ < 0 ? minZ : maxZ) >= -pxW &&
-                   nyX * (nyX < 0 ? minX : maxX) +
-                   nyY * (nyY < 0 ? minY : maxY) +
-                   nyZ * (nyZ < 0 ? minZ : maxZ) >= -nyW &&
-                   pyX * (pyX < 0 ? minX : maxX) +
-                   pyY * (pyY < 0 ? minY : maxY) +
-                   pyZ * (pyZ < 0 ? minZ : maxZ) >= -pyW &&
-                   nzX * (nzX < 0 ? minX : maxX) +
-                   nzY * (nzY < 0 ? minY : maxY) +
-                   nzZ * (nzZ < 0 ? minZ : maxZ) >= -nzW &&
-                   pzX * (pzX < 0 ? minX : maxX) +
-                   pzY * (pzY < 0 ? minY : maxY) +
-                   pzZ * (pzZ < 0 ? minZ : maxZ) >= -pzW;
+            return nxX * (nxX < 0 ? minX : maxX) + nxY * (nxY < 0 ? minY : maxY) + nxZ * (nxZ < 0 ? minZ : maxZ) >= -nxW &&
+                   pxX * (pxX < 0 ? minX : maxX) + pxY * (pxY < 0 ? minY : maxY) + pxZ * (pxZ < 0 ? minZ : maxZ) >= -pxW &&
+
+                   nyX * (nyX < 0 ? minX : maxX) + nyY * (nyY < 0 ? minY : maxY) + nyZ * (nyZ < 0 ? minZ : maxZ) >= -nyW &&
+                   pyX * (pyX < 0 ? minX : maxX) + pyY * (pyY < 0 ? minY : maxY) + pyZ * (pyZ < 0 ? minZ : maxZ) >= -pyW &&
+
+                   nzX * (nzX < 0 ? minX : maxX) + nzY * (nzY < 0 ? minY : maxY) + nzZ * (nzZ < 0 ? minZ : maxZ) >= -nzW &&
+                   pzX * (pzX < 0 ? minX : maxX) + pzY * (pzY < 0 ? minY : maxY) + pzZ * (pzZ < 0 ? minZ : maxZ) >= -pzW;
         }
     };
 }

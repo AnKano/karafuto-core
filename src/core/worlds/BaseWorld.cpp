@@ -4,7 +4,8 @@
 #if defined(EMSCRIPTEN)
 #include "../contexts/network/emscripten-fetch/EmscriptenFetchNetworkContext.hpp"
 #elif defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
-#include "../contexts/network/curl/CURLNetworkContext.hpp"
+//#include "../contexts/network/curl/CURLNetworkContext.hpp"
+#include "../contexts/network/basic/BasicNetworkContext.hpp"
 #else
 #include "../contexts/network/fallback/FallbackNetworkContext.hpp"
 #endif
@@ -20,7 +21,8 @@ namespace KCore {
 #if defined(EMSCRIPTEN)
         mNetworkContext = new EmscriptenFetchNetworkContext{};
 #elif defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
-        mNetworkContext = new CURLNetworkContext{};
+//        mNetworkContext = new CURLNetworkContext{};
+        mNetworkContext = new BasicNetworkContext{};
 #else
         mNetworkContext = new FallbackNetworkContext{};
 #endif
@@ -178,6 +180,13 @@ namespace KCore {
         mPrevBaseTiles = std::move(mCurrBaseTiles);
         mCurrBaseTiles = {};
 
+        typedef std::chrono::high_resolution_clock Time;
+        typedef std::chrono::milliseconds ms;
+        typedef std::chrono::duration<float> fsec;
+
+        auto t0 = Time::now();
+
+
         std::vector<TileDescription> tiles{};
 
         // create tiles
@@ -200,6 +209,11 @@ namespace KCore {
 
             count++;
         }
+
+        auto t1 = Time::now();
+        fsec fs = t1 - t0;
+        ms d = std::chrono::duration_cast<ms>(fs);
+//        std::cout << "base step: " << d.count() << "ms\n";
 
         postTileCalculation(tiles);
     }

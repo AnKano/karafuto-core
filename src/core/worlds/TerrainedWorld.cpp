@@ -2,7 +2,8 @@
 #include "stages/BuiltinStages.hpp"
 
 #if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
-#include "../contexts/rendering/opencl/RenderContext.hpp"
+//#include "../contexts/rendering/opencl/OpenCLRenderContext.hpp"
+#include "../contexts/rendering/vulkan/VulkanRenderContext.hpp"
 #elif defined(__EMSCRIPTEN__)
 #include "../contexts/rendering/emscripten-webgl/WebGLRenderContext.hpp"
 #else
@@ -17,7 +18,8 @@ namespace KCore {
     TerrainedWorld::TerrainedWorld(float latitude, float longitude) : BaseWorld(latitude, longitude) {
 
 #if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
-        mRenderContext = new KCore::OpenCL::RenderContext(this);
+        mRenderContext = new KCore::Vulkan::VulkanRenderContext(this);
+//        mRenderContext = new KCore::OpenCL::OpenCLRenderContext(this);
 #elif defined(__EMSCRIPTEN__)
         mRenderContext = new KCore::WebGL::WebGLRenderContext(this);
 #else
@@ -28,6 +30,12 @@ namespace KCore {
     }
 
     void TerrainedWorld::calculateMetaTiles() {
+        typedef std::chrono::high_resolution_clock Time;
+        typedef std::chrono::milliseconds ms;
+        typedef std::chrono::duration<float> fsec;
+
+        auto t0 = Time::now();
+
         // store old tiles and clear up current
         mPrevMetaTiles = std::move(mCurrMetaTiles);
         mCurrMetaTiles = {};
@@ -74,6 +82,11 @@ namespace KCore {
         for (const auto &[quadcode, _]: mCurrMetaTiles)
             toRenderContext.push_back(mCreatedMetaTiles[quadcode]);
         mRenderContext->setCurrentTileState(toRenderContext);
+
+        auto t1 = Time::now();
+        fsec fs = t1 - t0;
+        ms d = std::chrono::duration_cast<ms>(fs);
+//        std::cout << "meta step: " << d.count() << "ms\n";
 
         postMetaTileCalculation();
     }

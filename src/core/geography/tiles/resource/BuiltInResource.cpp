@@ -65,6 +65,7 @@ namespace KCore {
             auto desc = tile->getTileDescription();
             auto task = new KCore::CallbackTask{
                     [world, desc]() {
+
                         auto tilecode = desc.getTilecode();
                         auto zoom = tilecode.z, x = tilecode.x, y = tilecode.y;
                         auto *result = (std::vector<KCore::GeoJSONObject> *)
@@ -114,6 +115,7 @@ namespace KCore {
                         if (objects->empty()) return;
                         auto event = KCore::MapEvent::MakeGeoJSONEvent(desc.getQuadcode(), objects);
                         world->pushToAsyncEvents(event);
+
                     }
             };
             world->getTaskContext().pushTaskToQueue(task);
@@ -217,6 +219,7 @@ namespace KCore {
                                 desc.getQuadcode(), objects
                         );
                         world->pushToAsyncEvents(event);
+
                     }
             };
             world->getTaskContext().pushTaskToQueue(task);

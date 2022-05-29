@@ -2,31 +2,11 @@
 
 namespace KCore {
     INetworkContext::INetworkContext() {
-        mRenderThread = std::make_unique<std::thread>([this]() {
+        mThread = std::make_unique<std::thread>([this]() {
             initialize();
             runLoop();
         });
-        mRenderThread->detach();
-    }
-
-    INetworkContext::~INetworkContext() {
-        disposeContext();
-    }
-
-    void INetworkContext::setWaitInterval(const uint64_t &value) {
-        mWaitInterval = std::chrono::milliseconds(value);
-    }
-
-    void INetworkContext::setWaitInterval(const std::chrono::milliseconds &value) {
-        mWaitInterval = value;
-    }
-
-    void INetworkContext::setShouldClose(const bool &value) {
-        mShouldClose = value;
-    }
-
-    bool INetworkContext::getWorkingStatus() const {
-        return mReadyToBeDead;
+        mThread->detach();
     }
 
     void INetworkContext::runLoop() {

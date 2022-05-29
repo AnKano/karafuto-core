@@ -12,36 +12,19 @@
 #include "../../cache/BaseCache.hpp"
 
 #include "NetworkRequest.hpp"
+#include "../IContext.hpp"
 
 using namespace std::chrono_literals;
 
 namespace KCore {
     class MapCore;
 
-    class INetworkContext {
+    class INetworkContext : public IContext {
     protected:
         std::deque<NetworkRequest *> mRequestQueue;
 
-        std::unique_ptr<std::thread> mRenderThread;
-        std::chrono::milliseconds mWaitInterval = 1s;
-        bool mShouldClose = false;
-        bool mReadyToBeDead = false;
-
     public:
         INetworkContext();
-
-        ~INetworkContext();
-
-        [[maybe_unused]]
-        void setWaitInterval(const uint64_t &value);
-
-        [[maybe_unused]]
-        void setWaitInterval(const std::chrono::milliseconds &value);
-
-        void setShouldClose(const bool &value);
-
-        [[nodiscard]]
-        bool getWorkingStatus() const;
 
         void pushRequestToQueue(NetworkRequest* request);
 

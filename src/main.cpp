@@ -231,7 +231,7 @@ int main() {
         );
     }
 
-    const uint16_t iterations{100};
+    const uint32_t iterations{10000};
 
     // 46.9181f, 142.7189f is latitude and longitude of
     // the surroundings of the city of Yuzhno-Sakhalinsk
@@ -278,12 +278,13 @@ int main() {
 #else
     TerrainSource_ptr->addSourcePart("../build/assets/sources", ".hgt");
 #endif
-//    auto ImageSource_ptr = KCore::CreateRemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
+    auto ImageSource_ptr = KCore::CreateRemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
 
     world->registerSource(TerrainSource_ptr, "terrain");
+    world->registerSource(ImageSource_ptr, "base");
 
     auto jsonSource = new KCore::GeoJSONLocalSource;
-    jsonSource->addSourcePart("assets/sources/few.geojson");
+    jsonSource->addSourcePart("assets/sources/12.geojson");
     world->registerSource(jsonSource, "json");
 
     world->commitWorldSetup();

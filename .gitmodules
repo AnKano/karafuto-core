@@ -4,9 +4,6 @@
 [submodule "third-party/glfw"]
 	path = third-party/glfw
 	url = https://github.com/glfw/glfw.git
-[submodule "third-party/curl"]
-	path = third-party/curl
-	url = https://github.com/curl/curl.git
 [submodule "third-party/earcut"]
 	path = third-party/earcut
 	url = https://github.com/mapbox/earcut.hpp
@@ -22,3 +19,6 @@
 [submodule "third-party/zlib"]
 	path = third-party/zlib
 	url = https://github.com/madler/zlib
+[submodule "third-party/HTTPRequest"]
+	path = third-party/HTTPRequest
+	url = https://github.com/elnormous/HTTPRequest.git

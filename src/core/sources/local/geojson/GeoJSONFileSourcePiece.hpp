@@ -31,6 +31,7 @@ namespace KCore {
 
     private:
         void parse() {
+
             rapidjson::Document doc;
 
             mDataString = std::string{mData.data(), mData.data() + mData.size()};
@@ -48,6 +49,8 @@ namespace KCore {
             } else {
                 mFileCorrupted = true;
             }
+
+
         }
 
         void parseCollection(const rapidjson::Value &collection) {

@@ -44,7 +44,7 @@ namespace KCore {
             return mUrl;
         }
 
-        const std::vector<uint8_t> &getBuffer() {
+        std::vector<uint8_t> &getBuffer() {
             return mTransmissionBuffer;
         }
     };

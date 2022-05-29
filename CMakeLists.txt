@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 3.21)
 project(karafuto_core)
 
-set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD 20)
 
 set(MAIN_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(THIRD_PARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party")
@@ -81,6 +81,8 @@ else ()
 
                 ${MAIN_SOURCE_DIR}/core/contexts/network/emscripten-fetch/*.hpp
 
+                ${MAIN_SOURCE_DIR}/core/contexts/network/curl/*.hpp
+
                 ${MAIN_SOURCE_DIR}/core/contexts/rendering/opengl/*.hpp
                 ${MAIN_SOURCE_DIR}/core/contexts/rendering/opengl/*.inl
 
@@ -90,6 +92,8 @@ else ()
 
         file(
                 GLOB_RECURSE CPP_SOURCES_EXCLUDE
+
+                ${MAIN_SOURCE_DIR}/core/contexts/network/curl/*.cpp
 
                 ${MAIN_SOURCE_DIR}/core/contexts/network/emscripten-fetch/*.cpp
 
@@ -164,11 +168,14 @@ else ()
     if (WIN32)
         message("Windows: Added curl as shared library")
 
-        set(BUILD_SHARED_LIBS ON)
-        set(HTTP_ONLY ON)
-        add_subdirectory(${THIRD_PARTY_DIR}/curl)
-        set(BUILD_SHARED_LIBS ON)
+#        set(BUILD_SHARED_LIBS ON)
+#        set(HTTP_ONLY ON)
+#        add_subdirectory(${THIRD_PARTY_DIR}/curl)
+#        set(BUILD_SHARED_LIBS ON)
 
+        set(BUILD_SHARED_LIBS ON)
+        add_subdirectory(${THIRD_PARTY_DIR}/HTTPRequest)
+        set(BUILD_SHARED_LIBS ON)
 
         message("Windows: Added glm headers")
         set(BUILD_SHARED_LIBS OFF)
@@ -223,15 +230,17 @@ else ()
         add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
         add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
 
-        set(LIBRARIES libcurl glm opencl zlibstatic)
+        set(LIBRARIES glm opencl zlibstatic HTTPRequest wsock32 ws2_32)
 
         target_link_directories(libkcore PRIVATE ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
         target_link_directories(libkcore-static PRIVATE ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
         target_link_directories(karafuto_core PRIVATE ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
 
-        target_link_libraries(libkcore PUBLIC ${LIBRARIES})
-        target_link_libraries(libkcore-static PUBLIC ${LIBRARIES})
-        target_link_libraries(karafuto_core PUBLIC ${LIBRARIES})
+        find_package(Vulkan REQUIRED)
+
+        target_link_libraries(libkcore PUBLIC ${LIBRARIES} ${Vulkan_LIBRARIES})
+        target_link_libraries(libkcore-static PUBLIC ${LIBRARIES} ${Vulkan_LIBRARIES})
+        target_link_libraries(karafuto_core PUBLIC ${LIBRARIES} ${Vulkan_LIBRARIES})
     endif ()
 
     # ----|> declare targets
@@ -264,6 +273,8 @@ else ()
 
     if (WIN32)
         message("Windows: Added RapidJSON, Earcut, stb-image, gzip and opencl includes")
+
+
         set(INCLUDE_COMPOUND
                 ${THIRD_PARTY_DIR}/rapidjson/include
                 ${THIRD_PARTY_DIR}/earcut/include
@@ -273,6 +284,7 @@ else ()
 
                 ${THIRD_PARTY_DIR}/zlib
                 ${CMAKE_BINARY_DIR}/third-party/zlib
+                $ENV{VULKAN_SDK}/Include
                 )
         target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
         include_directories(${THIRD_PARTY_DIR}/zlib)

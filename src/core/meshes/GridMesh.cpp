@@ -50,7 +50,7 @@ namespace KCore {
                 float uvX = (float) ix / ((float) segmentsX);
                 float uvY = (float) iy / ((float) segmentsY);
 
-                mUVs.emplace_back(uvX, uvY);
+                mUVs.emplace_back(uvX, 1.0 - uvY);
             }
         }
 
