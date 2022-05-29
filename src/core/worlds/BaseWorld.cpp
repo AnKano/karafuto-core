@@ -197,7 +197,7 @@ namespace KCore {
         auto distance = glm::length(glm::vec3(center.x, 0, center.y) - mOriginPosition);
         auto error = quality * tile.getSideLength() / distance;
 
-        return error > 1.0f;
+        return error > target;
     }
 
     bool BaseWorld::checkTileInFrustum(const TileDescription &tile) {

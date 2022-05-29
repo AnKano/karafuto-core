@@ -4,8 +4,6 @@
 #if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
 //#include "../contexts/rendering/opencl/OpenCLRenderContext.hpp"
 #include "../contexts/rendering/vulkan/VulkanRenderContext.hpp"
-#elif defined(__EMSCRIPTEN__)
-#include "../contexts/rendering/emscripten-webgl/WebGLRenderContext.hpp"
 #else
 #include "../contexts/rendering/fallback/FallbackRenderContext.hpp"
 #endif
@@ -20,8 +18,6 @@ namespace KCore {
 #if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
         mRenderContext = new KCore::Vulkan::VulkanRenderContext(this);
 //        mRenderContext = new KCore::OpenCL::OpenCLRenderContext(this);
-#elif defined(__EMSCRIPTEN__)
-        mRenderContext = new KCore::WebGL::WebGLRenderContext(this);
 #else
         mRenderContext = new KCore::Fallback::FallbackRenderContext(this);
 #endif
@@ -30,51 +26,40 @@ namespace KCore {
     }
 
     void TerrainedWorld::calculateMetaTiles() {
-//        typedef std::chrono::high_resolution_clock Time;
-//        typedef std::chrono::milliseconds ms;
-//        typedef std::chrono::duration<float> fsec;
-//
-//        auto t0 = Time::now();
-
-        // store old tiles and clear up current
         mPrevMetaTiles = std::move(mCurrMetaTiles);
         mCurrMetaTiles = {};
 
-        auto depth = maximalCommonTilesDepth();
-        auto preferDepth = depth - 4;
+        auto hldDivision = divide(1.0);
+        auto lldDivision = divide(2.5);
 
-        std::map<std::string, TileDescription> collector;
         std::map<std::string, std::vector<std::string>> childCollector;
-        std::map<std::string, std::vector<std::string>> parentCollector;
 
-        for (const auto &[quadcode, _]: mCurrBaseTiles) {
-            auto tile = mCreatedBaseTiles[quadcode]->getTileDescription();
+        for (const auto &ll: lldDivision) {
+            if (ll.getVisibility() != TileVisibility::Visible) continue;
+            const auto &llQuadcode = ll.getQuadcode();
 
-            if (quadcode.size() >= preferDepth) {
-                // calculate quadcode for associate with parent meta tile
-                auto preferedQuadcode = quadcode.substr(0, preferDepth);
+            std::vector<std::string> childs{};
 
-                // get tile description from cache
-                collector[preferedQuadcode] = createTile(preferedQuadcode);
-                childCollector[preferedQuadcode].push_back(quadcode);
-            } else {
-                if (tile.getVisibility() != Visible) continue;
+            for (const auto &hl: hldDivision) {
+                if (hl.getVisibility() != TileVisibility::Visible) continue;
+                const auto &hlQuadcode = hl.getQuadcode();
 
-                auto parents = separateTileToDepth(tile, preferDepth);
-                for (const auto &_item: parents) {
-                    auto internalQuadcode = _item.getQuadcode();
-                    collector[internalQuadcode] = _item;
-                    childCollector[internalQuadcode] = {};
-                    parentCollector[internalQuadcode] = {quadcode};
-                }
+                if (hlQuadcode == llQuadcode) continue;
+                if (hlQuadcode.starts_with(llQuadcode))
+                    childs.push_back(hlQuadcode);
             }
+
+            childCollector[llQuadcode] = childs;
         }
 
-        for (const auto &[key, value]: collector) {
+        for (const auto &value: lldDivision) {
+            if (value.getVisibility() != TileVisibility::Visible) continue;
+
+            const auto &key = value.getQuadcode();
+
             if (mCreatedMetaTiles.count(key) == 0)
                 mCreatedMetaTiles[key] = new GenericTile(this, value);
             mCreatedMetaTiles[key]->setChildQuadcodes(childCollector[key]);
-            mCreatedMetaTiles[key]->setParentQuadcodes(parentCollector[key]);
             mCurrMetaTiles[key] = true;
         }
 
@@ -82,11 +67,6 @@ namespace KCore {
         for (const auto &[quadcode, _]: mCurrMetaTiles)
             toRenderContext.push_back(mCreatedMetaTiles[quadcode]);
         mRenderContext->setCurrentTileState(toRenderContext);
-
-//        auto t1 = Time::now();
-//        fsec fs = t1 - t0;
-//        ms d = std::chrono::duration_cast<ms>(fs);
-//        std::cout << "meta step: " << d.count() << "ms\n";
 
         postMetaTileCalculation();
     }
@@ -121,54 +101,6 @@ namespace KCore {
                 tile->invokeResources();
             }
         }
-    }
-
-    std::vector<TileDescription> TerrainedWorld::separateTileToDepth(const TileDescription &desc, uint8_t depth) {
-        auto parents = std::vector<TileDescription>();
-        const auto &rootQuadcode = desc.getQuadcode();
-
-        for (const auto &item: std::vector{"0", "1", "2", "3"}) {
-            auto tile = createTile(rootQuadcode + item);
-            parents.push_back(tile);
-        }
-
-        std::size_t count{0};
-        while (count != parents.size()) {
-            auto tile = &parents[count];
-            auto quadcode = tile->getQuadcode();
-
-            if (checkTileInFrustum(*tile) && tile->getTilecode().z <= depth) {
-                if (tile->getType() != TileType::Root)
-                    tile->setType(TileType::Separated);
-                tile->setVisibility(TileVisibility::Hide);
-
-                for (const auto &item: std::vector{"0", "1", "2", "3"}) {
-                    auto child = createTile(quadcode + item);
-                    parents.push_back(child);
-                }
-            }
-
-            count++;
-        }
-
-        // filter parents that reach last depth
-        auto condition = [&depth](const TileDescription &tile) {
-            return tile.getTilecode().z == depth;
-        };
-
-        auto result = std::vector<TileDescription>();
-        std::copy_if(parents.begin(), parents.end(), std::back_inserter(result), condition);
-        return result;
-    }
-
-    uint8_t TerrainedWorld::maximalCommonTilesDepth() {
-        uint8_t depth{0};
-        for (const auto &[quadcode, _]: mCurrBaseTiles) {
-            auto tile = mCreatedBaseTiles[quadcode]->getTileDescription();
-            if (tile.getTilecode().z > depth)
-                depth = tile.getTilecode().z;
-        }
-        return depth;
     }
 
     void TerrainedWorld::performStages() {
