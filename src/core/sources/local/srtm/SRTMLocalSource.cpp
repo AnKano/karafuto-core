@@ -134,7 +134,6 @@ namespace KCore {
         mPieces.push_back(part);
     }
 
-#ifndef EMSCRIPTEN
     extern "C" {
     DllExport KCore::SRTMLocalSource *CreateSRTMLocalSource() {
         return new SRTMLocalSource;
@@ -148,5 +147,4 @@ namespace KCore {
         sourcePtr->addSourcePart(directory, postfix);
     }
     }
-#endif
 }

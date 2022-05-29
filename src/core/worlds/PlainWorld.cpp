@@ -49,11 +49,9 @@ namespace KCore {
 
     void PlainWorld::postMetaTileCalculation() {}
 
-#ifndef EMSCRIPTEN
     extern "C" {
     DllExport KCore::PlainWorld *CreatePlainWorld(float latitude, float longitude) {
         return new KCore::PlainWorld(latitude, longitude);
     }
     }
-#endif
 }

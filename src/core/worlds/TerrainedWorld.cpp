@@ -2,8 +2,8 @@
 #include "stages/BuiltinStages.hpp"
 
 #if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
-#include "../contexts/rendering/opencl/OpenCLRenderContext.hpp"
-//#include "../contexts/rendering/vulkan/VulkanRenderContext.hpp"
+//#include "../contexts/rendering/opencl/OpenCLRenderContext.hpp"
+#include "../contexts/rendering/vulkan/VulkanRenderContext.hpp"
 #else
 #include "../contexts/rendering/fallback/FallbackRenderContext.hpp"
 #endif
@@ -16,8 +16,8 @@ namespace KCore {
     TerrainedWorld::TerrainedWorld(float latitude, float longitude) : BaseWorld(latitude, longitude) {
 
 #if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
-//        mRenderContext = new KCore::Vulkan::VulkanRenderContext(this);
-        mRenderContext = new KCore::OpenCL::OpenCLRenderContext(this);
+        mRenderContext = new KCore::Vulkan::VulkanRenderContext(this);
+//        mRenderContext = new KCore::OpenCL::OpenCLRenderContext(this);
 #else
         mRenderContext = new KCore::Fallback::FallbackRenderContext(this);
 #endif
@@ -131,7 +131,6 @@ namespace KCore {
         return mRenderContext;
     }
 
-#ifndef __EMSCRIPTEN__
     extern "C" {
     DllExport KCore::TerrainedWorld *CreateTerrainedWorld(float latitude, float longitude) {
         return new KCore::TerrainedWorld(latitude, longitude);
@@ -145,5 +144,4 @@ namespace KCore {
         world->getSources()[tag] = source;
     }
     }
-#endif
 }

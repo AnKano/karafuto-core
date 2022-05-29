@@ -43,9 +43,7 @@ namespace KCore {
         void restoreAffixes();
     };
 
-#ifndef EMSCRIPTEN
     extern "C" {
     DllExport KCore::RemoteSource *CreateRemoteSource(const char* url);
     }
-#endif
 }

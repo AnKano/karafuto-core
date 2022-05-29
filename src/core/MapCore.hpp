@@ -9,13 +9,8 @@
 #include "worlds/TerrainedWorld.hpp"
 #include "meshes/GridMesh.hpp"
 
-#ifndef __EMSCRIPTEN__
-
 #include "contexts/rendering/IRenderContext.hpp"
 #include "contexts/network/INetworkContext.hpp"
-
-#endif
-
 #include "contexts/task/TaskContext.hpp"
 #include "cache/LimitedSpaceCache.hpp"
 #include "events/MapEvent.hpp"
@@ -62,7 +57,6 @@ namespace KCore {
         void performUpdate();
     };
 
-#ifndef __EMSCRIPTEN__
     extern "C" {
     DllExport KCore::MapCore *CreateMapCore();
 
@@ -94,6 +88,5 @@ namespace KCore {
 
     DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length);
     }
-#endif
 }
 

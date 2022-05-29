@@ -53,7 +53,6 @@ namespace KCore {
         void postMetaTileCalculation() override;
     };
 
-#ifndef __EMSCRIPTEN__
     extern "C" {
     DllExport KCore::TerrainedWorld *CreateTerrainedWorld(float latitude, float longitude);
 
@@ -61,6 +60,5 @@ namespace KCore {
 
     DllExport void TerrainedWorldRegisterSource(KCore::TerrainedWorld *world, BaseSource *source, const char *tag);
     }
-#endif
 }
 

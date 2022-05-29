@@ -74,11 +74,7 @@ int main() {
 
     auto TerrainSource_ptr = new KCore::SRTMLocalSource();
 
-#ifdef __EMSCRIPTEN__
-    TerrainSource_ptr->addSourcePart("/assets/sources", ".hgt");
-#else
     TerrainSource_ptr->addSourcePart("../build/assets/sources", ".hgt");
-#endif
     auto ImageSource_ptr = KCore::CreateRemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
 
     world->registerSource(TerrainSource_ptr, "terrain");

@@ -36,11 +36,9 @@ namespace KCore {
         mURLSuffix = mRawUrl.substr(position + payloadLength);
     }
 
-#ifndef EMSCRIPTEN
     extern "C" {
     DllExport KCore::RemoteSource *CreateRemoteSource(const char *url) {
         return new RemoteSource(url);
     }
     }
-#endif
 }

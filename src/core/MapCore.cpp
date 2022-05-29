@@ -8,9 +8,7 @@
 #include "meshes/PolylineMesh.hpp"
 #include "meshes/PolygonMesh.hpp"
 
-#ifndef __EMSCRIPTEN__
 #include "gzip/decompress.hpp"
-#endif
 
 namespace KCore {
     MapCore::MapCore() = default;
@@ -80,7 +78,6 @@ namespace KCore {
         return mWorldAdapter->getAsyncEvents();
     }
 
-#ifndef __EMSCRIPTEN__
     DllExport KCore::MapCore *CreateMapCore() {
         return new KCore::MapCore();
     }
@@ -165,5 +162,4 @@ namespace KCore {
 
         return points->data();
     }
-#endif
 }
