@@ -30,11 +30,11 @@ namespace KCore {
     }
 
     void TerrainedWorld::calculateMetaTiles() {
-        typedef std::chrono::high_resolution_clock Time;
-        typedef std::chrono::milliseconds ms;
-        typedef std::chrono::duration<float> fsec;
-
-        auto t0 = Time::now();
+//        typedef std::chrono::high_resolution_clock Time;
+//        typedef std::chrono::milliseconds ms;
+//        typedef std::chrono::duration<float> fsec;
+//
+//        auto t0 = Time::now();
 
         // store old tiles and clear up current
         mPrevMetaTiles = std::move(mCurrMetaTiles);
@@ -83,9 +83,9 @@ namespace KCore {
             toRenderContext.push_back(mCreatedMetaTiles[quadcode]);
         mRenderContext->setCurrentTileState(toRenderContext);
 
-        auto t1 = Time::now();
-        fsec fs = t1 - t0;
-        ms d = std::chrono::duration_cast<ms>(fs);
+//        auto t1 = Time::now();
+//        fsec fs = t1 - t0;
+//        ms d = std::chrono::duration_cast<ms>(fs);
 //        std::cout << "meta step: " << d.count() << "ms\n";
 
         postMetaTileCalculation();

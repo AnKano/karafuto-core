@@ -103,6 +103,8 @@ namespace KCore {
         INetworkContext *getNetworkContext();
 
     protected:
+        std::vector<TileDescription> divide(float target = 1.0);
+
         virtual void performStages() = 0;
 
         virtual void createBaseTileResources(GenericTile *tile) = 0;
@@ -113,7 +115,7 @@ namespace KCore {
 
         virtual void postMetaTileCalculation() = 0;
 
-        bool screenSpaceError(TileDescription &tile, float quality);
+        bool screenSpaceError(TileDescription &tile, float target, float quality = 3.0f);
 
         bool checkTileInFrustum(const TileDescription &tile);
 

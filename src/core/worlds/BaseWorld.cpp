@@ -169,45 +169,22 @@ namespace KCore {
         mPrevBaseTiles = std::move(mCurrBaseTiles);
         mCurrBaseTiles = {};
 
-        typedef std::chrono::high_resolution_clock Time;
-        typedef std::chrono::milliseconds ms;
-        typedef std::chrono::duration<float> fsec;
+//        typedef std::chrono::high_resolution_clock Time;
+//        typedef std::chrono::milliseconds ms;
+//        typedef std::chrono::duration<float> fsec;
+//        auto t0 = Time::now();
 
-        auto t0 = Time::now();
+        std::vector<TileDescription> tiles = divide();
 
-
-        std::vector<TileDescription> tiles{};
-
-        // create tiles
-        for (const auto &item: std::vector{"0", "1", "2", "3"})
-            tiles.push_back(createTile(item));
-
-        std::size_t count{0};
-        while (count != tiles.size()) {
-            auto tile = &tiles[count];
-            auto quadcode = tile->getQuadcode();
-
-            if (screenSpaceError(*tile, 3.0)) {
-                if (tile->getType() != TileType::Root)
-                    tile->setType(TileType::Separated);
-                tile->setVisibility(TileVisibility::Hide);
-
-                for (const auto &item: std::vector{"0", "1", "2", "3"})
-                    tiles.push_back(createTile(quadcode + item));
-            }
-
-            count++;
-        }
-
-        auto t1 = Time::now();
-        fsec fs = t1 - t0;
-        ms d = std::chrono::duration_cast<ms>(fs);
+//        auto t1 = Time::now();
+//        fsec fs = t1 - t0;
+//        ms d = std::chrono::duration_cast<ms>(fs);
 //        std::cout << "base step: " << d.count() << "ms\n";
 
         postTileCalculation(tiles);
     }
 
-    bool BaseWorld::screenSpaceError(TileDescription &tile, float quality) {
+    bool BaseWorld::screenSpaceError(TileDescription &tile, float target, float quality) {
         const auto &quadcode = tile.getQuadcode();
 
         if (!checkTileInFrustum(tile)) {
@@ -227,8 +204,8 @@ namespace KCore {
         auto pos = tile.getCenter();
         auto scale = tile.getSideLength();
 
-        float minX = (float) pos.x - scale, maxX = (float) pos.x + scale;
-        float minZ = (float) pos.y - scale, maxZ = (float) pos.y + scale;
+        float minX = (float) pos.x - scale / 2, maxX = (float) pos.x + scale / 2;
+        float minZ = (float) pos.y - scale / 2, maxZ = (float) pos.y + scale / 2;
         float minY = -1.0f, maxY = 1.0f;
 
         auto result = mCullingFilter.testAABB(minX, minY, minZ, maxX, maxY, maxZ);
@@ -275,5 +252,31 @@ namespace KCore {
         }
 
         return tile;
+    }
+
+    std::vector<TileDescription> BaseWorld::divide(float target) {
+        std::vector<TileDescription> tiles{};
+
+        // create tiles
+        for (const auto &item: std::vector{"0", "1", "2", "3"})
+            tiles.push_back(createTile(item));
+
+        std::size_t count{0};
+        while (count != tiles.size()) {
+            auto tile = &tiles[count];
+            auto quadcode = tile->getQuadcode();
+
+            if (screenSpaceError(*tile, target)) {
+                if (tile->getType() != TileType::Root) tile->setType(TileType::Separated);
+                tile->setVisibility(TileVisibility::Hide);
+
+                for (const auto &item: std::vector{"0", "1", "2", "3"})
+                    tiles.push_back(createTile(quadcode + item));
+            }
+
+            count++;
+        }
+
+        return tiles;
     }
 }
