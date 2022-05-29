@@ -22,14 +22,6 @@
 
 #include "Texture.hpp"
 
-const uint32_t WIDTH = 2048;
-const uint32_t HEIGHT = 2048;
-const uint32_t SLOTS = 64;
-
-const std::vector<const char *> validationLayers = {
-        "VK_LAYER_KHRONOS_validation"
-};
-
 #ifdef NDEBUG
 const bool enableValidationLayers = false;
 #else
@@ -82,16 +74,6 @@ struct UniformBufferObject {
     alignas(16) glm::mat4 proj;
 };
 
-const std::vector<Vertex> vertices = {
-        {{-1.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
-        {{1.0f,  -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
-        {{1.0f,  1.0f,  0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
-        {{-1.0f, 1.0f,  0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
-};
-
-const std::vector<uint16_t> indices = {
-        0, 1, 2, 2, 3, 0
-};
 
 struct FramebufferAttachment {
     VkImage image;
@@ -100,30 +82,6 @@ struct FramebufferAttachment {
     VkFormat format;
     VkImageSubresourceRange subresourceRange;
     VkAttachmentDescription description;
-
-    bool hasDepth() {
-        std::vector<VkFormat> formats =
-                {
-                        VK_FORMAT_D16_UNORM,
-                        VK_FORMAT_X8_D24_UNORM_PACK32,
-                        VK_FORMAT_D32_SFLOAT,
-                        VK_FORMAT_D16_UNORM_S8_UINT,
-                        VK_FORMAT_D24_UNORM_S8_UINT,
-                        VK_FORMAT_D32_SFLOAT_S8_UINT,
-                };
-        return std::find(formats.begin(), formats.end(), format) != std::end(formats);
-    }
-
-    bool hasStencil() {
-        std::vector<VkFormat> formats =
-                {
-                        VK_FORMAT_S8_UINT,
-                        VK_FORMAT_D16_UNORM_S8_UINT,
-                        VK_FORMAT_D24_UNORM_S8_UINT,
-                        VK_FORMAT_D32_SFLOAT_S8_UINT,
-                };
-        return std::find(formats.begin(), formats.end(), format) != std::end(formats);
-    }
 };
 
 struct VulkanTileDescription {
@@ -133,6 +91,26 @@ struct VulkanTileDescription {
 };
 
 class VulkanCore {
+private:
+    const uint32_t WIDTH = 2048;
+    const uint32_t HEIGHT = 2048;
+    const uint32_t SLOTS = 64;
+
+    const std::vector<const char *> validationLayers = {
+            "VK_LAYER_KHRONOS_validation"
+    };
+
+    const std::vector<Vertex> vertices = {
+            {{-1.0f, -1.0f, 0.0f}, {1.0f, 0.0f, 0.0f}, {1.0f, 0.0f}},
+            {{1.0f,  -1.0f, 0.0f}, {0.0f, 1.0f, 0.0f}, {0.0f, 0.0f}},
+            {{1.0f,  1.0f,  0.0f}, {0.0f, 0.0f, 1.0f}, {0.0f, 1.0f}},
+            {{-1.0f, 1.0f,  0.0f}, {1.0f, 1.0f, 1.0f}, {1.0f, 1.0f}}
+    };
+
+    const std::vector<uint16_t> indices = {
+            0, 1, 2, 2, 3, 0
+    };
+
 public:
     void run() {
         initVulkan();
@@ -183,21 +161,21 @@ public:
 
         createDescriptorSetLayout();
 
-        altCreateFramebuffers();
-        altCreateRenderPass();
-        altCreatePipeline();
+        createFramebuffers();
+        createRenderPass();
+        createPipeline();
 
         createDescriptorPool();
         createDescriptorSets();
     }
 
-    void altCreateFramebuffers();
+    void createFramebuffers();
 
-    void altCreateRenderPass();
+    void createRenderPass();
 
     void createDescriptorSetLayout();
 
-    void altCreatePipeline();
+    void createPipeline();
 
     void createInstance();
 
@@ -218,8 +196,10 @@ public:
 
     VkImageView createImageView(VkImage image, VkFormat format, VkImageAspectFlags aspectFlags);
 
-    void createImage(uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
-                     VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory);
+    void createImage(
+            uint32_t width, uint32_t height, VkFormat format, VkImageTiling tiling, VkImageUsageFlags usage,
+            VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory
+    );
 
     void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
 
@@ -235,8 +215,10 @@ public:
 
     void createDescriptorSets();
 
-    void createBuffer(VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer,
-                      VkDeviceMemory &bufferMemory);
+    void createBuffer(
+            VkDeviceSize size, VkBufferUsageFlags usage, VkMemoryPropertyFlags properties, VkBuffer &buffer,
+            VkDeviceMemory &bufferMemory
+    );
 
     VkCommandBuffer beginSingleTimeCommands();
 
@@ -262,19 +244,23 @@ public:
 
     static std::vector<char> readFile(const std::string &filename);
 
-    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
-                                                        VkDebugUtilsMessageTypeFlagsEXT messageType,
-                                                        const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
-                                                        void *pUserData) {
+    static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
+            VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,
+            VkDebugUtilsMessageTypeFlagsEXT messageType,
+            const VkDebugUtilsMessengerCallbackDataEXT *pCallbackData,
+            void *pUserData
+    ) {
         std::cerr << "validation layer: " << pCallbackData->pMessage << std::endl;
 
         return VK_FALSE;
     }
 
     static VkResult
-    CreateDebugUtilsMessengerEXT(VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
-                                 const VkAllocationCallbacks *pAllocator,
-                                 VkDebugUtilsMessengerEXT *pDebugMessenger) {
+    CreateDebugUtilsMessengerEXT(
+            VkInstance instance, const VkDebugUtilsMessengerCreateInfoEXT *pCreateInfo,
+            const VkAllocationCallbacks *pAllocator,
+            VkDebugUtilsMessengerEXT *pDebugMessenger
+    ) {
         auto func = (PFN_vkCreateDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance,
                                                                                "vkCreateDebugUtilsMessengerEXT");
         if (func != nullptr) {
@@ -284,8 +270,10 @@ public:
         }
     }
 
-    static void DestroyDebugUtilsMessengerEXT(VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
-                                              const VkAllocationCallbacks *pAllocator) {
+    static void DestroyDebugUtilsMessengerEXT(
+            VkInstance instance, VkDebugUtilsMessengerEXT debugMessenger,
+            const VkAllocationCallbacks *pAllocator
+    ) {
         auto func = (PFN_vkDestroyDebugUtilsMessengerEXT) vkGetInstanceProcAddr(instance,
                                                                                 "vkDestroyDebugUtilsMessengerEXT");
         if (func != nullptr) {

@@ -1,7 +1,7 @@
 #include "VulkanCore.hpp"
-#include "misc/BuiltInShaderBinaries.hpp"
+#include "misc/BuiltInShaderBinaries.inl"
 
-void VulkanCore::altCreateFramebuffers() {
+void VulkanCore::createFramebuffers() {
     uint32_t width = WIDTH;
     uint32_t height = HEIGHT;
     VkFormat colorFormat = VK_FORMAT_R5G6B5_UNORM_PACK16;
@@ -71,7 +71,7 @@ void VulkanCore::altCreateFramebuffers() {
     vkCreateImageView(device, &depthStencilView, nullptr, &depthAttachment.view);
 }
 
-void VulkanCore::altCreateRenderPass() {
+void VulkanCore::createRenderPass() {
     VkFormat colorFormat = VK_FORMAT_R5G6B5_UNORM_PACK16;
     VkFormat depthFormat = findDepthFormat();
 
@@ -175,7 +175,7 @@ void VulkanCore::createDescriptorSetLayout() {
     }
 }
 
-void VulkanCore::altCreatePipeline() {
+void VulkanCore::createPipeline() {
     auto vertShaderCode = KCore::Vulkan::BuiltIn::TextureRenderer::vertShader;
     auto fragShaderCode = KCore::Vulkan::BuiltIn::TextureRenderer::fragShader;
 
