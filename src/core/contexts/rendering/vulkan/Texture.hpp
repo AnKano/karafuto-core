@@ -23,6 +23,8 @@ public:
 
     ~Texture();
 
+    void manuallyDestroy();
+
 private:
     void createTextureImage(const std::string &path);
 

@@ -134,11 +134,7 @@ namespace KCore {
                         auto *source = (KCore::SRTMLocalSource *) world->getSources()["terrain"];
                         auto result = source->getDataForTile(zoom, x, y, 128, 128);
 
-                        auto results = std::make_shared<std::vector<uint8_t>>();
-                        results->insert(results->begin(), result, result + (128 * 128 * 2));
-
-                        auto mesh = new GridMesh(1.0f, 1.0f, 127, 127);
-                        mesh->applyHeights(result, 127, 127);
+                        auto mesh = new GridMesh(1.0f, 1.0f, 127, 127, result);
 
                         delete[] result;
 

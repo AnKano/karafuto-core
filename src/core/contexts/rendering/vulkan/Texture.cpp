@@ -78,7 +78,7 @@ void Texture::createTextureSampler() {
     samplerInfo.addressModeU = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeV = VK_SAMPLER_ADDRESS_MODE_REPEAT;
     samplerInfo.addressModeW = VK_SAMPLER_ADDRESS_MODE_REPEAT;
-    samplerInfo.anisotropyEnable = VK_TRUE;
+    samplerInfo.anisotropyEnable = VK_FALSE;
     samplerInfo.maxAnisotropy = properties.limits.maxSamplerAnisotropy;
     samplerInfo.borderColor = VK_BORDER_COLOR_INT_OPAQUE_BLACK;
     samplerInfo.unnormalizedCoordinates = VK_FALSE;
@@ -95,7 +95,20 @@ void Texture::createTextureImageView() {
     textureImageView = parent->createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
+void Texture::manuallyDestroy() {
+    vkUnmapMemory(parent->device, textureImageMemory);
+    vkFreeMemory(parent->device, textureImageMemory, nullptr);
+
+    vkDestroySampler(parent->device, textureSampler, nullptr);
+    vkDestroyImageView(parent->device, textureImageView, nullptr);
+
+    vkDestroyImage(parent->device, textureImage, nullptr);
+}
+
 Texture::~Texture() {
+//    vkUnmapMemory(parent->device, textureImageMemory);
+    vkFreeMemory(parent->device, textureImageMemory, nullptr);
+
     vkDestroySampler(parent->device, textureSampler, nullptr);
     vkDestroyImageView(parent->device, textureImageView, nullptr);
 

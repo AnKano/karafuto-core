@@ -2,8 +2,8 @@
 #include "stages/BuiltinStages.hpp"
 
 #if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
-//#include "../contexts/rendering/opencl/OpenCLRenderContext.hpp"
-#include "../contexts/rendering/vulkan/VulkanRenderContext.hpp"
+#include "../contexts/rendering/opencl/OpenCLRenderContext.hpp"
+//#include "../contexts/rendering/vulkan/VulkanRenderContext.hpp"
 #else
 #include "../contexts/rendering/fallback/FallbackRenderContext.hpp"
 #endif
@@ -16,8 +16,8 @@ namespace KCore {
     TerrainedWorld::TerrainedWorld(float latitude, float longitude) : BaseWorld(latitude, longitude) {
 
 #if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
-        mRenderContext = new KCore::Vulkan::VulkanRenderContext(this);
-//        mRenderContext = new KCore::OpenCL::OpenCLRenderContext(this);
+//        mRenderContext = new KCore::Vulkan::VulkanRenderContext(this);
+        mRenderContext = new KCore::OpenCL::OpenCLRenderContext(this);
 #else
         mRenderContext = new KCore::Fallback::FallbackRenderContext(this);
 #endif
@@ -80,7 +80,7 @@ namespace KCore {
         };
 
         for (const auto &item: tiles) {
-            auto quadcode = item.getQuadcode();
+            const auto& quadcode = item.getQuadcode();
             if (condition(item)) {
                 if (mCreatedBaseTiles.count(quadcode) == 0) {
                     mCreatedBaseTiles[quadcode] = new GenericTile(this, item);

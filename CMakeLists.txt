@@ -26,7 +26,8 @@ if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
 
     if (WIN32)
         set(PLATFORM "Windows")
-        set(BACKEND "Vulkan")
+#        set(BACKEND "Vulkan")
+        set(BACKEND "OpenCL")
     endif ()
 endif ()
 
@@ -75,8 +76,8 @@ if (ON)
             list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
         endif ()
 
-        message("\t - Vulkan adapter")
-        if (ON)
+        if (${BACKEND} STREQUAL "Vulkan")
+            message("\t - Vulkan adapter")
             set(CPP_HEADERS_ADDITIONALS "")
             file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.hpp
@@ -86,6 +87,21 @@ if (ON)
             set(CPP_SOURCES_ADDITIONALS "")
             file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.cpp)
+
+            list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
+            list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
+        elseif (${BACKEND} STREQUAL "OpenCL")
+            message("\t - OpenCL adapter")
+            set(CPP_HEADERS_ADDITIONALS "")
+            file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.inl
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.hpp)
+
+            set(CPP_SOURCES_ADDITIONALS "")
+            file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.cpp
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.cpp)
 
             list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
@@ -100,7 +116,7 @@ if (ON)
 
     if (${PLATFORM} STREQUAL "Windows")
         # find better way to do it
-        # set(OCL_ROOT "C:/Program Files (x86)/OCL_SDK_Light")
+        set(OCL_ROOT "C:/Program Files (x86)/OCL_SDK_Light")
 
         message("\t - Declare specific C-math definitions")
         add_compile_definitions(_USE_MATH_DEFINES)
@@ -164,7 +180,7 @@ if (ON)
         add_subdirectory(${THIRD_PARTY_DIR}/HTTPRequest)
 
         message("\t - Added GLM...")
-        add_subdirectory(${THIRD_PARTY_DIR}/glm EXCLUDE_FROM_ALL)
+        add_subdirectory(${THIRD_PARTY_DIR}/glm)
 
         message("\t - Added zlib...")
         if (ON)
@@ -183,7 +199,7 @@ if (ON)
     message("")
     message("🎯 Declare targets")
 
-#    add_library(libkcore-static STATIC ${CPP_HEADERS} ${CPP_SOURCES})
+    #    add_library(libkcore-static STATIC ${CPP_HEADERS} ${CPP_SOURCES})
     add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
 
     add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
@@ -226,6 +242,7 @@ if (ON)
     if (ON)
         if (${PLATFORM} STREQUAL "Windows")
             if (${BACKEND} STREQUAL "Vulkan")
+                message("\t - Vulkan libraries")
                 set(LIBRARIES glm zlibstatic HTTPRequest wsock32 ws2_32)
 
                 find_package(Vulkan REQUIRED)
@@ -234,11 +251,14 @@ if (ON)
                 # target_link_libraries(libkcore-static PUBLIC ${LIBRARIES} ${Vulkan_LIBRARIES})
                 target_link_libraries(karafuto_core PUBLIC ${LIBRARIES} ${Vulkan_LIBRARIES})
             elseif (${BACKEND} STREQUAL "OpenCL")
-                set(LIBRARIES glm opencl zlibstatic HTTPRequest wsock32 ws2_32)
+                message("\t - OpenCL libraries")
+                set(LIBRARIES opencl glm zlibstatic HTTPRequest wsock32 ws2_32)
 
-                target_link_directories(libkcore PRIVATE ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
+                target_link_libraries(libkcore PUBLIC ${LIBRARIES})
+                target_link_directories(libkcore PUBLIC ${LIBRARIES} ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
                 # target_link_directories(libkcore-static PRIVATE ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
-                target_link_directories(karafuto_core PRIVATE ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
+                target_link_libraries(karafuto_core PUBLIC ${LIBRARIES})
+                target_link_directories(karafuto_core PUBLIC ${LIBRARIES} ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
             endif ()
         endif ()
     endif ()
@@ -246,31 +266,31 @@ if (ON)
     message("\t - Add headers")
     if (ON)
         if (OFF)
-            if (APPLE)
-                message("MacOS: Added RapidJSON, Earcut, stb-image includes")
-                set(INCLUDE_COMPOUND
-                        ${THIRD_PARTY_DIR}/rapidjson/include
-                        ${THIRD_PARTY_DIR}/earcut/include
-                        ${THIRD_PARTY_DIR}/stb-image
-                        ${THIRD_PARTY_DIR}/gzip-hpp/include
-                        )
-                target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
-                target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
-                target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
-            endif ()
-
-            if (UNIX AND NOT APPLE)
-                message("Unix: Added RapidJSON, Earcut, stb-image, gzip includes")
-                set(INCLUDE_COMPOUND
-                        ${THIRD_PARTY_DIR}/rapidjson/include
-                        ${THIRD_PARTY_DIR}/earcut/include
-                        ${THIRD_PARTY_DIR}/stb-image
-                        ${THIRD_PARTY_DIR}/gzip-hpp/include
-                        )
-                target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
-                target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
-                target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
-            endif ()
+#            if (APPLE)
+#                message("MacOS: Added RapidJSON, Earcut, stb-image includes")
+#                set(INCLUDE_COMPOUND
+#                        ${THIRD_PARTY_DIR}/rapidjson/include
+#                        ${THIRD_PARTY_DIR}/earcut/include
+#                        ${THIRD_PARTY_DIR}/stb-image
+#                        ${THIRD_PARTY_DIR}/gzip-hpp/include
+#                        )
+#                target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
+#                target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
+#                target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
+#            endif ()
+#
+#            if (UNIX AND NOT APPLE)
+#                message("Unix: Added RapidJSON, Earcut, stb-image, gzip includes")
+#                set(INCLUDE_COMPOUND
+#                        ${THIRD_PARTY_DIR}/rapidjson/include
+#                        ${THIRD_PARTY_DIR}/earcut/include
+#                        ${THIRD_PARTY_DIR}/stb-image
+#                        ${THIRD_PARTY_DIR}/gzip-hpp/include
+#                        )
+#                target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
+#                target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
+#                target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
+#            endif ()
         endif ()
 
         if (${PLATFORM} STREQUAL "Windows")

@@ -22,11 +22,11 @@
 
 #include "Texture.hpp"
 
-#ifdef NDEBUG
-const bool enableValidationLayers = false;
-#else
+//#ifdef NDEBUG
+//const bool enableValidationLayers = false;
+//#else
 const bool enableValidationLayers = true;
-#endif
+//#endif
 
 struct QueueFamilyIndices {
     std::optional<uint32_t> graphicsFamily;
@@ -241,8 +241,6 @@ public:
     std::vector<const char *> getRequiredExtensions();
 
     bool checkValidationLayerSupport();
-
-    static std::vector<char> readFile(const std::string &filename);
 
     static VKAPI_ATTR VkBool32 VKAPI_CALL debugCallback(
             VkDebugUtilsMessageSeverityFlagBitsEXT messageSeverity,

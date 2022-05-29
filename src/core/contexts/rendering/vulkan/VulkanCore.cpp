@@ -924,6 +924,7 @@ std::vector<uint8_t> VulkanCore::readFrame() {
     std::vector<uint8_t> imageData{};
     imageData.insert(imageData.end(), imagedata, imagedata + (WIDTH * HEIGHT * 2));
 
+
     vkUnmapMemory(device, dstImageMemory);
     vkFreeMemory(device, dstImageMemory, nullptr);
     vkDestroyImage(device, dstImage, nullptr);
@@ -982,11 +983,20 @@ void VulkanCore::drawFrame() {
     vkCmdBindVertexBuffers(commandBuffer, 0, 1, vertexBuffers, offsets);
     vkCmdBindIndexBuffer(commandBuffer, indexBuffer, 0, VK_INDEX_TYPE_UINT16);
 
+    std::vector<std::unique_ptr<Texture>> textures;
+
     for (int i = 0; i < SLOTS && i < descriptions.size(); i++) {
         auto &desc = descriptions[i];
 
         // create texture
-        Texture texture(this, desc.tex, 256, 256, 4);
+        textures.emplace_back(new Texture(this, desc.tex, 256, 256, 4));
+    }
+
+    for (int i = 0; i < SLOTS && i < descriptions.size(); i++) {
+        auto &desc = descriptions[i];
+
+        // create texture
+//        Texture texture(this, desc.tex, 256, 256, 4);
 
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = uniformBuffers[i];
@@ -995,8 +1005,8 @@ void VulkanCore::drawFrame() {
 
         VkDescriptorImageInfo imageInfo{};
         imageInfo.imageLayout = VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL;
-        imageInfo.imageView = texture.textureImageView;
-        imageInfo.sampler = texture.textureSampler;
+        imageInfo.imageView = textures[i]->textureImageView;
+        imageInfo.sampler = textures[i]->textureSampler;
 
         std::array<VkWriteDescriptorSet, 2> descriptorWrites{};
 
@@ -1033,6 +1043,7 @@ void VulkanCore::drawFrame() {
                 1, 0, 0, 0
         );
     }
+
     descriptions.clear();
 
     vkCmdEndRenderPass(commandBuffer);
@@ -1045,6 +1056,7 @@ void VulkanCore::drawFrame() {
     submitInfo.pCommandBuffers = &commandBuffer;
 
     VkFenceCreateInfo fenceInfo{};
+    fenceInfo.sType = VK_STRUCTURE_TYPE_FENCE_CREATE_INFO;
     VkFence fence;
     vkCreateFence(device, &fenceInfo, nullptr, &fence);
     vkQueueSubmit(queue, 1, &submitInfo, fence);
@@ -1132,24 +1144,6 @@ bool VulkanCore::checkValidationLayerSupport() {
     }
 
     return true;
-}
-
-std::vector<char> VulkanCore::readFile(const std::string &filename) {
-    std::ifstream file(filename, std::ios::ate | std::ios::binary);
-
-    if (!file.is_open()) {
-        throw std::runtime_error("failed to open file!");
-    }
-
-    size_t fileSize = (size_t) file.tellg();
-    std::vector<char> buffer(fileSize);
-
-    file.seekg(0);
-    file.read(buffer.data(), fileSize);
-
-    file.close();
-
-    return buffer;
 }
 
 void VulkanCore::declareTile(const std::vector<uint8_t> &img,

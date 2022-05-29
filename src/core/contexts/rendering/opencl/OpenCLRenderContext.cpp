@@ -100,7 +100,7 @@ namespace KCore::OpenCL {
 
         for (const auto &meta: metas) {
             auto items = meta->getChildQuadcodes();
-            for (const auto item: items) {
+            for (const auto& item: items) {
                 if (mInRAMNotConvertedTextures.count(item) == 0) continue;
 
                 unsigned int offsetX, offsetY, depth;
