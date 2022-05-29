@@ -28,8 +28,6 @@ namespace KCore {
 
         void pushRequestToQueue(NetworkRequest* request);
 
-        virtual void synchronousStep();
-
     private:
         void runLoop();
 
