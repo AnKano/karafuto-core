@@ -26,7 +26,7 @@ __kernel void oneShotRenderToRGB888(
     int pos_x = offset_width + pos.x;
     int pos_y = offset_height + pos.y;
 
-    int pixel = pos_y * 2048 + pos_x;
+    int pixel = pos_y * 1024 + pos_x;
 
     output[pixel*3+0] = texelData.x;
     output[pixel*3+1] = texelData.y;
@@ -52,7 +52,7 @@ __kernel void oneShotRenderToRGB565(
     int pos_x = offset_width + pos.x;
     int pos_y = offset_height + pos.y;
 
-    int pixel = pos_y * 2048 + pos_x;
+    int pixel = pos_y * 1024 + pos_x;
 
     char x1, x2;
     x1 = (texelData.x & 0xF8) | (texelData.y >> 5);
@@ -65,7 +65,7 @@ __kernel void oneShotRenderToRGB565(
 __kernel void wipeCanvas(__global char* output) {
     const int2 pos = {get_global_id(0), get_global_id(1)};
 
-    int pixel = pos.y * 2048 + pos.x;
+    int pixel = pos.y * 1024 + pos.x;
 
     output[pixel*2+0] = 0x00;
     output[pixel*2+1] = 0x00;

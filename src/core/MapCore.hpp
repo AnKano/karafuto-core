@@ -12,7 +12,6 @@
 #include "contexts/rendering/IRenderContext.hpp"
 #include "contexts/network/INetworkContext.hpp"
 #include "contexts/task/TaskContext.hpp"
-#include "cache/LimitedSpaceCache.hpp"
 #include "events/MapEvent.hpp"
 
 #include "sources/local/srtm/SRTMLocalSource.hpp"
@@ -77,10 +76,7 @@ namespace KCore {
 
     DllExport KCore::MapEvent *EjectAsyncEventsFromVector(std::vector<MapEvent> *vecPtr, int &length);
 
-
-    DllExport uint8_t *DecompressArrayByPtr(uint8_t *data, int length);
-
-    DllExport uint8_t *DecompressVectorByPtr(std::vector<uint8_t> *data);
+    DllExport uint8_t* GetBytesFromVector(std::vector<uint8_t> *vecPtr, int &length);
 
     DllExport void ReleaseArray(uint8_t *arrayPtr);
 

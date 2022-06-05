@@ -7,12 +7,6 @@
 [submodule "third-party/rapidjson"]
 	path = third-party/rapidjson
 	url = https://github.com/Tencent/rapidjson
-[submodule "third-party/zlib"]
-	path = third-party/zlib
-	url = https://github.com/madler/zlib
 [submodule "third-party/HTTPRequest"]
 	path = third-party/HTTPRequest
 	url = https://github.com/elnormous/HTTPRequest.git
-[submodule "third-party/miniz"]
-	path = third-party/miniz
-	url = https://github.com/richgel999/miniz.git

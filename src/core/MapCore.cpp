@@ -8,8 +8,6 @@
 #include "meshes/PolylineMesh.hpp"
 #include "meshes/PolygonMesh.hpp"
 
-#include "gzip/decompress.hpp"
-
 namespace KCore {
     MapCore::MapCore() = default;
 
@@ -52,9 +50,9 @@ namespace KCore {
                                               {mCameraPosition.x, 0.0f, mCameraPosition.z},
                                               {0.0f, 0.0f, 1.0f});
 
-        this->mCameraProjectionMatrix = glm::perspective(glm::radians(45.0f),
-                                                         aspectRatio,
-                                                         100.0f, 2500000.0f);
+        this->mCameraProjectionMatrix = glm::perspective(
+                glm::radians(45.0f), aspectRatio, 100.0f, 2500000.0f
+        );
 
         performUpdate();
     }
@@ -91,25 +89,9 @@ namespace KCore {
         return data->data();
     }
 
-    DllExport uint8_t *DecompressArrayByPtr(uint8_t *data, int length) {
-        std::string decompressed_data = gzip::decompress(
-                reinterpret_cast<const char *>(data), length
-        );
-
-        auto *converted = new uint8_t[decompressed_data.size()];
-        std::copy(decompressed_data.begin(), decompressed_data.end(), converted);
-
-        return converted;
-    }
-
-    DllExport uint8_t *DecompressVectorByPtr(std::vector<uint8_t> *data) {
-        auto *conv = reinterpret_cast<const char *>(data->data());
-        std::string decompressed_data = gzip::decompress(conv, data->size());
-
-        auto *converted = new uint8_t[decompressed_data.size()];
-        std::copy(decompressed_data.begin(), decompressed_data.end(), converted);
-
-        return converted;
+    DllExport uint8_t *GetBytesFromVector(std::vector<uint8_t> *vecPtr, int &length) {
+        length = vecPtr->size();
+        return vecPtr->data();
     }
 
     DllExport void UpdateMapCore(KCore::MapCore *mapCore,

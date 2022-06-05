@@ -1,10 +1,7 @@
 #include "BaseWorld.hpp"
 
-#if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
-    #include "../contexts/network/basic/BasicNetworkContext.hpp"
-#else
-    #include "../contexts/network/fallback/FallbackNetworkContext.hpp"
-#endif
+#include "../contexts/network/basic/BasicNetworkContext.hpp"
+//    #include "../contexts/network/fallback/FallbackNetworkContext.hpp"
 
 namespace KCore {
     BaseWorld::BaseWorld() : BaseWorld(0.0f, 0.0f) {}
@@ -14,11 +11,8 @@ namespace KCore {
         mOriginLatLon = originPoint;
         mOriginPosition = {latitude, 0.0f, longitude};
 
-#if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
         mNetworkContext = new BasicNetworkContext{};
-#else
-        mNetworkContext = new FallbackNetworkContext{};
-#endif
+//        mNetworkContext = new FallbackNetworkContext{};
     }
 
     std::map<std::string, GenericTile *> &BaseWorld::getCreatedBaseTiles() {

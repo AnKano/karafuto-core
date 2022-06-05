@@ -17,19 +17,16 @@ if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
     if (APPLE)
         set(PLATFORM "APPLE")
         set(BACKEND "Vulkan")
-    endif ()
-
-    if (UNIX)
+    elseif (UNIX)
         set(PLATFORM "UNIX")
         set(BACKEND "Vulkan")
-    endif ()
-
-    if (WIN32)
+    elseif (WIN32)
         set(PLATFORM "Windows")
-        set(BACKEND "Vulkan")
-#        set(BACKEND "OpenCL")
+        #        set(BACKEND "Vulkan")
+        set(BACKEND "OpenCL")
     endif ()
 endif ()
+
 
 message("🖥️ Current platform: ${PLATFORM}")
 message("🖼️ Current backend: ${BACKEND} \n")
@@ -57,19 +54,21 @@ endif ()
 if (ON)
     message("🖊️ Grab dependent sources")
 
-
     if (${PLATFORM} STREQUAL "Windows")
         message("\t - Basic HTTP adapter")
         if (ON)
             set(CPP_HEADERS_ADDITIONALS "")
             file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
                     ${MAIN_SOURCE_DIR}/core/contexts/network/basic/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/fallback/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/fallback/*.inl
                     ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkContext.hpp
                     ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkRequest.hpp)
 
             set(CPP_SOURCES_ADDITIONALS "")
             file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
                     ${MAIN_SOURCE_DIR}/core/contexts/network/basic/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/fallback/*.cpp
                     ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkContext.cpp)
 
             list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
@@ -82,11 +81,14 @@ if (ON)
             file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.hpp
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.inl
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/fallback/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/fallback/*.inl
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.hpp)
 
             set(CPP_SOURCES_ADDITIONALS "")
             file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/fallback/*.cpp
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.cpp)
 
             list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
@@ -97,11 +99,14 @@ if (ON)
             file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.hpp
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.inl
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/fallback/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/fallback/*.inl
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.hpp)
 
             set(CPP_SOURCES_ADDITIONALS "")
             file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/fallback/*.cpp
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.cpp)
 
             list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
@@ -123,15 +128,15 @@ if (ON)
     endif ()
 
     if (OFF)
-        if (APPLE)
-            message("MacOS: Override OpenSSL dirs")
-
-            # This is a bug in CMake that causes it to prefer the system version over
-            # the one in the specified ROOT folder.
-            set(OPENSSL_ROOT_DIR ${OPENSSL_ROOT_DIR} /usr/local/Cellar/openssl@3/3.0.1/)
-            set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
-            set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.dylib CACHE FILEPATH "" FORCE)
-        endif ()
+#        if (APPLE)
+#            message("MacOS: Override OpenSSL dirs")
+#
+#            # This is a bug in CMake that causes it to prefer the system version over
+#            # the one in the specified ROOT folder.
+#            set(OPENSSL_ROOT_DIR ${OPENSSL_ROOT_DIR} /usr/local/Cellar/openssl@3/3.0.1/)
+#            set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
+#            set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.dylib CACHE FILEPATH "" FORCE)
+#        endif ()
     endif ()
 endif ()
 
@@ -182,15 +187,15 @@ if (ON)
         message("\t - Added GLM...")
         add_subdirectory(${THIRD_PARTY_DIR}/glm)
 
-        message("\t - Added zlib...")
-        if (ON)
-            add_subdirectory(${THIRD_PARTY_DIR}/zlib)
-
-            message(${CMAKE_BINARY_DIR}/third-party/zlib)
-
-            set(ZLIB_INCLUDE_DIR ${THIRD_PARTY_DIR}/zlib "${CMAKE_BINARY_DIR}/third-party/zlib")
-            set(ZLIB_LIBRARY zlib)
-        endif ()
+#        message("\t - Added zlib...")
+#        if (ON)
+#            add_subdirectory(${THIRD_PARTY_DIR}/zlib)
+#
+#            message(${CMAKE_BINARY_DIR}/third-party/zlib)
+#
+#            set(ZLIB_INCLUDE_DIR ${THIRD_PARTY_DIR}/zlib "${CMAKE_BINARY_DIR}/third-party/zlib")
+#            set(ZLIB_LIBRARY zlib)
+#        endif ()
     endif ()
 endif ()
 
@@ -243,7 +248,7 @@ if (ON)
         if (${PLATFORM} STREQUAL "Windows")
             if (${BACKEND} STREQUAL "Vulkan")
                 message("\t - Vulkan libraries")
-                set(LIBRARIES glm zlibstatic HTTPRequest wsock32 ws2_32)
+                set(LIBRARIES glm HTTPRequest wsock32 ws2_32)
 
                 find_package(Vulkan REQUIRED)
 
@@ -252,7 +257,7 @@ if (ON)
                 target_link_libraries(karafuto_core PUBLIC ${LIBRARIES} ${Vulkan_LIBRARIES})
             elseif (${BACKEND} STREQUAL "OpenCL")
                 message("\t - OpenCL libraries")
-                set(LIBRARIES opencl glm zlibstatic HTTPRequest wsock32 ws2_32)
+                set(LIBRARIES opencl glm HTTPRequest wsock32 ws2_32)
 
                 target_link_libraries(libkcore PUBLIC ${LIBRARIES})
                 target_link_directories(libkcore PUBLIC ${LIBRARIES} ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
@@ -266,31 +271,31 @@ if (ON)
     message("\t - Add headers")
     if (ON)
         if (OFF)
-#            if (APPLE)
-#                message("MacOS: Added RapidJSON, Earcut, stb-image includes")
-#                set(INCLUDE_COMPOUND
-#                        ${THIRD_PARTY_DIR}/rapidjson/include
-#                        ${THIRD_PARTY_DIR}/earcut/include
-#                        ${THIRD_PARTY_DIR}/stb-image
-#                        ${THIRD_PARTY_DIR}/gzip-hpp/include
-#                        )
-#                target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
-#                target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
-#                target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
-#            endif ()
-#
-#            if (UNIX AND NOT APPLE)
-#                message("Unix: Added RapidJSON, Earcut, stb-image, gzip includes")
-#                set(INCLUDE_COMPOUND
-#                        ${THIRD_PARTY_DIR}/rapidjson/include
-#                        ${THIRD_PARTY_DIR}/earcut/include
-#                        ${THIRD_PARTY_DIR}/stb-image
-#                        ${THIRD_PARTY_DIR}/gzip-hpp/include
-#                        )
-#                target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
-#                target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
-#                target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
-#            endif ()
+            #            if (APPLE)
+            #                message("MacOS: Added RapidJSON, Earcut, stb-image includes")
+            #                set(INCLUDE_COMPOUND
+            #                        ${THIRD_PARTY_DIR}/rapidjson/include
+            #                        ${THIRD_PARTY_DIR}/earcut/include
+            #                        ${THIRD_PARTY_DIR}/stb-image
+            #                        ${THIRD_PARTY_DIR}/gzip-hpp/include
+            #                        )
+            #                target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
+            #                target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
+            #                target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
+            #            endif ()
+            #
+            #            if (UNIX AND NOT APPLE)
+            #                message("Unix: Added RapidJSON, Earcut, stb-image, gzip includes")
+            #                set(INCLUDE_COMPOUND
+            #                        ${THIRD_PARTY_DIR}/rapidjson/include
+            #                        ${THIRD_PARTY_DIR}/earcut/include
+            #                        ${THIRD_PARTY_DIR}/stb-image
+            #                        ${THIRD_PARTY_DIR}/gzip-hpp/include
+            #                        )
+            #                target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
+            #                target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
+            #                target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
+            #            endif ()
         endif ()
 
         if (${PLATFORM} STREQUAL "Windows")
@@ -298,7 +303,6 @@ if (ON)
                     ${THIRD_PARTY_DIR}/rapidjson/include
                     ${THIRD_PARTY_DIR}/earcut/include
                     ${THIRD_PARTY_DIR}/stb-image
-                    ${THIRD_PARTY_DIR}/gzip-hpp/include
                     ${OCL_ROOT}/include
 
                     ${THIRD_PARTY_DIR}/zlib

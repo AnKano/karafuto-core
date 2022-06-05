@@ -21,6 +21,7 @@ namespace KCore {
     }
 
     void GeoJSONLocalSource::createPartFile(const std::string &path) {
+        std::cout << path << std::endl;
         mPieces.push_back(static_cast<const std::shared_ptr<BaseSourcePart>>(new GeoJSONFileSourcePiece(path)));
     }
 

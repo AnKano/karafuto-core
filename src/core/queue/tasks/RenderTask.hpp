@@ -4,7 +4,6 @@
 #include <utility>
 #include <iostream>
 
-#include "../../cache/BaseCache.hpp"
 #include "../../events/MapEvent.hpp"
 
 #include "BaseTask.hpp"

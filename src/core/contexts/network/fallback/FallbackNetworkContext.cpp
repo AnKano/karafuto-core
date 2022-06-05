@@ -1,13 +1,26 @@
 #include "FallbackNetworkContext.hpp"
 
+#include "misc/FallbackResource.inl"
+
 namespace KCore {
     void FallbackNetworkContext::performLoopStep() {
-        std::this_thread::sleep_for(100ms);
         while (!mRequestQueue.empty()) {
-            // get next task or nullptr
             auto task = mRequestQueue.back();
             mRequestQueue.pop_back();
-            delete task;
+
+            std::thread{[task]() {
+                try {
+                    auto &buffer = task->getBuffer();
+                    buffer.insert(
+                            buffer.end(),
+                            Network::Fallback::BuiltIn::image.begin(),
+                            Network::Fallback::BuiltIn::image.end()
+                    );
+                    task->Finalize();
+                } catch (const std::exception &e) {
+                    std::cerr << "Request failed, error: " << e.what() << '\n';
+                }
+            }}.detach();
         }
     }
 

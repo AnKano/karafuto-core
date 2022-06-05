@@ -1,7 +1,6 @@
 #include "VulkanRenderContext.hpp"
 
 #include "../../../worlds/TerrainedWorld.hpp"
-#include "gzip/compress.hpp"
 
 namespace KCore::Vulkan {
     VulkanRenderContext::VulkanRenderContext(TerrainedWorld *world) : IRenderContext(world) {}
@@ -49,6 +48,8 @@ namespace KCore::Vulkan {
         auto metas = getCurrentTileState();
 
         for (const auto &meta: metas) {
+//            auto start_time = std::chrono::high_resolution_clock::now();
+
             auto items = meta->getChildQuadcodes();
             for (const auto item: items) {
                 if (mInRAMNotConvertedTextures.count(item) == 0) continue;
@@ -104,6 +105,11 @@ namespace KCore::Vulkan {
 
                 auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
             }).detach();
+
+//            auto end_time = std::chrono::high_resolution_clock::now();
+//            auto time = end_time - start_time;
+//
+//            std::cout << time/std::chrono::milliseconds(1) << "ms to run.\n";
 
             std::this_thread::sleep_for(10ms);
         }

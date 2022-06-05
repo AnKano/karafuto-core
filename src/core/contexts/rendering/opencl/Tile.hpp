@@ -16,7 +16,6 @@
 #include <iostream>
 #include <cstdint>
 
-#include <gzip/decompress.hpp>
 #include "../../../misc/STBImageUtils.hpp"
 
 namespace KCore::OpenCL {
@@ -58,31 +57,7 @@ namespace KCore::OpenCL {
         Tile(cl_context *context, const std::size_t &height, const std::size_t &width, const std::vector<uint8_t> &data)
                 : mTextureHeight(height), mTextureWidth(width) {
             mContext = context;
-
-            auto image = STBImageUtils::decodeImageBuffer(
-                    reinterpret_cast<const uint8_t *>(data.data()),
-                    data.size(),
-                    3
-            );
-
-            if (image.empty()) {
-                mData.resize(height * width * 3);
-
-                float step = 256.0f / (float) height;
-
-                int pixel = 0;
-                for (auto j = 0u; j < height; ++j) {
-                    for (auto i = 0u; i < width; ++i) {
-                        mData[pixel * 3] = std::ceil(i * step);
-                        mData[pixel * 3 + 1] = std::ceil(j * step);
-                        mData[pixel * 3 + 2] = std::ceil(j * step);
-
-                        pixel++;
-                    }
-                }
-            } else
-                mData = image;
-
+            mData = data;
             loadToGPU();
         }
 

@@ -5,8 +5,6 @@
 #include "IRenderContext.hpp"
 #include "../../worlds/TerrainedWorld.hpp"
 
-#include <gzip/compress.hpp>
-
 namespace KCore {
     IRenderContext::IRenderContext(TerrainedWorld *world) : mWorldAdapter(world) {
         mThread = std::make_unique<std::thread>([this]() {
@@ -18,13 +16,6 @@ namespace KCore {
 
     void IRenderContext::storeTextureInContext(const std::vector<uint8_t> &data, const std::string &quadcode) {
         std::lock_guard<std::mutex> lock{mTexturesLock};
-
-        std::string compressed_data = gzip::compress(reinterpret_cast<const char *>(data.data()), data.size(), Z_BEST_SPEED);
-        std::vector<uint8_t> conv;
-        std::copy(compressed_data.begin(), compressed_data.end(), std::back_inserter(conv));
-
-//        std::cout << "compressed: " << conv.size() << std::endl;
-
         mInRAMNotConvertedTextures[quadcode] = data;
     }
 

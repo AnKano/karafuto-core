@@ -1,12 +1,9 @@
 #include "TerrainedWorld.hpp"
 #include "stages/BuiltinStages.hpp"
 
-#if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
-//#include "../contexts/rendering/opencl/OpenCLRenderContext.hpp"
-#include "../contexts/rendering/vulkan/VulkanRenderContext.hpp"
-#else
-#include "../contexts/rendering/fallback/FallbackRenderContext.hpp"
-#endif
+#include "../contexts/rendering/opencl/OpenCLRenderContext.hpp"
+//#include "../contexts/rendering/vulkan/VulkanRenderContext.hpp"
+//#include "../contexts/rendering/fallback/FallbackRenderContext.hpp"
 
 #include <algorithm>
 
@@ -14,13 +11,9 @@ namespace KCore {
     TerrainedWorld::TerrainedWorld() : BaseWorld(0.0f, 0.0f) {}
 
     TerrainedWorld::TerrainedWorld(float latitude, float longitude) : BaseWorld(latitude, longitude) {
-
-#if defined(__APPLE__) || defined(__linux__) || defined(WINDOWS) || defined(WIN32)
-        mRenderContext = new KCore::Vulkan::VulkanRenderContext(this);
-//        mRenderContext = new KCore::OpenCL::OpenCLRenderContext(this);
-#else
-        mRenderContext = new KCore::Fallback::FallbackRenderContext(this);
-#endif
+//        mRenderContext = new KCore::Vulkan::VulkanRenderContext(this);
+        mRenderContext = new KCore::OpenCL::OpenCLRenderContext(this);
+//        mRenderContext = new KCore::Fallback::FallbackRenderContext(this);
 
         registerStage(KCore::BuiltInStages::MetaCalculate());
     }
@@ -48,6 +41,9 @@ namespace KCore {
                 if (hlQuadcode.starts_with(llQuadcode))
                     childs.push_back(hlQuadcode);
             }
+
+            if (childs.empty())
+                childs.push_back(llQuadcode);
 
             childCollector[llQuadcode] = childs;
         }
@@ -123,6 +119,7 @@ namespace KCore {
 
     void TerrainedWorld::update() {
         BaseWorld::update();
+
         calculateMetaTiles();
         performStages();
     }

@@ -26,7 +26,8 @@ namespace KCore {
             mPieces.push_back(sharedPiece);
         }
 
-        void addSourcePart(const std::string &filePath) {
+        void addSourcePart(const std::string& filePath) {
+            std::cout << filePath << std::endl;
             createPartFile(filePath);
         }
 

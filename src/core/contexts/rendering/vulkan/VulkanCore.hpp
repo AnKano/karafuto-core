@@ -92,8 +92,8 @@ struct VulkanTileDescription {
 
 class VulkanCore {
 private:
-    const uint32_t WIDTH = 2048;
-    const uint32_t HEIGHT = 2048;
+    const uint32_t WIDTH = 1024;
+    const uint32_t HEIGHT = 1024;
     const uint32_t SLOTS = 64;
 
     const std::vector<const char *> validationLayers = {

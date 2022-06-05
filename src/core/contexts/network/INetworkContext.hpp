@@ -9,7 +9,6 @@
 #include "../../queue/Queue.hpp"
 #include "../../geography/TileDescription.hpp"
 #include "../../queue/tasks/NetworkTask.hpp"
-#include "../../cache/BaseCache.hpp"
 
 #include "NetworkRequest.hpp"
 #include "../IContext.hpp"

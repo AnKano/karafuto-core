@@ -10,8 +10,6 @@
 
 #include "../geography/TileDescription.hpp"
 #include "../misc/FrustumCulling.hpp"
-#include "../cache/TimeoutCache.hpp"
-#include "../geography/tiles/MetaTile.hpp"
 #include "../contexts/rendering/IRenderContext.hpp"
 
 namespace KCore {
@@ -34,7 +32,6 @@ namespace KCore {
         }
 
     private:
-
         std::vector<TileDescription> separateTileToDepth(const TileDescription &tile, uint8_t depth);
 
         void calculateMetaTiles();
