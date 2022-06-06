@@ -86,6 +86,9 @@ namespace KCore {
         const std::string &getQuadcode() const;
 
         [[nodiscard]]
+        const std::vector<std::string> &getRelatedQuadcodes() const;
+
+        [[nodiscard]]
         const glm::ivec3 &getTilecode() const;
 
         [[nodiscard]]

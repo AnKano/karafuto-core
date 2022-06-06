@@ -40,7 +40,7 @@ namespace KCore::OpenCL {
         std::size_t mOutImageBytes = mOutImageHeight * mOutImageWidth * mOutImagePixelBytes;
 
     public:
-        OpenCLRenderContext(World *world) : IRenderContext(world) {}
+        explicit OpenCLRenderContext(World *world) : IRenderContext(world) {}
 
     protected:
         void performLoopStep() override;

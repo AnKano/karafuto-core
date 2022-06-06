@@ -7,10 +7,11 @@
 #include "misc/Utils.hpp"
 
 #include "contexts/network/basic/BasicNetworkContext.hpp"
-//#include "contexts/network/fallback/FallbackNetworkContext.hpp"
+//#include "contexts/network/debug/DebugNetworkContext.hpp"
 
 //#include "contexts/rendering/opencl/OpenCLRenderContext.hpp"
-#include "contexts/rendering/fallback/FallbackRenderContext.hpp"
+//#include "contexts/rendering/debug/DebugRenderContext.hpp"
+#include "contexts/rendering/one-to-one/OneToOneContext.hpp"
 
 namespace KCore {
     World::World() : World(0.0f, 0.0f) {}
@@ -20,11 +21,11 @@ namespace KCore {
         mOriginPosition = {latitude, 0.0f, longitude};
 
         mNetworkContext = new BasicNetworkContext{};
-//        mNetworkContext = new FallbackNetworkContext{};
+//        mNetworkContext = new DebugNetworkContext{};
         mRemoteSource = new RemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
 
 //        mRenderContext = new OpenCL::OpenCLRenderContext(this);
-        mRenderContext = new Fallback::FallbackRenderContext(this);
+        mRenderContext = new OneToOne::OneToOneContext(this);
     }
 
     void World::update() {

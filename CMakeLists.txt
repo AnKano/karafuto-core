@@ -60,15 +60,15 @@ if (ON)
             set(CPP_HEADERS_ADDITIONALS "")
             file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
                     ${MAIN_SOURCE_DIR}/core/contexts/network/basic/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/fallback/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/fallback/*.inl
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/debug/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/debug/*.inl
                     ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkContext.hpp
                     ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkRequest.hpp)
 
             set(CPP_SOURCES_ADDITIONALS "")
             file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
                     ${MAIN_SOURCE_DIR}/core/contexts/network/basic/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/fallback/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/debug/*.cpp
                     ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkContext.cpp)
 
             list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
@@ -81,15 +81,17 @@ if (ON)
             file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.hpp
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.inl
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/fallback/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/fallback/*.inl
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.inl
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/one-to-one/*.hpp
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/ImageResult.hpp
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.hpp)
 
             set(CPP_SOURCES_ADDITIONALS "")
             file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/fallback/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/one-to-one/*.cpp
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.cpp)
 
             list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
@@ -98,17 +100,19 @@ if (ON)
             message("\t - OpenCL adapter")
             set(CPP_HEADERS_ADDITIONALS "")
             file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
-#                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.hpp
-#                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.inl
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/fallback/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/fallback/*.inl
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.inl
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.inl
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/one-to-one/*.hpp
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/ImageResult.hpp
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.hpp)
 
             set(CPP_SOURCES_ADDITIONALS "")
             file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
-#                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/fallback/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/one-to-one/*.cpp
                     ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.cpp)
 
             list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})

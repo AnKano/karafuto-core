@@ -76,6 +76,10 @@ namespace KCore {
         return mQuadcode;
     }
 
+    const std::vector<std::string> &TileDescription::getRelatedQuadcodes() const {
+        return mRelatedQuadcodes;
+    }
+
     const glm::ivec3 &TileDescription::getTilecode() const {
         return mTilecode;
     }

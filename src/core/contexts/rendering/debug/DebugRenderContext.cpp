@@ -1,12 +1,12 @@
-#include "FallbackRenderContext.hpp"
+#include "DebugRenderContext.hpp"
 
-#include "misc/FallbackResource.inl"
+#include "misc/DebugResource.inl"
 #include "../../../World.hpp"
 
-namespace KCore::Fallback {
-    void FallbackRenderContext::initialize() {}
+namespace KCore::Debug {
+    void DebugContext::initialize() {}
 
-    void FallbackRenderContext::performLoopStep() {
+    void DebugContext::performLoopStep() {
         if (mWorld->imageEventsCount() != 0) {
             std::this_thread::sleep_for(100ms);
             return;
@@ -15,13 +15,13 @@ namespace KCore::Fallback {
         auto tiles = getCurrentTileState();
 
         for (const auto &tile: tiles) {
-            auto data = Rendering::Fallback::BuiltIn::image;
-
-            int width = -1, height = -1, channels = -1;
-            auto results = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width, height, channels);
-
-            std::thread([results, this, tile, width, height]() {
+            std::thread([this, tile]() {
                 auto t0 = std::chrono::high_resolution_clock::now();
+
+                auto data = Renderer::Debug::BuiltIn::image;
+
+                int width = -1, height = -1, channels = -1;
+                auto results = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width, height, channels);
 
                 auto image = new ImageResult{};
                 image->width = width;
@@ -45,5 +45,5 @@ namespace KCore::Fallback {
         std::this_thread::sleep_for(100ms);
     }
 
-    void FallbackRenderContext::dispose() {}
+    void DebugContext::dispose() {}
 }

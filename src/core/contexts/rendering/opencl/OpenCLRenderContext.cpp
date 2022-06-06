@@ -7,6 +7,8 @@
 #include <chrono>
 #include <thread>
 
+#include "../../../World.hpp"
+
 namespace KCore::OpenCL {
     void OpenCLRenderContext::initialize() {
         int err;
@@ -87,17 +89,15 @@ namespace KCore::OpenCL {
     }
 
     void OpenCLRenderContext::performLoopStep() {
-        auto metas = getCurrentTileState();
+        auto tiles = getCurrentTileState();
 
-        for (const auto &meta: metas) {
-//            auto start_time = std::chrono::high_resolution_clock::now();
-
-            auto items = meta->getChildQuadcodes();
+        for (auto &meta: tiles) {
+            auto items = meta.getRelatedQuadcodes();
             for (const auto& item: items) {
                 if (mInRAMNotConvertedTextures.count(item) == 0) continue;
 
                 unsigned int offsetX, offsetY, depth;
-                auto rootQuadcode = meta->getTileDescription().getQuadcode();
+                auto rootQuadcode = meta.getQuadcode();
                 childTransform(rootQuadcode, item, offsetX, offsetY, depth);
 
                 auto &data = mInRAMNotConvertedTextures[item];
@@ -129,25 +129,29 @@ namespace KCore::OpenCL {
 
             performWipeKernel();
 
-            std::thread([results, this, meta]() {
+            std::thread([this, results, meta]() {
                 auto t0 = std::chrono::high_resolution_clock::now();
 
-                auto rawBuffer = new std::vector<uint8_t>{};
-                rawBuffer->resize(results.size());
-                std::copy(results.begin(), results.end(), rawBuffer->data());
+                auto image = new ImageResult{};
+                image->width = mOutImageWidth;
+                image->height = mOutImageHeight;
+                image->size = mOutImageBytes;
+                if (mOutImagePixelBytes == 2)
+                    image->format = RGB565;
+                else if (mOutImagePixelBytes == 3)
+                    image->format = RGB888;
+                else if (mOutImagePixelBytes == 4)
+                    image->format = RGBA8888;
+                image->data = new uint8_t[image->size];
+                std::copy(results.begin(), results.end(), image->data);
 
-                auto rootQuadcode = meta->getTileDescription().getQuadcode();
-                mWorld->pushToEvents(Event::MakeRenderLoadedEvent(rootQuadcode, rawBuffer));
+                auto rootQuadcode = meta.getQuadcode();
+                mWorld->pushToImageEvents(Event::MakeImageEvent(rootQuadcode, image));
                 auto t1 = std::chrono::high_resolution_clock::now();
                 auto duration = t1 - t0;
 
                 auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
             }).detach();
-
-//            auto end_time = std::chrono::high_resolution_clock::now();
-//            auto time = end_time - start_time;
-//
-//            std::cout << time/std::chrono::milliseconds(1) << "ms to run.\n";
 
             std::this_thread::sleep_for(10ms);
         }
