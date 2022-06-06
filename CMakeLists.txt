@@ -307,6 +307,7 @@ if (ON)
         if (${PLATFORM} STREQUAL "Windows")
             set(INCLUDE_COMPOUND
                     ${THIRD_PARTY_DIR}/rapidjson/include
+                    ${THIRD_PARTY_DIR}/lrucache17
                     ${THIRD_PARTY_DIR}/earcut/include
                     ${THIRD_PARTY_DIR}/stb-image
                     ${OCL_ROOT}/include

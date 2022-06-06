@@ -10,19 +10,9 @@ namespace KCore {
         restoreRawUrl();
     }
 
-    uint8_t *RemoteSource::getDataForTile(uint8_t zoom, uint16_t x, uint16_t y, uint16_t slicesX, uint16_t slicesY) {
-        return nullptr;
-    }
-
     std::string RemoteSource::bakeUrl(const TileDescription &desc) {
         return mURLPrefix + desc.tileURL() + mURLSuffix;
     }
-
-    std::vector<std::shared_ptr<BaseSourcePart>> RemoteSource::getRelatedPieces(uint8_t zoom, uint16_t x, uint16_t y) {
-        return {};
-    }
-
-    void RemoteSource::createPartFile(const std::string &path) {}
 
     void RemoteSource::restoreRawUrl() {
         mRawUrl = mURLPrefix + "{z}/{x}/{y}" + mURLSuffix;

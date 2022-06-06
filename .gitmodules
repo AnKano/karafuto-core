@@ -10,3 +10,6 @@
 [submodule "third-party/HTTPRequest"]
 	path = third-party/HTTPRequest
 	url = https://github.com/elnormous/HTTPRequest.git
+[submodule "third-party/lrucache17"]
+	path = third-party/lrucache17
+	url = https://github.com/marty1885/lrucache17

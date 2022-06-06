@@ -14,5 +14,7 @@ namespace KCore {
         void performLoopStep() override;
 
         void dispose() override;
+
+        void fetch(NetworkRequest* task);
     };
 }

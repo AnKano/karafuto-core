@@ -9,9 +9,9 @@
 #include "contexts/network/basic/BasicNetworkContext.hpp"
 //#include "contexts/network/debug/DebugNetworkContext.hpp"
 
-//#include "contexts/rendering/opencl/OpenCLRenderContext.hpp"
+#include "contexts/rendering/opencl/OpenCLRenderContext.hpp"
 //#include "contexts/rendering/debug/DebugRenderContext.hpp"
-#include "contexts/rendering/one-to-one/OneToOneContext.hpp"
+//#include "contexts/rendering/one-to-one/OneToOneContext.hpp"
 
 namespace KCore {
     World::World() : World(0.0f, 0.0f) {}
@@ -24,8 +24,12 @@ namespace KCore {
 //        mNetworkContext = new DebugNetworkContext{};
         mRemoteSource = new RemoteSource("http://tile.openstreetmap.org/{z}/{x}/{y}.png");
 
-//        mRenderContext = new OpenCL::OpenCLRenderContext(this);
-        mRenderContext = new OneToOne::OneToOneContext(this);
+//        auto token = "";
+//        auto networkUrl = std::string{"http://api.mapbox.com/v4/mapbox.satellite/{z}/{x}/{y}.png?access_token="} + token;
+//        mRemoteSource = new RemoteSource(networkUrl);
+
+        mRenderContext = new OpenCL::OpenCLRenderContext(this);
+//        mRenderContext = new OneToOne::OneToOneContext(this);
     }
 
     void World::update() {
@@ -57,15 +61,31 @@ namespace KCore {
         mPrevTiles = std::move(mCurrTiles);
         mCurrTiles = {};
 
-        auto subdivisionResult = subdivideSpace(1.0);
+        {
+            auto hldDivision = subdivideSpace(1.0);
+            auto lldDivision = subdivideSpace(2.5);
 
-        // filter & associate
-        for (auto &item: subdivisionResult) {
-            if (item.getVisibility() == Visible) {
-                mCurrTiles[item.getQuadcode()] = item;
-                item.setRelatedQuadcodes({item.getQuadcode()});
+            for (auto &ll: lldDivision) {
+                if (ll.getVisibility() != TileVisibility::Visible) continue;
+                const auto &llQuadcode = ll.getQuadcode();
 
-                mTiles.push_back(item);
+                std::vector<std::string> childs{};
+
+                for (const auto &hl: hldDivision) {
+                    if (hl.getVisibility() != TileVisibility::Visible) continue;
+                    const auto &hlQuadcode = hl.getQuadcode();
+
+                    if (hlQuadcode == llQuadcode) continue;
+                    if (hlQuadcode.starts_with(llQuadcode))
+                        childs.push_back(hlQuadcode);
+                }
+
+                if (childs.empty())
+                    childs.push_back(llQuadcode);
+
+                ll.setRelatedQuadcodes(childs);
+                mCurrTiles[llQuadcode] = ll;
+                mTiles.push_back(ll);
             }
         }
 
@@ -73,8 +93,8 @@ namespace KCore {
         auto inter = mapKeysIntersection<std::string>(mCurrTiles, mPrevTiles);
 
         for (auto &item: diff) {
-            bool inPrev = mPrevTiles.count(item) > 0;
-            bool inNew = mCurrTiles.count(item) > 0;
+            bool inPrev = mPrevTiles.contains(item);
+            bool inNew = mCurrTiles.contains(item);
 
             if (inNew) {
                 auto payload = &mCurrTiles[item].mPayload;
@@ -86,16 +106,6 @@ namespace KCore {
 
                 if (mRemoteSource == nullptr) continue;
                 if (mNetworkContext == nullptr) continue;
-
-                auto url = mRemoteSource->bakeUrl(desc);
-                auto request = new KCore::NetworkRequest{
-                        url, [this, desc](const std::vector<uint8_t> &data) {
-//                            std::cout << "something was downloaded to " << desc.getQuadcode()  << std::endl;
-                            if (mRenderContext != nullptr)
-                                mRenderContext->storeTextureInContext(data, desc.getQuadcode());
-                        }, nullptr
-                };
-                mNetworkContext->pushRequestToQueue(request);
             }
 
             if (inPrev) {
@@ -104,8 +114,77 @@ namespace KCore {
             }
         }
 
+        for (const auto &item: mTiles) {
+            // !TODO: stop load this shit every fucking time!!!
+            for (const auto &related: item.getRelatedQuadcodes()) {
+                if (mRequested.contains(related)) continue;
+
+                mNetworkContext->pushRequestToQueue(
+                        new KCore::NetworkRequest{
+                                mRemoteSource->bakeUrl(createTile(related)),
+                                [this, related](const std::vector<uint8_t> &data) {
+                                    if (mRenderContext != nullptr)
+                                        mRenderContext->storeTextureInContext(data, related);
+                                }, nullptr
+                        }
+                );
+
+                mRequested[related] = true;
+            }
+        }
+
         if (mRenderContext != nullptr)
             mRenderContext->setCurrentTileState(mTiles);
+
+//        auto subdivisionResult = subdivideSpace(1.0);
+//
+//        // filter & associate
+//        for (auto &item: subdivisionResult) {
+//            if (item.getVisibility() == Visible) {
+//                mCurrTiles[item.getQuadcode()] = item;
+//                item.setRelatedQuadcodes({item.getQuadcode()});
+//
+//                mTiles.push_back(item);
+//            }
+//        }
+//
+//        auto diff = mapKeysDifference<std::string>(mCurrTiles, mPrevTiles);
+//        auto inter = mapKeysIntersection<std::string>(mCurrTiles, mPrevTiles);
+//
+//        for (auto &item: diff) {
+//            bool inPrev = mPrevTiles.count(item) > 0;
+//            bool inNew = mCurrTiles.count(item) > 0;
+//
+//            if (inNew) {
+//                auto payload = &mCurrTiles[item].mPayload;
+//
+//                auto event = Event::MakeInFrustumEvent(item, payload);
+//                pushToCoreEvents(event);
+//
+//                auto desc = mCurrTiles[item];
+//
+//                if (mRemoteSource == nullptr) continue;
+//                if (mNetworkContext == nullptr) continue;
+//
+//                auto url = mRemoteSource->bakeUrl(desc);
+//                auto request = new KCore::NetworkRequest{
+//                        url, [this, desc](const std::vector<uint8_t> &data) {
+////                            std::cout << "something was downloaded to " << desc.getQuadcode()  << std::endl;
+//                            if (mRenderContext != nullptr)
+//                                mRenderContext->storeTextureInContext(data, desc.getQuadcode());
+//                        }, nullptr
+//                };
+//                mNetworkContext->pushRequestToQueue(request);
+//            }
+//
+//            if (inPrev) {
+//                auto event = Event::MakeNotInFrustumEvent(item);
+//                pushToCoreEvents(event);
+//            }
+//        }
+//
+//        if (mRenderContext != nullptr)
+//            mRenderContext->setCurrentTileState(mTiles);
     }
 
     void World::pushToCoreEvents(const Event &event) {

@@ -4,7 +4,7 @@
 
 namespace KCore::OneToOne {
     /**
-     * Always produce debug render with one image 64 x 64 RGB888 for testing purposes
+     * Instead rendering produce image that relate to tile
      */
     class OneToOneContext : public IRenderContext {
     public:

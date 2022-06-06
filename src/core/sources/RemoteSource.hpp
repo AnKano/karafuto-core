@@ -10,7 +10,7 @@
 #include "../../bindings.hpp"
 
 namespace KCore {
-    class RemoteSource : public BaseSource {
+    class RemoteSource {
     protected:
         std::string mRawUrl;
         std::string mURLPrefix, mURLSuffix;
@@ -28,14 +28,7 @@ namespace KCore {
          **/
         RemoteSource(std::string prefix, std::string affix);
 
-        uint8_t *getDataForTile(uint8_t zoom, uint16_t x, uint16_t y, uint16_t slicesX, uint16_t slicesY) override;
-
         std::string bakeUrl(const TileDescription &desc);
-
-    protected:
-        std::vector<std::shared_ptr<BaseSourcePart>> getRelatedPieces(uint8_t zoom, uint16_t x, uint16_t y) override;
-
-        void createPartFile(const std::string &path) override;
 
     private:
         void restoreRawUrl();

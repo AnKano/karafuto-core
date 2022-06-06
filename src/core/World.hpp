@@ -35,6 +35,8 @@ namespace KCore {
         std::mutex mQueueLock;
         std::vector<Event> mCoreEventsQueue, mImageEventsQueue;
 
+        std::map<std::string, bool> mRequested;
+
     public:
         World();
 

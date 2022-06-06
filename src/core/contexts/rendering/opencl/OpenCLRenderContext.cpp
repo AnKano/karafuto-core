@@ -94,7 +94,7 @@ namespace KCore::OpenCL {
         for (auto &meta: tiles) {
             auto items = meta.getRelatedQuadcodes();
             for (const auto& item: items) {
-                if (mInRAMNotConvertedTextures.count(item) == 0) continue;
+                if (!mInRAMNotConvertedTextures.contains(item)) continue;
 
                 unsigned int offsetX, offsetY, depth;
                 auto rootQuadcode = meta.getQuadcode();
@@ -130,27 +130,20 @@ namespace KCore::OpenCL {
             performWipeKernel();
 
             std::thread([this, results, meta]() {
-                auto t0 = std::chrono::high_resolution_clock::now();
-
                 auto image = new ImageResult{};
                 image->width = mOutImageWidth;
                 image->height = mOutImageHeight;
                 image->size = mOutImageBytes;
-                if (mOutImagePixelBytes == 2)
-                    image->format = RGB565;
-                else if (mOutImagePixelBytes == 3)
-                    image->format = RGB888;
-                else if (mOutImagePixelBytes == 4)
-                    image->format = RGBA8888;
+
+                if (mOutImagePixelBytes == 2)      image->format = RGB565;
+                else if (mOutImagePixelBytes == 3) image->format = RGB888;
+                else if (mOutImagePixelBytes == 4) image->format = RGBA8888;
+
                 image->data = new uint8_t[image->size];
                 std::copy(results.begin(), results.end(), image->data);
 
                 auto rootQuadcode = meta.getQuadcode();
                 mWorld->pushToImageEvents(Event::MakeImageEvent(rootQuadcode, image));
-                auto t1 = std::chrono::high_resolution_clock::now();
-                auto duration = t1 - t0;
-
-                auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
             }).detach();
 
             std::this_thread::sleep_for(10ms);

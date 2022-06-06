@@ -14,22 +14,27 @@ namespace KCore {
             auto task = mRequestQueue.back();
             mRequestQueue.pop_back();
 
-            std::thread{[task]() {
-                try {
-                    http::Request request{task->getUrl()};
-                    const auto response = request.send("GET", "", {
-                            {"Content-Type", "application/x-www-form-urlencoded"},
-                            {"User-Agent",   "KarafutoMapCore/0.1"},
-                    });
-                    auto &buffer = task->getBuffer();
-                    buffer.insert(buffer.end(), response.body.begin(), response.body.end());
-                    task->emitFinal();
-                } catch (const std::exception &e) {
-                    std::cerr << "Request failed, error: " << e.what() << '\n';
-                }
-            }}.detach();
+            fetch(task);
         }
     }
 
     void BasicNetworkContext::dispose() {}
+
+    void BasicNetworkContext::fetch(NetworkRequest* task) {
+        std::thread{[this, task]() {
+            try {
+                http::Request request{task->getUrl()};
+                const auto response = request.send("GET", "", {
+                        {"Content-Type", "application/x-www-form-urlencoded"},
+                        {"User-Agent",   "KarafutoMapCore/0.1"},
+                });
+                auto &buffer = task->getBuffer();
+                buffer.insert(buffer.end(), response.body.begin(), response.body.end());
+                task->emitFinal();
+            } catch (const std::exception &e) {
+                std::cerr << "Request failed, error: " << e.what() << '\n';
+                fetch(task);
+            }
+        }}.detach();
+    }
 }

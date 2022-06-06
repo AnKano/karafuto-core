@@ -49,7 +49,7 @@ namespace KCore {
     }
 
     void MapCore::performUpdate() {
-        // !TODO: to parameter
+//         !TODO: to parameter
         mCameraProjectionMatrix *= glm::scale(glm::vec3{0.85f, 0.85f, 1.0f});
 
         mWorld.updateFrustum(mCameraProjectionMatrix, mCameraViewMatrix);
