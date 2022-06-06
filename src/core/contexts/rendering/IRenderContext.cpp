@@ -3,10 +3,11 @@
 //
 
 #include "IRenderContext.hpp"
-#include "../../worlds/TerrainedWorld.hpp"
+
+#include "../../World.hpp"
 
 namespace KCore {
-    IRenderContext::IRenderContext(TerrainedWorld *world) : mWorldAdapter(world) {
+    IRenderContext::IRenderContext(World* world) : mWorld(world) {
         mThread = std::make_unique<std::thread>([this]() {
             initialize();
             runRenderLoop();
@@ -21,24 +22,26 @@ namespace KCore {
 
     void IRenderContext::runRenderLoop() {
         while (!mShouldClose) {
-            if (mWorldAdapter->getAsyncEventsLength() != 0) {
-                std::this_thread::sleep_for(350ms);
+            if (mWorld->imageEventsCount() != 0) {
+                std::this_thread::sleep_for(100ms);
                 continue;
             }
 
             performLoopStep();
+
+            std::this_thread::sleep_for(100ms);
         }
 
         dispose();
         mReadyToBeDead = true;
     }
 
-    void IRenderContext::setCurrentTileState(const std::vector<KCore::GenericTile *> &tiles) {
+    void IRenderContext::setCurrentTileState(const std::vector<KCore::TileDescription> &tiles) {
         std::lock_guard<std::mutex> lock{mTileStateLock};
         mCurrentTileState = tiles;
     }
 
-    const std::vector<KCore::GenericTile *> &IRenderContext::getCurrentTileState() {
+    const std::vector<KCore::TileDescription> &IRenderContext::getCurrentTileState() {
         std::lock_guard<std::mutex> lock{mTileStateLock};
         return mCurrentTileState;
     }

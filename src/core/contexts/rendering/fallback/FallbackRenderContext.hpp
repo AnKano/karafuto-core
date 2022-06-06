@@ -5,7 +5,7 @@
 namespace KCore::Fallback {
     class FallbackRenderContext : public IRenderContext {
     public:
-        FallbackRenderContext(TerrainedWorld *world) : IRenderContext(world) {}
+        FallbackRenderContext(World *world) : IRenderContext(world) {}
 
     protected:
         void initialize() override;

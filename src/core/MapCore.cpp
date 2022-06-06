@@ -1,19 +1,10 @@
 #include "MapCore.hpp"
 
 #include <glm/gtc/type_ptr.hpp>
-
-#include "worlds/PlainWorld.hpp"
-#include "queue/tasks/CallbackTask.hpp"
 #include "misc/Utils.hpp"
-#include "meshes/PolylineMesh.hpp"
-#include "meshes/PolygonMesh.hpp"
 
 namespace KCore {
-    MapCore::MapCore() = default;
-
-    void MapCore::setWorldAdapter(BaseWorld *worldAdapter) {
-        mWorldAdapter = worldAdapter;
-    }
+    MapCore::MapCore(float latitude, float longitude) : mWorld(latitude, longitude) {}
 
     void MapCore::update(const float *cameraProjectionMatrix_ptr,
                          const float *cameraViewMatrix_ptr,
@@ -26,9 +17,9 @@ namespace KCore {
         auto projectionMatrix = glm::make_mat4x4(cameraProjectionMatrix_ptr);
         if (transposeProjectionMatrix) projectionMatrix = glm::transpose(projectionMatrix);
 
-        this->mCameraViewMatrix = viewMatrix;
-        this->mCameraProjectionMatrix = projectionMatrix;
-        this->mCameraPosition = glm::make_vec3(cameraPosition_ptr);
+        mCameraViewMatrix = viewMatrix;
+        mCameraProjectionMatrix = projectionMatrix;
+        mCameraPosition = glm::make_vec3(cameraPosition_ptr);
 
         performUpdate();
     }
@@ -36,21 +27,21 @@ namespace KCore {
     void MapCore::update(const glm::mat4 &cameraProjectionMatrix,
                          const glm::mat4 &cameraViewMatrix,
                          const glm::vec3 &cameraPosition) {
-        this->mCameraViewMatrix = cameraViewMatrix;
-        this->mCameraProjectionMatrix = cameraProjectionMatrix;
-        this->mCameraPosition = cameraPosition;
+        mCameraViewMatrix = cameraViewMatrix;
+        mCameraProjectionMatrix = cameraProjectionMatrix;
+        mCameraPosition = cameraPosition;
 
         performUpdate();
     }
 
     void MapCore::update2D(const float &aspectRatio, const float &zoom,
                            const float &cameraPositionX, const float &cameraPositionY) {
-        this->mCameraPosition = glm::vec3{-cameraPositionX, zoom, cameraPositionY};
-        this->mCameraViewMatrix = glm::lookAt(this->mCameraPosition,
-                                              {mCameraPosition.x, 0.0f, mCameraPosition.z},
-                                              {0.0f, 0.0f, 1.0f});
+        mCameraPosition = glm::vec3{-cameraPositionX, zoom, cameraPositionY};
+        mCameraViewMatrix = glm::lookAt(mCameraPosition,
+                                        {mCameraPosition.x, 0.0f, mCameraPosition.z},
+                                        {0.0f, 0.0f, 1.0f});
 
-        this->mCameraProjectionMatrix = glm::perspective(
+        mCameraProjectionMatrix = glm::perspective(
                 glm::radians(45.0f), aspectRatio, 100.0f, 2500000.0f
         );
 
@@ -58,30 +49,20 @@ namespace KCore {
     }
 
     void MapCore::performUpdate() {
-        if (!mWorldAdapter) {
-            std::cerr << "MapCore cannot apply matrices: World adapter not found!" << std::endl;
-            throw std::runtime_error("Cannot apply matrices: World adapter not found!");
-        }
+        // !TODO: to parameter
+        mCameraProjectionMatrix *= glm::scale(glm::vec3{0.85f, 0.85f, 1.0f});
 
-        mWorldAdapter->updateFrustum(this->mCameraProjectionMatrix, this->mCameraViewMatrix);
-        mWorldAdapter->setPosition(this->mCameraPosition);
-        mWorldAdapter->update();
+        mWorld.updateFrustum(mCameraProjectionMatrix, mCameraViewMatrix);
+        mWorld.setPosition(mCameraPosition);
+        mWorld.update();
     }
 
-    std::vector<MapEvent> MapCore::getSyncEvents() {
-        return mWorldAdapter->getSyncEvents();
+    std::vector<Event> MapCore::getEvents() {
+        return mWorld.getEventsCopyAndClearQueue();
     }
 
-    std::vector<MapEvent> MapCore::getAsyncEvents() {
-        return mWorldAdapter->getAsyncEvents();
-    }
-
-    DllExport KCore::MapCore *CreateMapCore() {
-        return new KCore::MapCore();
-    }
-
-    DllExport void SetWorldAdapter(KCore::MapCore *core, KCore::BaseWorld *adapter) {
-        core->setWorldAdapter(adapter);
+    DllExport KCore::MapCore *CreateMapCore(float latitude, float longitude) {
+        return new KCore::MapCore(latitude, longitude);
     }
 
     DllExport uint8_t *GetVectorMeta(std::vector<uint8_t> *data, int &length) {
@@ -104,28 +85,21 @@ namespace KCore {
                         false, false);
     }
 
-    DllExport std::vector<MapEvent> *GetSyncEventsVector(KCore::MapCore *corePtr) {
-        return new std::vector<MapEvent>(corePtr->getSyncEvents());
+    DllExport std::vector<Event> *GetEventsVector(KCore::MapCore *corePtr) {
+        return new std::vector<Event>(corePtr->getEvents());
     }
 
-    DllExport std::vector<MapEvent> *GetAsyncEventsVector(KCore::MapCore *corePtr) {
-        return new std::vector<MapEvent>(corePtr->getAsyncEvents());
-    }
-
-    DllExport KCore::MapEvent *EjectSyncEventsFromVector(std::vector<MapEvent> *vecPtr, int &length) {
+    DllExport KCore::Event *EjectEventsFromVector(std::vector<Event> *vecPtr, int &length) {
         length = (int) vecPtr->size();
         return vecPtr->data();
     }
 
-    DllExport KCore::MapEvent *EjectAsyncEventsFromVector(std::vector<MapEvent> *vecPtr, int &length) {
-        length = (int) vecPtr->size();
-        return vecPtr->data();
-    }
-
-    DllExport void ReleaseEventsVector(std::vector<MapEvent> *vecPtr) {
+    DllExport void ReleaseEventsVector(std::vector<Event> *vecPtr) {
         for (const auto &item: *vecPtr) {
-            if (item.type == EventType::ContentLoadedRender) {
-                delete (std::vector<uint8_t> *) (item.payload);
+            if (item.type == EventType::ImageReady) {
+                auto *castedPayload = (ImageResult *) item.payload;
+                delete[] castedPayload->data;
+                delete castedPayload;
             }
         }
 
@@ -136,12 +110,12 @@ namespace KCore {
         delete[] arrayPtr;
     }
 
-    DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length) {
-        if (points == nullptr)
-            length = 0;
-        else
-            length = points->size();
-
-        return points->data();
-    }
+//    DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length) {
+//        if (points == nullptr)
+//            length = 0;
+//        else
+//            length = points->size();
+//
+//        return points->data();
+//    }
 }

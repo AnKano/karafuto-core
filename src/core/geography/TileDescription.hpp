@@ -19,13 +19,6 @@ namespace KCore {
         Leaf = 2
     };
 
-    enum TileCardinals {
-        NorthWest = 0,
-        NorthEast = 1,
-        SouthWest = 2,
-        SouthEast = 3
-    };
-
     enum TileVisibility {
         Hide = 0,
         Visible = 1
@@ -43,11 +36,10 @@ namespace KCore {
     class TileDescription {
     public:
         TilePayload mPayload;
-        std::string mTilecodeStr;
 
     private:
-        // all tile properties
         std::string mQuadcode;
+        std::vector<std::string> mRelatedQuadcodes;
 
         glm::ivec3 mTilecode{};
         glm::vec4 mBoundsLatLon{};
@@ -60,8 +52,6 @@ namespace KCore {
 
         float mSideLength{};
 
-        TileCardinals mCardinal;
-
     public:
         TileDescription();
 
@@ -73,6 +63,8 @@ namespace KCore {
         std::string tileURL() const;
 
         void setQuadcode(const std::string &quadcode);
+
+        void setRelatedQuadcodes(const std::vector<std::string> &quadcodes);
 
         void setTilecode(const glm::ivec3 &tilecode);
 
@@ -116,8 +108,5 @@ namespace KCore {
 
         [[nodiscard]]
         TileType getType() const;
-
-    private:
-        TileCardinals calculateCardinalFromQuadcode();
     };
 }

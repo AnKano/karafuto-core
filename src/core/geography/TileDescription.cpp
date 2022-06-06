@@ -7,11 +7,8 @@ namespace KCore {
     TileDescription::TileDescription() = default;
 
     TileDescription::TileDescription(const std::string &quadcode) {
-        if (quadcode.empty())
-            throw std::invalid_argument("Provided empty quadcode");
-
+        if (quadcode.empty()) throw std::invalid_argument("Provided empty quadcode");
         setQuadcode(quadcode);
-        mCardinal = calculateCardinalFromQuadcode();
     }
 
     std::string TileDescription::tileURL() const {
@@ -25,11 +22,14 @@ namespace KCore {
     void TileDescription::setQuadcode(const std::string &quadcode) {
 #if defined(_MSC_VER)
         strcpy_s(TileDescription::mPayload.Quadcode, quadcode.c_str());
-#endif
-#if defined(__GNUC__)
+#elif defined(__GNUC__)
         strcpy(TileDescription::mPayload.Quadcode, quadcode.c_str());
 #endif
         TileDescription::mQuadcode = quadcode;
+    }
+
+    void TileDescription::setRelatedQuadcodes(const std::vector<std::string> &quadcodes) {
+        mRelatedQuadcodes = quadcodes;
     }
 
     void TileDescription::setTilecode(const glm::ivec3 &tilecode) {
@@ -37,7 +37,6 @@ namespace KCore {
         TileDescription::mPayload.Tilecode.y = static_cast<int32_t>(tilecode.y);
         TileDescription::mPayload.Tilecode.z = static_cast<int32_t>(tilecode.z);
         TileDescription::mTilecode = tilecode;
-        TileDescription::mTilecodeStr = tileURL();
     }
 
     void TileDescription::setBoundsLatLon(const glm::vec4 &boundsLatLon) {
@@ -107,20 +106,5 @@ namespace KCore {
 
     TileVisibility TileDescription::getVisibility() const {
         return mVisibility;
-    }
-
-    enum TileCardinals TileDescription::calculateCardinalFromQuadcode() {
-        switch (mQuadcode.back()) {
-            case '0':
-                return NorthWest;
-            case '1':
-                return NorthEast;
-            case '2':
-                return SouthWest;
-            case '3':
-                return SouthEast;
-            default:
-                throw std::runtime_error("Unexpected tile mCardinal");
-        }
     }
 }

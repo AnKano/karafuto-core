@@ -30,12 +30,12 @@ namespace KCore {
                   mOnSuccess(std::move(onSuccess)),
                   mOnFailure(std::move(onFailure)) {}
 
-        void Finalize() {
+        void emitFinal() {
             if (mOnSuccess != nullptr)
                 mOnSuccess(mTransmissionBuffer);
         }
 
-        void Break() {
+        void emitFailure() {
             if (mOnFailure != nullptr)
                 mOnFailure();
         }

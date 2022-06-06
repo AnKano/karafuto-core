@@ -315,7 +315,7 @@ RECENT REVISION HISTORY:
 // differently. To enable this conversion, call
 // stbi_convert_iphone_png_to_rgb(1).
 //
-// Call stbi_set_unpremultiply_on_load(1) as well to force a divide per
+// Call stbi_set_unpremultiply_on_load(1) as well to force a subdivideSpace per
 // pixel to remove any premultiplied alpha *only* if the image file explicitly
 // says there's premultiplied data (currently only happens in iPhone images,
 // and only if iPhone convert-to-rgb processing is on).

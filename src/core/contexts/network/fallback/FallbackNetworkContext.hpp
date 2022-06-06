@@ -3,7 +3,7 @@
 #include "../INetworkContext.hpp"
 
 namespace KCore {
-    class FallbackNetworkContext : public INetworkContext {
+    class [[maybe_unused]] FallbackNetworkContext : public INetworkContext {
     public:
         FallbackNetworkContext() : INetworkContext() {}
 

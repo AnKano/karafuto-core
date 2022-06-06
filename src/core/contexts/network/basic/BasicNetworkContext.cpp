@@ -23,7 +23,7 @@ namespace KCore {
                     });
                     auto &buffer = task->getBuffer();
                     buffer.insert(buffer.end(), response.body.begin(), response.body.end());
-                    task->Finalize();
+                    task->emitFinal();
                 } catch (const std::exception &e) {
                     std::cerr << "Request failed, error: " << e.what() << '\n';
                 }

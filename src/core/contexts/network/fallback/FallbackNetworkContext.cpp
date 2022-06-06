@@ -16,7 +16,7 @@ namespace KCore {
                             Network::Fallback::BuiltIn::image.begin(),
                             Network::Fallback::BuiltIn::image.end()
                     );
-                    task->Finalize();
+                    task->emitFinal();
                 } catch (const std::exception &e) {
                     std::cerr << "Request failed, error: " << e.what() << '\n';
                 }

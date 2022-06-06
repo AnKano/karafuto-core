@@ -21,7 +21,7 @@ namespace KCore {
     public:
         FrustumCulling() = default;
 
-        void update_frustum(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) {
+        void updateFrustum(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) {
             mProjectViewMatrix = projectionMatrix * viewMatrix;
 
             nxX = mProjectViewMatrix[0][3] + mProjectViewMatrix[0][0];

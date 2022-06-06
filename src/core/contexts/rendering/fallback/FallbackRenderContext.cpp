@@ -1,36 +1,38 @@
 #include "FallbackRenderContext.hpp"
 
-#include "../../../worlds/TerrainedWorld.hpp"
 #include "misc/FallbackResource.inl"
+#include "../../../World.hpp"
 
 namespace KCore::Fallback {
-    void FallbackRenderContext::initialize() {
-
-    }
+    void FallbackRenderContext::initialize() {}
 
     void FallbackRenderContext::performLoopStep() {
-        if (mWorldAdapter->getAsyncEventsLength() != 0) {
-            std::this_thread::sleep_for(350ms);
+        if (mWorld->imageEventsCount() != 0) {
+            std::this_thread::sleep_for(100ms);
             return;
-        };
+        }
 
-        auto metas = getCurrentTileState();
+        auto tiles = getCurrentTileState();
 
-        for (const auto &meta: metas) {
+        for (const auto &tile: tiles) {
             auto data = Rendering::Fallback::BuiltIn::image;
 
             int width = -1, height = -1, channels = -1;
             auto results = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width, height, channels);
 
-            std::thread([results, this, meta]() {
+            std::thread([results, this, tile, width, height]() {
                 auto t0 = std::chrono::high_resolution_clock::now();
 
-                auto rawBuffer = new std::vector<uint8_t>{};
-                rawBuffer->resize(results.size());
-                std::copy(results.begin(), results.end(), rawBuffer->data());
+                auto image = new ImageResult{};
+                image->width = width;
+                image->height = height;
+                image->size = width * height * 3;
+                image->format = RGB888;
+                image->data = new uint8_t[image->size];
+                std::copy(results.begin(), results.end(), image->data);
 
-                auto rootQuadcode = meta->getTileDescription().getQuadcode();
-                mWorldAdapter->pushToAsyncEvents(MapEvent::MakeRenderLoadedEvent(rootQuadcode, rawBuffer));
+                auto rootQuadcode = tile.getQuadcode();
+                mWorld->pushToCoreEvents(Event::MakeImageEvent(rootQuadcode, image));
                 auto t1 = std::chrono::high_resolution_clock::now();
                 auto duration = t1 - t0;
 
@@ -39,9 +41,9 @@ namespace KCore::Fallback {
 
             std::this_thread::sleep_for(10ms);
         }
+
+        std::this_thread::sleep_for(100ms);
     }
 
-    void FallbackRenderContext::dispose() {
-
-    }
+    void FallbackRenderContext::dispose() {}
 }

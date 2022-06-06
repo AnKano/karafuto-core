@@ -7,8 +7,6 @@
 #include <chrono>
 #include <thread>
 
-#include "../../../worlds/TerrainedWorld.hpp"
-
 namespace KCore::OpenCL {
     void OpenCLRenderContext::initialize() {
         int err;
@@ -89,11 +87,6 @@ namespace KCore::OpenCL {
     }
 
     void OpenCLRenderContext::performLoopStep() {
-        if (mWorldAdapter->getAsyncEventsLength() != 0) {
-            std::this_thread::sleep_for(350ms);
-            return;
-        };
-
         auto metas = getCurrentTileState();
 
         for (const auto &meta: metas) {
@@ -108,8 +101,8 @@ namespace KCore::OpenCL {
                 childTransform(rootQuadcode, item, offsetX, offsetY, depth);
 
                 auto &data = mInRAMNotConvertedTextures[item];
-                int width = -1, height = -1, channels = -1;
 
+                int width = -1, height = -1, channels = -1;
                 auto image = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width, height, channels);
 
                 Tile tile(&mContext, width, height, image);
@@ -144,7 +137,7 @@ namespace KCore::OpenCL {
                 std::copy(results.begin(), results.end(), rawBuffer->data());
 
                 auto rootQuadcode = meta->getTileDescription().getQuadcode();
-                mWorldAdapter->pushToAsyncEvents(MapEvent::MakeRenderLoadedEvent(rootQuadcode, rawBuffer));
+                mWorld->pushToEvents(Event::MakeRenderLoadedEvent(rootQuadcode, rawBuffer));
                 auto t1 = std::chrono::high_resolution_clock::now();
                 auto duration = t1 - t0;
 

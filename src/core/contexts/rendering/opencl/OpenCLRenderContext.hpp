@@ -12,7 +12,9 @@
 #elif defined(__linux__)
 #include <CL/cl.h>
 #elif defined(WIN32) || defined(WINDOWS)
+
 #include <CL/cl.h>
+
 #endif
 
 #include "Tile.hpp"
@@ -38,7 +40,7 @@ namespace KCore::OpenCL {
         std::size_t mOutImageBytes = mOutImageHeight * mOutImageWidth * mOutImagePixelBytes;
 
     public:
-        OpenCLRenderContext(TerrainedWorld *world) : IRenderContext(world) {}
+        OpenCLRenderContext(World *world) : IRenderContext(world) {}
 
     protected:
         void performLoopStep() override;
@@ -53,7 +55,7 @@ namespace KCore::OpenCL {
 
         void setupRenderKernel();
 
-        void performRenderKernel(const Tile& tile);
+        void performRenderKernel(const Tile &tile);
 
         void setupWipeKernel();
 
