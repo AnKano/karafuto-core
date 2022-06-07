@@ -25,9 +25,9 @@ namespace KCore {
     protected:
         World *mWorld;
 
-        std::mutex mTexturesLock, mTileStateLock;
-        std::vector<KCore::TileDescription> mCurrentTileState;
-        std::map<std::string, std::vector<uint8_t>> mInRAMNotConvertedTextures;
+        std::mutex mContextLock;
+        std::vector<KCore::TileDescription> mLastKnownTiles;
+        std::map<std::string, std::vector<uint8_t>> mCachedTextures;
 
     public:
         IRenderContext(World *world);
@@ -37,6 +37,8 @@ namespace KCore {
         void setCurrentTileState(const std::vector<KCore::TileDescription> &tiles);
 
         void runRenderLoop();
+
+        void clearCached();
 
     protected:
         const std::vector<KCore::TileDescription> &getCurrentTileState();

@@ -27,6 +27,10 @@ namespace KCore {
 
         void pushRequestToQueue(NetworkRequest* request);
 
+        void clearQueue() {
+            mRequestQueue.clear();
+        }
+
     private:
         void runLoop();
 

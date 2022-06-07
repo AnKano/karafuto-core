@@ -9,9 +9,11 @@
 #include "../geography/TileDescription.hpp"
 #include "../../bindings.hpp"
 
+
 namespace KCore {
     class RemoteSource {
-    protected:
+    private:
+
         std::string mRawUrl;
         std::string mURLPrefix, mURLSuffix;
 
@@ -35,8 +37,4 @@ namespace KCore {
 
         void restoreAffixes();
     };
-
-    extern "C" {
-    DllExport KCore::RemoteSource *CreateRemoteSource(const char* url);
-    }
 }

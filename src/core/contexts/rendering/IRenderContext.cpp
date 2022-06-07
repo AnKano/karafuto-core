@@ -16,8 +16,8 @@ namespace KCore {
     }
 
     void IRenderContext::storeTextureInContext(const std::vector<uint8_t> &data, const std::string &quadcode) {
-        std::lock_guard<std::mutex> lock{mTexturesLock};
-        mInRAMNotConvertedTextures[quadcode] = data;
+        std::lock_guard<std::mutex> lock{mContextLock};
+        mCachedTextures[quadcode] = data;
     }
 
     void IRenderContext::runRenderLoop() {
@@ -37,12 +37,17 @@ namespace KCore {
     }
 
     void IRenderContext::setCurrentTileState(const std::vector<KCore::TileDescription> &tiles) {
-        std::lock_guard<std::mutex> lock{mTileStateLock};
-        mCurrentTileState = tiles;
+        std::lock_guard<std::mutex> lock{mContextLock};
+        mLastKnownTiles = tiles;
     }
 
     const std::vector<KCore::TileDescription> &IRenderContext::getCurrentTileState() {
-        std::lock_guard<std::mutex> lock{mTileStateLock};
-        return mCurrentTileState;
+        std::lock_guard<std::mutex> lock{mContextLock};
+        return mLastKnownTiles;
+    }
+
+    void IRenderContext::clearCached() {
+        std::lock_guard<std::mutex> lock{mContextLock};
+        mCachedTextures.clear();
     }
 }

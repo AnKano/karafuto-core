@@ -15,10 +15,10 @@ namespace KCore::OneToOne {
 
         for (const auto &tile: tiles) {
             auto relatedCode = tile.getRelatedQuadcodes()[0];
-            if (!mInRAMNotConvertedTextures.contains(relatedCode)) continue;
+            if (!mCachedTextures.contains(relatedCode)) continue;
 
             std::thread([this, tile, relatedCode]() {
-                auto data = mInRAMNotConvertedTextures[relatedCode];
+                auto data = mCachedTextures[relatedCode];
 
                 int width = -1, height = -1, channels = -1;
                 auto results = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width, height, channels);

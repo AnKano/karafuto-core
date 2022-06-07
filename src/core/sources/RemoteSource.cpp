@@ -25,10 +25,4 @@ namespace KCore {
         mURLPrefix = mRawUrl.substr(0, position);
         mURLSuffix = mRawUrl.substr(position + payloadLength);
     }
-
-    extern "C" {
-    DllExport KCore::RemoteSource *CreateRemoteSource(const char *url) {
-        return new RemoteSource(url);
-    }
-    }
 }

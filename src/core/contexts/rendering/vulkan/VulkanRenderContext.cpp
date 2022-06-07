@@ -1,9 +1,9 @@
 #include "VulkanRenderContext.hpp"
 
-#include "../../../worlds/TerrainedWorld.hpp"
+#include "../../../World.hpp"
 
 namespace KCore::Vulkan {
-    VulkanRenderContext::VulkanRenderContext(TerrainedWorld *world) : IRenderContext(world) {}
+    VulkanRenderContext::VulkanRenderContext(World *world) : IRenderContext(world) {}
 
     void VulkanRenderContext::initialize() {
         core.run();
@@ -40,76 +40,57 @@ namespace KCore::Vulkan {
     }
 
     void VulkanRenderContext::performLoopStep() {
-        if (mWorldAdapter->getAsyncEventsLength() != 0) {
-            std::this_thread::sleep_for(350ms);
-            return;
-        };
-
         auto metas = getCurrentTileState();
 
         for (const auto &meta: metas) {
-//            auto start_time = std::chrono::high_resolution_clock::now();
-
-            auto items = meta->getChildQuadcodes();
+            auto items = meta.getRelatedQuadcodes();
             for (const auto item: items) {
-                if (mInRAMNotConvertedTextures.count(item) == 0) continue;
+                if (!mCachedTextures.contains(item)) continue;
 
                 glm::mat4 scaleMatrix, translationMatrix;
-                auto rootQuadcode = meta->getTileDescription().getQuadcode();
+                auto rootQuadcode = meta.getQuadcode();
                 prepareTransform(rootQuadcode, item, scaleMatrix, translationMatrix);
 
-                auto &data = mInRAMNotConvertedTextures[item];
-                auto image = STBImageUtils::decodeImageBuffer(
-                        reinterpret_cast<const uint8_t *>(data.data()),
-                        data.size(),
-                        STBI_rgb
-                );
+                auto &data = mCachedTextures[item];
 
-                std::vector<uint8_t> decodedImage(256*256*4);
-                int pixel = 0;
-                for (auto j = 0u; j < 256; ++j) {
-                    for (auto i = 0u; i < 256; ++i) {
-                        decodedImage[pixel * 4]     = image[pixel * 3 ];
-                        decodedImage[pixel * 4 + 1] = image[pixel * 3 + 1];
-                        decodedImage[pixel * 4 + 2] = image[pixel * 3 + 2];
-                        decodedImage[pixel * 4 + 3] = 0xFF;
+                int width = -1, height = -1, channels = -1;
+                auto image = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width, height, channels);
 
-                        pixel++;
+                if (channels == 3) {
+                    std::vector<uint8_t> decodedImage(width * height * 4);
+                    int pixel = 0;
+                    for (auto j = 0u; j < width; ++j) {
+                        for (auto i = 0u; i < height; ++i) {
+                            decodedImage[pixel * 4] = image[pixel * 3];
+                            decodedImage[pixel * 4 + 1] = image[pixel * 3 + 1];
+                            decodedImage[pixel * 4 + 2] = image[pixel * 3 + 2];
+                            decodedImage[pixel * 4 + 3] = 0xFF;
+
+                            pixel++;
+                        }
                     }
-                }
-
-// declare
-                core.declareTile(decodedImage, scaleMatrix, translationMatrix);
+                    core.declareTile(decodedImage, scaleMatrix, translationMatrix);
+                } else if (channels == 4)
+                    core.declareTile(image, scaleMatrix, translationMatrix);
             }
 
-// render
             core.drawFrame();
 
             auto results = core.readFrame();
 
-            std::thread([results, this, meta]() {
-                auto t0 = std::chrono::high_resolution_clock::now();
+            std::thread([this, results, meta]() {
+                auto image = new ImageResult{};
+                image->width = 1024;
+                image->height = 1024;
+                image->size = image->width * image->height * 2;
+                image->format = RGB565;
 
-                std::string compressed_data = gzip::compress(
-                        reinterpret_cast<const char *>(results.data()), results.size(), Z_BEST_SPEED
-                );
+                image->data = new uint8_t[image->size];
+                std::copy(results.begin(), results.end(), image->data);
 
-                auto rawBuffer = new std::vector<uint8_t>{};
-                rawBuffer->resize(compressed_data.size());
-                std::copy(compressed_data.begin(), compressed_data.end(), rawBuffer->data());
-
-                auto rootQuadcode = meta->getTileDescription().getQuadcode();
-                mWorldAdapter->pushToAsyncEvents(MapEvent::MakeRenderLoadedEvent(rootQuadcode, rawBuffer));
-                auto t1 = std::chrono::high_resolution_clock::now();
-                auto duration = t1 - t0;
-
-                auto d = std::chrono::duration_cast<std::chrono::milliseconds>(duration);
+                auto rootQuadcode = meta.getQuadcode();
+                mWorld->pushToImageEvents(Event::MakeImageEvent(rootQuadcode, image));
             }).detach();
-
-//            auto end_time = std::chrono::high_resolution_clock::now();
-//            auto time = end_time - start_time;
-//
-//            std::cout << time/std::chrono::milliseconds(1) << "ms to run.\n";
 
             std::this_thread::sleep_for(10ms);
         }

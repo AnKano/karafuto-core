@@ -94,13 +94,13 @@ namespace KCore::OpenCL {
         for (auto &meta: tiles) {
             auto items = meta.getRelatedQuadcodes();
             for (const auto& item: items) {
-                if (!mInRAMNotConvertedTextures.contains(item)) continue;
+                if (!mCachedTextures.contains(item)) continue;
 
                 unsigned int offsetX, offsetY, depth;
                 auto rootQuadcode = meta.getQuadcode();
                 childTransform(rootQuadcode, item, offsetX, offsetY, depth);
 
-                auto &data = mInRAMNotConvertedTextures[item];
+                auto &data = mCachedTextures[item];
 
                 int width = -1, height = -1, channels = -1;
                 auto image = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width, height, channels);

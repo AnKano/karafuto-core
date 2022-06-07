@@ -16,6 +16,13 @@
 #include "World.hpp"
 
 namespace KCore {
+    enum LayerMode {
+        OneToOneLOD,
+        OneToSubdivisionLOD,
+//        FixedLevel,
+//        FixedLevelWithSubdivision
+    };
+
     class MapCore {
     private:
         glm::mat4 mCameraViewMatrix{}, mCameraProjectionMatrix{};
@@ -42,6 +49,10 @@ namespace KCore {
 
         std::vector<Event> getEvents();
 
+        void setLayerMode(LayerMode mode, float param1, float param2);
+
+        void setLayerRasterUrl(const char* url);
+
     private:
         void performUpdate();
     };
@@ -49,7 +60,7 @@ namespace KCore {
     extern "C" {
     DllExport KCore::MapCore *CreateMapCore(float latitude, float longitude);
 
-    DllExport void UpdateMapCore(KCore::MapCore *mapCore,
+    DllExport void UpdateMapCore(KCore::MapCore *corePtr,
                                  float *cameraProjectionMatrix,
                                  float *cameraViewMatrix,
                                  float *cameraPosition);
@@ -58,13 +69,15 @@ namespace KCore {
 
     DllExport KCore::Event *EjectEventsFromVector(std::vector<Event> *vecPtr, int &length);
 
-    DllExport uint8_t* GetBytesFromVector(std::vector<uint8_t> *vecPtr, int &length);
+    DllExport uint8_t *GetBytesFromVector(std::vector<uint8_t> *vecPtr, int &length);
 
     DllExport void ReleaseArray(uint8_t *arrayPtr);
 
     DllExport void ReleaseEventsVector(std::vector<Event> *vecPtr);
 
-//    DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length);
+    DllExport void SetLayerMode(KCore::MapCore *corePtr, LayerMode mode, float param1, float param2);
+
+    DllExport void SetLayerRasterUrl(KCore::MapCore *corePtr, const char* url);
     }
 }
 

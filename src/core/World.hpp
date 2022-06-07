@@ -27,15 +27,16 @@ namespace KCore {
         std::vector<TileDescription> mTiles{};
         std::map<std::string, TileDescription> mPrevTiles, mCurrTiles{};
 
-        INetworkContext *mNetworkContext{nullptr};
-        IRenderContext *mRenderContext{nullptr};
+        std::unique_ptr<INetworkContext> mNetworkContext{nullptr};
+        std::unique_ptr<IRenderContext> mRenderContext{nullptr};
 
-        RemoteSource *mRemoteSource{nullptr};
+        std::map<std::string, bool> mRequested;
+        std::unique_ptr<RemoteSource> mRemoteSource{nullptr};
 
         std::mutex mQueueLock;
         std::vector<Event> mCoreEventsQueue, mImageEventsQueue;
 
-        std::map<std::string, bool> mRequested;
+        std::function<void()> mTileProcessor;
 
     public:
         World();
@@ -68,11 +69,17 @@ namespace KCore {
 
         TileDescription createTile(const std::string &quadcode);
 
-        INetworkContext *getNetworkContext();
-
-        IRenderContext *getRenderContext();
-
         std::vector<Event> getEventsCopyAndClearQueue();
+
+        // ----------------
+
+        void setRasterUrl(const char* url);
+
+        // ----------------
+
+        void setOneToOneLODMode(float subdivisionTarget = 1.0f);
+
+        void setOneToSubdivisionLODMode(float subdivisionTarget = 1.0f, float additionalSubdivisionTarget = 2.5f);
     };
 }
 

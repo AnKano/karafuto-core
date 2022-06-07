@@ -5,11 +5,7 @@
 #include <glm/glm.hpp>
 #include <glm/gtx/transform.hpp>
 
-#if defined(WIN32) || defined(WINDOWS)
-
 #include "VulkanCore.hpp"
-
-#endif
 
 namespace KCore::Vulkan {
     class VulkanRenderContext : public IRenderContext {
@@ -17,7 +13,7 @@ namespace KCore::Vulkan {
         VulkanCore core;
 
     public:
-        VulkanRenderContext(TerrainedWorld *world);
+        VulkanRenderContext(World *world);
 
     private:
         void prepareTransform(const std::string &rootQuadcode,

@@ -61,6 +61,21 @@ namespace KCore {
         return mWorld.getEventsCopyAndClearQueue();
     }
 
+    void MapCore::setLayerMode(LayerMode mode, float param1, float param2) {
+        switch (mode) {
+            case OneToOneLOD:
+                mWorld.setOneToOneLODMode(param1);
+                break;
+            case OneToSubdivisionLOD:
+                mWorld.setOneToSubdivisionLODMode(param1, param2);
+                break;
+        }
+    }
+
+    void MapCore::setLayerRasterUrl(const char* url) {
+        mWorld.setRasterUrl(url);
+    }
+
     DllExport KCore::MapCore *CreateMapCore(float latitude, float longitude) {
         return new KCore::MapCore(latitude, longitude);
     }
@@ -75,11 +90,11 @@ namespace KCore {
         return vecPtr->data();
     }
 
-    DllExport void UpdateMapCore(KCore::MapCore *mapCore,
+    DllExport void UpdateMapCore(KCore::MapCore *corePtr,
                                  float *cameraProjectionMatrix,
                                  float *cameraViewMatrix,
                                  float *cameraPosition) {
-        mapCore->update(cameraProjectionMatrix,
+        corePtr->update(cameraProjectionMatrix,
                         cameraViewMatrix,
                         cameraPosition,
                         false, false);
@@ -110,12 +125,11 @@ namespace KCore {
         delete[] arrayPtr;
     }
 
-//    DllExport void *GetPoints(std::vector<GeoJSONTransObject> *points, int &length) {
-//        if (points == nullptr)
-//            length = 0;
-//        else
-//            length = points->size();
-//
-//        return points->data();
-//    }
+    DllExport void SetLayerMode(KCore::MapCore *corePtr, LayerMode mode, float param1, float param2) {
+        corePtr->setLayerMode(mode, param1, param2);
+    }
+
+    DllExport void SetLayerRasterUrl(KCore::MapCore *corePtr, const char* url) {
+        corePtr->setLayerRasterUrl(url);
+    }
 }

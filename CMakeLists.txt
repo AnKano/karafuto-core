@@ -22,8 +22,8 @@ if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
         set(BACKEND "Vulkan")
     elseif (WIN32)
         set(PLATFORM "Windows")
-        #        set(BACKEND "Vulkan")
-        set(BACKEND "OpenCL")
+        set(BACKEND "Vulkan")
+        #        set(BACKEND "OpenCL")
     endif ()
 endif ()
 
@@ -134,15 +134,15 @@ if (ON)
     endif ()
 
     if (OFF)
-#        if (APPLE)
-#            message("MacOS: Override OpenSSL dirs")
-#
-#            # This is a bug in CMake that causes it to prefer the system version over
-#            # the one in the specified ROOT folder.
-#            set(OPENSSL_ROOT_DIR ${OPENSSL_ROOT_DIR} /usr/local/Cellar/openssl@3/3.0.1/)
-#            set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
-#            set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.dylib CACHE FILEPATH "" FORCE)
-#        endif ()
+        #        if (APPLE)
+        #            message("MacOS: Override OpenSSL dirs")
+        #
+        #            # This is a bug in CMake that causes it to prefer the system version over
+        #            # the one in the specified ROOT folder.
+        #            set(OPENSSL_ROOT_DIR ${OPENSSL_ROOT_DIR} /usr/local/Cellar/openssl@3/3.0.1/)
+        #            set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
+        #            set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.dylib CACHE FILEPATH "" FORCE)
+        #        endif ()
     endif ()
 endif ()
 
@@ -193,15 +193,18 @@ if (ON)
         message("\t - Added GLM...")
         add_subdirectory(${THIRD_PARTY_DIR}/glm)
 
-#        message("\t - Added zlib...")
-#        if (ON)
-#            add_subdirectory(${THIRD_PARTY_DIR}/zlib)
-#
-#            message(${CMAKE_BINARY_DIR}/third-party/zlib)
-#
-#            set(ZLIB_INCLUDE_DIR ${THIRD_PARTY_DIR}/zlib "${CMAKE_BINARY_DIR}/third-party/zlib")
-#            set(ZLIB_LIBRARY zlib)
-#        endif ()
+        message("\t - Added LRUCache17...")
+        add_subdirectory(${THIRD_PARTY_DIR}/lrucache17)
+
+        #        message("\t - Added zlib...")
+        #        if (ON)
+        #            add_subdirectory(${THIRD_PARTY_DIR}/zlib)
+        #
+        #            message(${CMAKE_BINARY_DIR}/third-party/zlib)
+        #
+        #            set(ZLIB_INCLUDE_DIR ${THIRD_PARTY_DIR}/zlib "${CMAKE_BINARY_DIR}/third-party/zlib")
+        #            set(ZLIB_LIBRARY zlib)
+        #        endif ()
     endif ()
 endif ()
 
