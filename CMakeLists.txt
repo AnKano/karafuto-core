@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.21)
+cmake_minimum_required(VERSION 3.18)
 project(karafuto_core)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -14,7 +14,10 @@ file(GLOB_RECURSE CPP_SOURCES ${MAIN_SOURCE_DIR}/*.cpp)
 
 # Select platform and default backend if not set
 if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
-    if (APPLE)
+    if (ANDROID)
+        set(PLATFORM "Android")
+        set(BACKEND "Vulkan")
+    elseif (APPLE)
         set(PLATFORM "APPLE")
         set(BACKEND "Vulkan")
     elseif (UNIX)
@@ -23,7 +26,7 @@ if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
     elseif (WIN32)
         set(PLATFORM "Windows")
         set(BACKEND "Vulkan")
-        #        set(BACKEND "OpenCL")
+        # set(BACKEND "OpenCL")
     endif ()
 endif ()
 
@@ -53,6 +56,51 @@ endif ()
 # Create temporary variables contain platform-dependent sources
 if (ON)
     message("🖊️ Grab dependent sources")
+
+    if (${PLATFORM} STREQUAL "Android")
+        message("\t - Basic HTTP adapter")
+        if (ON)
+            set(CPP_HEADERS_ADDITIONALS "")
+            file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/basic/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/debug/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/debug/*.inl
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkContext.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkRequest.hpp)
+
+            set(CPP_SOURCES_ADDITIONALS "")
+            file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/basic/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/debug/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkContext.cpp)
+
+            list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
+            list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
+        endif ()
+
+        if (${BACKEND} STREQUAL "Vulkan")
+            message("\t - Vulkan adapter")
+            set(CPP_HEADERS_ADDITIONALS "")
+            file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.inl
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.inl
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/one-to-one/*.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/ImageResult.hpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.hpp)
+
+            set(CPP_SOURCES_ADDITIONALS "")
+            file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/one-to-one/*.cpp
+                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.cpp)
+
+            list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
+            list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
+        endif ()
+    endif ()
 
     if (${PLATFORM} STREQUAL "Windows")
         message("\t - Basic HTTP adapter")
@@ -186,6 +234,17 @@ if (ON)
         #endif ()
     endif ()
 
+    if (${PLATFORM} STREQUAL "Android")
+        message("\t - Added HTTPRequest")
+        add_subdirectory(${THIRD_PARTY_DIR}/HTTPRequest)
+
+        message("\t - Added GLM...")
+        add_subdirectory(${THIRD_PARTY_DIR}/glm)
+
+        message("\t - Added LRUCache17...")
+        add_subdirectory(${THIRD_PARTY_DIR}/lrucache17)
+    endif ()
+
     if (${PLATFORM} STREQUAL "Windows")
         message("\t - Added HTTPRequest")
         add_subdirectory(${THIRD_PARTY_DIR}/HTTPRequest)
@@ -213,10 +272,12 @@ if (ON)
     message("")
     message("🎯 Declare targets")
 
-    #    add_library(libkcore-static STATIC ${CPP_HEADERS} ${CPP_SOURCES})
-    add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
-
-    add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
+    if (${PLATFORM} STREQUAL "Android")
+        add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
+    elseif (${PLATFORM} STREQUAL "Windows")
+        add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
+        add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
+    endif()
 
     if (OFF)
         #if (APPLE)
@@ -254,7 +315,13 @@ if (ON)
 
     message("\t - Link libraries")
     if (ON)
-        if (${PLATFORM} STREQUAL "Windows")
+        if (${PLATFORM} STREQUAL "Android")
+            if (${BACKEND} STREQUAL "Vulkan")
+                message("\t - Vulkan libraries")
+                set(LIBRARIES glm HTTPRequest vulkan)
+                target_link_libraries(libkcore PUBLIC ${LIBRARIES})
+            endif()
+        elseif (${PLATFORM} STREQUAL "Windows")
             if (${BACKEND} STREQUAL "Vulkan")
                 message("\t - Vulkan libraries")
                 set(LIBRARIES glm HTTPRequest wsock32 ws2_32)
@@ -307,7 +374,15 @@ if (ON)
             #            endif ()
         endif ()
 
-        if (${PLATFORM} STREQUAL "Windows")
+        if (${PLATFORM} STREQUAL "Android")
+            set(INCLUDE_COMPOUND
+                    ${THIRD_PARTY_DIR}/rapidjson/include
+                    ${THIRD_PARTY_DIR}/lrucache17
+                    ${THIRD_PARTY_DIR}/earcut/include
+                    ${THIRD_PARTY_DIR}/stb-image
+                    )
+            target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
+        elseif (${PLATFORM} STREQUAL "Windows")
             set(INCLUDE_COMPOUND
                     ${THIRD_PARTY_DIR}/rapidjson/include
                     ${THIRD_PARTY_DIR}/lrucache17

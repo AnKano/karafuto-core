@@ -23,9 +23,9 @@
 #include "Texture.hpp"
 
 //#ifdef NDEBUG
-//const bool enableValidationLayers = false;
+const bool enableValidationLayers = false;
 //#else
-const bool enableValidationLayers = true;
+//const bool enableValidationLayers = true;
 //#endif
 
 struct QueueFamilyIndices {
@@ -92,8 +92,8 @@ struct VulkanTileDescription {
 
 class VulkanCore {
 private:
-    const uint32_t WIDTH = 1024;
-    const uint32_t HEIGHT = 1024;
+    const uint32_t WIDTH = 512;
+    const uint32_t HEIGHT = 512;
     const uint32_t SLOTS = 64;
 
     const std::vector<const char *> validationLayers = {

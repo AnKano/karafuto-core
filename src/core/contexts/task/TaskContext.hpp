@@ -26,7 +26,7 @@ namespace KCore {
         void runTaskLoop();
 
     private:
-        void dispose();
+        void dispose() override;
 
         void initialize() override;
 

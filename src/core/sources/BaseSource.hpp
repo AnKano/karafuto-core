@@ -32,16 +32,16 @@ namespace KCore {
         }
 
         void addSourcePart(const std::string &directoryPath, const std::string &postfix) {
-            for (const auto &entry: fs::directory_iterator(directoryPath)) {
-                std::cout << entry.path() << std::endl;
-
-                auto filePath = entry.path();
-                auto ext = entry.path().extension().string();
-
-                if (ext != postfix) continue;
-
-                createPartFile(filePath.string());
-            }
+//            for (const auto &entry: fs::directory_iterator(directoryPath)) {
+//                std::cout << entry.path() << std::endl;
+//
+//                auto filePath = entry.path();
+//                auto ext = entry.path().extension().string();
+//
+//                if (ext != postfix) continue;
+//
+//                createPartFile(filePath.string());
+//            }
         }
 
     protected:
