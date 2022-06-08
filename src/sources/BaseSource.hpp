@@ -8,8 +8,8 @@
 #include "BaseSourcePart.hpp"
 
 #ifndef __ANDROID__
-#include <filesystem>
-namespace fs = std::filesystem;
+    #include <filesystem>
+    namespace fs = std::filesystem;
 #endif
 
 namespace KCore {

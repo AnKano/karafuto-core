@@ -1,16 +1,15 @@
 #pragma once
 
-#include "../geography/TileDescription.hpp"
-#include "../layer/presenters/ImageResult.hpp"
 #include <cstring>
+
+#include "../../geography/TileDescription.hpp"
+#include "../../layer/presenters/ImageResult.hpp"
 
 namespace KCore {
     enum LayerEventType {
         InFrustum = 0,
         NotInFrustum = 1,
-        ImageReady = 2,
-//        TerrainLoaded = 3,
-//        GeoJSONLoaded = 4
+        ImageReady = 2
     };
 
     struct LayerEvent {

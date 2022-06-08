@@ -1,7 +1,8 @@
 #pragma once
 
-#include "../../../../../bindings.hpp"
-#include "../../../../meshes/BaseMesh.hpp"
+#include "../../../../misc/Bindings.hpp"
+#include "../../../../resources/meshes/BaseMesh.hpp"
+#include "../GeoJSONObject.hpp"
 
 #include "glm/vec3.hpp"
 

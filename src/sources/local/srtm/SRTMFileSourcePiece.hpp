@@ -19,7 +19,6 @@ namespace KCore {
             try {
                 parseMeta();
             } catch (const std::exception &e) {
-                mFileCorrupted = true;
                 std::cerr << e.what() << std::endl;
             }
         }

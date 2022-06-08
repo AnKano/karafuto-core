@@ -12,14 +12,12 @@ namespace KCore {
     class FileSource : public BaseSourcePart {
     protected:
         std::string mPath;
-
         std::string mFolderPath;
 
         std::string mFileName;
         std::string mFileNameBase;
         std::string mFileNameExtension;
 
-        bool mFileCorrupted{false};
     public:
         std::vector<uint8_t> mData{};
 

@@ -13,20 +13,19 @@
 namespace KCore {
     class RemoteSource {
     private:
-
         std::string mRawUrl;
         std::string mURLPrefix, mURLSuffix;
 
     public:
-        /** example: https://10.0.0.1:8080/{z}/{x}/{y}.png
-         * mURLPrefix - "https://10.0.0.1:8080/"
+        /** example: http://10.0.0.1:8080/{z}/{x}/{y}.png
+         * mURLPrefix - "http://10.0.0.1:8080/"
          * mURLSuffix - ".png"
          **/
         RemoteSource(std::string rawUrl);
 
-        /** example prefix: "https://10.0.0.1:8080/"
+        /** example prefix: "http://10.0.0.1:8080/"
          * example affix: ".png"
-         * mRawUrl - "https://10.0.0.1:8080/{z}/{x}/{y}.png"
+         * mRawUrl - "http://10.0.0.1:8080/{z}/{x}/{y}.png"
          **/
         RemoteSource(std::string prefix, std::string affix);
 

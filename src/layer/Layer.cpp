@@ -7,7 +7,7 @@
 #include "presenters/debug/DebugRenderContext.hpp"
 #include "presenters/one-to-one/OneToOneContext.hpp"
 
-#include "../misc/Requests.hpp"
+#include "../misc/NetworkTools.hpp"
 
 namespace KCore {
     Layer::Layer() : Layer(0.0f, 0.0f) {}
@@ -208,10 +208,11 @@ namespace KCore {
                     auto desc = mCurrTiles[item];
 
                     if (mRemoteSource == nullptr) continue;
-                    performGETRequest(mRemoteSource->bakeUrl(desc), [this, desc](const std::vector<uint8_t> &result) {
-                        if (mRenderContext != nullptr)
-                            mRenderContext->storeTextureInContext(result, desc.getQuadcode());
-                    });
+                    performGETRequestAsync(mRemoteSource->bakeUrl(desc),
+                                           [this, desc](const std::vector<uint8_t> &result) {
+                                               if (mRenderContext != nullptr)
+                                                   mRenderContext->storeTextureInContext(result, desc.getQuadcode());
+                                           });
                 }
 
                 if (inPrev)
@@ -276,11 +277,11 @@ namespace KCore {
                 for (const auto &related: item.getRelatedQuadcodes()) {
                     if (mRequested.contains(related)) continue;
 
-                    performGETRequest(mRemoteSource->bakeUrl(createTile(related)),
-                                      [this, related](const std::vector<uint8_t> &result) {
-                                          if (mRenderContext != nullptr)
-                                              mRenderContext->storeTextureInContext(result, related);
-                                      });
+                    performGETRequestAsync(mRemoteSource->bakeUrl(createTile(related)),
+                                           [this, related](const std::vector<uint8_t> &result) {
+                                               if (mRenderContext != nullptr)
+                                                   mRenderContext->storeTextureInContext(result, related);
+                                           });
 
                     mRequested[related] = true;
                 }

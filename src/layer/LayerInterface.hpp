@@ -6,9 +6,9 @@
 #include "glm/glm.hpp"
 
 #include "presenters/IRenderContext.hpp"
+#include "events/LayerEvent.hpp"
 #include "../geography/TileDescription.hpp"
 #include "../resources/meshes/GridMesh.hpp"
-#include "../events/LayerEvent.hpp"
 #include "../misc/Bindings.hpp"
 
 #include "Layer.hpp"
@@ -26,7 +26,7 @@ namespace KCore {
         glm::mat4 mCameraViewMatrix{}, mCameraProjectionMatrix{};
         glm::vec3 mCameraPosition{};
 
-        Layer mWorld;
+        Layer mLayer;
 
     public:
         LayerInterface(float latitude, float longitude);
@@ -51,6 +51,8 @@ namespace KCore {
 
         void setLayerMode(LayerMode mode, float param1, float param2);
 
+        Layer* raw();
+
     private:
         void setLayerRasterUrl(const char *url);
 
@@ -64,7 +66,7 @@ namespace KCore {
                                float *cameraProjectionMatrix,
                                float *cameraViewMatrix,
                                float *cameraPosition);
-    DllExport std::vector<LayerEvent> *GetEventsVector(KCore::LayerInterface *corePtr);
+    DllExport std::vector<LayerEvent> *GetEventsVector(KCore::LayerInterface *layerPtr);
     DllExport LayerEvent *EjectEventsFromVector(std::vector<LayerEvent> *vecPtr, int &length);
     DllExport void ReleaseEventsVector(std::vector<LayerEvent> *vecPtr);
     DllExport void SetLayerMode(KCore::LayerInterface *corePtr, LayerMode mode, float param1, float param2);

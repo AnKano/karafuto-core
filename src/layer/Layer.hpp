@@ -3,10 +3,10 @@
 #include <functional>
 
 #include "presenters/IRenderContext.hpp"
+#include "events/LayerEvent.hpp"
 #include "../misc/FrustumCulling.hpp"
 #include "../geography/TileDescription.hpp"
 #include "../sources/RemoteSource.hpp"
-#include "../events/LayerEvent.hpp"
 
 namespace KCore {
     class Layer {

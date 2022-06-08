@@ -5,9 +5,9 @@
 #include "../misc/Utils.hpp"
 
 namespace KCore {
-    LayerInterface::LayerInterface(float latitude, float longitude) : mWorld(latitude, longitude) {}
+    LayerInterface::LayerInterface(float latitude, float longitude) : mLayer(latitude, longitude) {}
 
-    LayerInterface::LayerInterface(float latitude, float longitude, const char* url) : mWorld(latitude, longitude) {
+    LayerInterface::LayerInterface(float latitude, float longitude, const char *url) : mLayer(latitude, longitude) {
         setLayerRasterUrl(url);
     }
 
@@ -57,35 +57,39 @@ namespace KCore {
         // !TODO: to parameter
         mCameraProjectionMatrix *= glm::scale(glm::vec3{0.85f, 0.85f, 1.0f});
 
-        mWorld.updateFrustum(mCameraProjectionMatrix, mCameraViewMatrix);
-        mWorld.setPosition(mCameraPosition);
-        mWorld.update();
+        mLayer.updateFrustum(mCameraProjectionMatrix, mCameraViewMatrix);
+        mLayer.setPosition(mCameraPosition);
+        mLayer.update();
     }
 
     std::vector<LayerEvent> LayerInterface::getEvents() {
-        return mWorld.getEventsCopyAndClearQueue();
+        return mLayer.getEventsCopyAndClearQueue();
     }
 
     void LayerInterface::setLayerMode(LayerMode mode, float param1, float param2) {
         switch (mode) {
             case OneToOneLOD:
-                mWorld.setOneToOneLODMode(param1);
+                mLayer.setOneToOneLODMode(param1);
                 break;
             case OneToSubdivisionLOD:
-                mWorld.setOneToSubdivisionLODMode(param1, param2);
+                mLayer.setOneToSubdivisionLODMode(param1, param2);
                 break;
         }
     }
 
-    void LayerInterface::setLayerRasterUrl(const char* url) {
-        mWorld.setRasterUrl(url);
+    void LayerInterface::setLayerRasterUrl(const char *url) {
+        mLayer.setRasterUrl(url);
+    }
+
+    Layer *LayerInterface::raw() {
+        return &mLayer;
     }
 
     DllExport KCore::LayerInterface *CreateTileLayerOSM(float latitude, float longitude) {
         return new KCore::LayerInterface(latitude, longitude);
     }
 
-    DllExport KCore::LayerInterface *CreateTileLayerWithURL(float latitude, float longitude, const char* url) {
+    DllExport KCore::LayerInterface *CreateTileLayerWithURL(float latitude, float longitude, const char *url) {
         return new KCore::LayerInterface(latitude, longitude, url);
     }
 
@@ -99,8 +103,8 @@ namespace KCore {
                         false, false);
     }
 
-    DllExport std::vector<LayerEvent> *GetEventsVector(KCore::LayerInterface *corePtr) {
-        return new std::vector<LayerEvent>(corePtr->getEvents());
+    DllExport std::vector<LayerEvent> *GetEventsVector(KCore::LayerInterface *layerPtr) {
+        return new std::vector<LayerEvent>(layerPtr->getEvents());
     }
 
     DllExport LayerEvent *EjectEventsFromVector(std::vector<LayerEvent> *vecPtr, int &length) {

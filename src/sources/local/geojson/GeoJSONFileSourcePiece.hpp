@@ -31,15 +31,11 @@ namespace KCore {
 
     private:
         void parse() {
-
             rapidjson::Document doc;
 
             mDataString = std::string{mData.data(), mData.data() + mData.size()};
-            if (doc.Parse(mDataString.c_str()).HasParseError()) {
-                throw std::runtime_error(
-                        "Error occurred in parsing: " + std::to_string(doc.GetParseError())
-                );
-            }
+            if (doc.Parse(mDataString.c_str()).HasParseError())
+                throw std::runtime_error("Error occurred in parsing: " + std::to_string(doc.GetParseError()));
 
             auto type = std::string{doc["type"].GetString()};
             if (type == "FeatureCollection") {
@@ -47,10 +43,8 @@ namespace KCore {
             } else if (type == "Feature") {
                 processObject(doc);
             } else {
-                mFileCorrupted = true;
+                throw std::runtime_error("File corrupted");
             }
-
-
         }
 
         void parseCollection(const rapidjson::Value &collection) {
