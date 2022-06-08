@@ -25,15 +25,13 @@ namespace KCore {
         std::map<std::string, std::vector<uint8_t>> mCachedTextures;
 
     public:
-        IRenderContext(Layer *world);
+        explicit IRenderContext(Layer *world);
 
         void storeTextureInContext(const std::vector<uint8_t> &data, const std::string &quadcode);
 
         void setCurrentTileState(const std::vector<KCore::TileDescription> &tiles);
 
         void runRenderLoop();
-
-        void clearCached();
 
     protected:
         const std::vector<KCore::TileDescription> &getCurrentTileState();

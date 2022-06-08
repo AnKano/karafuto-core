@@ -41,9 +41,4 @@ namespace KCore {
         std::lock_guard<std::mutex> lock{mContextLock};
         return mLastKnownTiles;
     }
-
-    void IRenderContext::clearCached() {
-        std::lock_guard<std::mutex> lock{mContextLock};
-        mCachedTextures.clear();
-    }
 }

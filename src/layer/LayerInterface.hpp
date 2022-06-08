@@ -31,6 +31,8 @@ namespace KCore {
     public:
         LayerInterface(float latitude, float longitude);
 
+        LayerInterface(float latitude, float longitude, const char* url);
+
         void update(const glm::mat4 &cameraProjectionMatrix,
                     const glm::mat4 &cameraViewMatrix,
                     const glm::vec3 &cameraPosition);
@@ -49,18 +51,19 @@ namespace KCore {
 
         void setLayerMode(LayerMode mode, float param1, float param2);
 
+    private:
         void setLayerRasterUrl(const char *url);
 
-    private:
         void performUpdate();
     };
 
     extern "C" {
-    DllExport KCore::LayerInterface *CreateMapCore(float latitude, float longitude);
-    DllExport void UpdateMapCore(KCore::LayerInterface *corePtr,
-                                 float *cameraProjectionMatrix,
-                                 float *cameraViewMatrix,
-                                 float *cameraPosition);
+    DllExport KCore::LayerInterface *CreateTileLayerWithURL(float latitude, float longitude, const char* url);
+    DllExport KCore::LayerInterface *CreateTileLayerOSM(float latitude, float longitude);
+    DllExport void UpdateLayer(KCore::LayerInterface *corePtr,
+                               float *cameraProjectionMatrix,
+                               float *cameraViewMatrix,
+                               float *cameraPosition);
     DllExport std::vector<LayerEvent> *GetEventsVector(KCore::LayerInterface *corePtr);
     DllExport LayerEvent *EjectEventsFromVector(std::vector<LayerEvent> *vecPtr, int &length);
     DllExport void ReleaseEventsVector(std::vector<LayerEvent> *vecPtr);

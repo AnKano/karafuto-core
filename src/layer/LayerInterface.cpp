@@ -7,6 +7,10 @@
 namespace KCore {
     LayerInterface::LayerInterface(float latitude, float longitude) : mWorld(latitude, longitude) {}
 
+    LayerInterface::LayerInterface(float latitude, float longitude, const char* url) : mWorld(latitude, longitude) {
+        setLayerRasterUrl(url);
+    }
+
     void LayerInterface::update(const float *cameraProjectionMatrix_ptr,
                                 const float *cameraViewMatrix_ptr,
                                 const float *cameraPosition_ptr,
@@ -51,7 +55,7 @@ namespace KCore {
 
     void LayerInterface::performUpdate() {
         // !TODO: to parameter
-//        mCameraProjectionMatrix *= glm::scale(glm::vec3{0.85f, 0.85f, 1.0f});
+        mCameraProjectionMatrix *= glm::scale(glm::vec3{0.85f, 0.85f, 1.0f});
 
         mWorld.updateFrustum(mCameraProjectionMatrix, mCameraViewMatrix);
         mWorld.setPosition(mCameraPosition);
@@ -77,14 +81,18 @@ namespace KCore {
         mWorld.setRasterUrl(url);
     }
 
-    DllExport KCore::LayerInterface *CreateMapCore(float latitude, float longitude) {
+    DllExport KCore::LayerInterface *CreateTileLayerOSM(float latitude, float longitude) {
         return new KCore::LayerInterface(latitude, longitude);
     }
 
-    DllExport void UpdateMapCore(KCore::LayerInterface *corePtr,
-                                 float *cameraProjectionMatrix,
-                                 float *cameraViewMatrix,
-                                 float *cameraPosition) {
+    DllExport KCore::LayerInterface *CreateTileLayerWithURL(float latitude, float longitude, const char* url) {
+        return new KCore::LayerInterface(latitude, longitude, url);
+    }
+
+    DllExport void UpdateLayer(KCore::LayerInterface *corePtr,
+                               float *cameraProjectionMatrix,
+                               float *cameraViewMatrix,
+                               float *cameraPosition) {
         corePtr->update(cameraProjectionMatrix,
                         cameraViewMatrix,
                         cameraPosition,
@@ -114,9 +122,5 @@ namespace KCore {
 
     DllExport void SetLayerMode(KCore::LayerInterface *corePtr, LayerMode mode, float param1, float param2) {
         corePtr->setLayerMode(mode, param1, param2);
-    }
-
-    DllExport void SetLayerRasterUrl(KCore::LayerInterface *corePtr, const char* url) {
-        corePtr->setLayerRasterUrl(url);
     }
 }

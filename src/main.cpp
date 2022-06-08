@@ -22,10 +22,10 @@ int main() {
 
     const uint32_t iterations{10000};
 
-    auto *core = KCore::CreateMapCore(46.9181f, 142.7189f);
+    auto *core = KCore::CreateTileLayerOSM(46.9181f, 142.7189f);
     for (auto i = 0; i < iterations; i++) {
         cameraOpenGlSpacePosition.x += 150.0f;
-        KCore::UpdateMapCore(
+        KCore::UpdateLayer(
                 core,
                 reinterpret_cast<float *>(&cameraProjectionMatrix),
                 reinterpret_cast<float *>(&cameraViewMatrix),

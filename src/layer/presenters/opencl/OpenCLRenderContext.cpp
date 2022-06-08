@@ -93,7 +93,7 @@ namespace KCore::OpenCL {
 
         for (auto &meta: tiles) {
             auto items = meta.getRelatedQuadcodes();
-            for (const auto& item: items) {
+            for (const auto &item: items) {
                 if (!mCachedTextures.contains(item)) continue;
 
                 unsigned int offsetX, offsetY, depth;
@@ -130,18 +130,7 @@ namespace KCore::OpenCL {
             performWipeKernel();
 
             std::thread([this, results, meta]() {
-                auto image = new ImageResult{};
-                image->width = mOutImageWidth;
-                image->height = mOutImageHeight;
-                image->size = mOutImageBytes;
-
-                if (mOutImagePixelBytes == 2)      image->format = RGB565;
-                else if (mOutImagePixelBytes == 3) image->format = RGB888;
-                else if (mOutImagePixelBytes == 4) image->format = RGBA8888;
-
-                image->data = new uint8_t[image->size];
-                std::copy(results.begin(), results.end(), image->data);
-
+                auto image = new ImageResult{mOutImageWidth, mOutImageHeight, mOutImagePixelBytes, results};
                 auto rootQuadcode = meta.getQuadcode();
                 mWorld->pushToImageEvents(LayerEvent::MakeImageEvent(rootQuadcode, image));
             }).detach();
@@ -204,7 +193,7 @@ namespace KCore::OpenCL {
     void OpenCLRenderContext::performWipeKernel() {
         if (!wipeKernelSetup) setupWipeKernel();
 
-        size_t global[3] = {mOutImageWidth, mOutImageHeight};
+        size_t global[3] = {static_cast<size_t>(mOutImageWidth), static_cast<size_t>(mOutImageHeight)};
         size_t local[3] = {1, 1};
 
         int err = 0;

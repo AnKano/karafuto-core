@@ -22,19 +22,7 @@ namespace KCore::OneToOne {
 
                 int width = -1, height = -1, channels = -1;
                 auto results = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width, height, channels);
-
-                auto image = new ImageResult{};
-                image->width = width;
-                image->height = height;
-                image->size = width * height * channels;
-                if (channels == 3)
-                    image->format = RGB888;
-                else if (channels == 4)
-                    image->format = RGBA8888;
-
-                image->data = new uint8_t[image->size];
-                std::copy(results.begin(), results.end(), image->data);
-
+                auto image = new ImageResult{width, height, channels, results};
                 auto rootQuadcode = tile.getQuadcode();
                 mWorld->pushToImageEvents(LayerEvent::MakeImageEvent(rootQuadcode, image));
             }).detach();

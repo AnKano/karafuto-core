@@ -27,9 +27,9 @@ namespace KCore::OpenCL {
         bool wipeKernelSetup = false;
 
         cl_mem mOutBuffer;
-        std::size_t mOutImageHeight = 1024;
-        std::size_t mOutImageWidth = 1024;
-        std::size_t mOutImagePixelBytes = 2;
+        int mOutImageHeight = 1024;
+        int mOutImageWidth = 1024;
+        int mOutImagePixelBytes = 2;
         std::size_t mOutImageBytes = mOutImageHeight * mOutImageWidth * mOutImagePixelBytes;
 
     public:

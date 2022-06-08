@@ -178,8 +178,6 @@ namespace KCore {
 
     void Layer::setRasterUrl(const char *url) {
         mRemoteSource = std::make_unique<RemoteSource>(url);
-
-        mRenderContext->clearCached();
         mRequested.clear();
     }
 
@@ -206,24 +204,18 @@ namespace KCore {
 
                 if (inNew) {
                     auto payload = &mCurrTiles[item].mPayload;
-
-                    auto event = LayerEvent::MakeInFrustumEvent(item, payload);
-                    pushToCoreEvents(event);
-
+                    pushToCoreEvents(LayerEvent::MakeInFrustumEvent(item, payload));
                     auto desc = mCurrTiles[item];
 
                     if (mRemoteSource == nullptr) continue;
-
                     performGETRequest(mRemoteSource->bakeUrl(desc), [this, desc](const std::vector<uint8_t> &result) {
                         if (mRenderContext != nullptr)
                             mRenderContext->storeTextureInContext(result, desc.getQuadcode());
                     });
                 }
 
-                if (inPrev) {
-                    auto event = LayerEvent::MakeNotInFrustumEvent(item);
-                    pushToCoreEvents(event);
-                }
+                if (inPrev)
+                    pushToCoreEvents(LayerEvent::MakeNotInFrustumEvent(item));
             }
 
             if (mRenderContext != nullptr)
@@ -271,18 +263,12 @@ namespace KCore {
 
                 if (inNew) {
                     auto payload = &mCurrTiles[item].mPayload;
-
-                    auto event = LayerEvent::MakeInFrustumEvent(item, payload);
-                    pushToCoreEvents(event);
-
+                    pushToCoreEvents(LayerEvent::MakeInFrustumEvent(item, payload));
                     auto desc = mCurrTiles[item];
-
-                    if (mRemoteSource == nullptr) continue;
                 }
 
                 if (inPrev) {
-                    auto event = LayerEvent::MakeNotInFrustumEvent(item);
-                    pushToCoreEvents(event);
+                    pushToCoreEvents(LayerEvent::MakeNotInFrustumEvent(item));
                 }
             }
 
