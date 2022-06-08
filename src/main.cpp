@@ -2,8 +2,7 @@
 #include <glm/glm.hpp>
 #include <utility>
 
-#include "core/MapCore.hpp"
-#include "core/meshes/PolylineMesh.hpp"
+#include "layer/LayerInterface.hpp"
 
 int main() {
     const uint16_t viewportWidth{1920}, viewportHeight{1080};

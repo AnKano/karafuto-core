@@ -25,8 +25,8 @@ if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
         set(BACKEND "Vulkan")
     elseif (WIN32)
         set(PLATFORM "Windows")
-        set(BACKEND "Vulkan")
-        # set(BACKEND "OpenCL")
+#        set(BACKEND "Vulkan")
+         set(BACKEND "OpenCL")
     endif ()
 endif ()
 
@@ -38,16 +38,11 @@ message("🖼️ Current backend: ${BACKEND} \n")
 if (ON)
     set(CPP_HEADERS_ADDITIONALS "")
     file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
-            ${MAIN_SOURCE_DIR}/core/contexts/network/*.hpp
-            ${MAIN_SOURCE_DIR}/core/contexts/rendering/*.hpp
-            ${MAIN_SOURCE_DIR}/core/contexts/rendering/*.inl
-            )
+            ${MAIN_SOURCE_DIR}/layer/presenters/*.hpp
+            ${MAIN_SOURCE_DIR}/layer/presenters/*.inl)
 
     set(CPP_SOURCES_ADDITIONALS "")
-    file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
-            ${MAIN_SOURCE_DIR}/core/contexts/network/*.cpp
-            ${MAIN_SOURCE_DIR}/core/contexts/rendering/*.cpp
-            )
+    file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS ${MAIN_SOURCE_DIR}/layer/presenters/*.cpp)
 
     list(REMOVE_ITEM CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
     list(REMOVE_ITEM CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
@@ -58,44 +53,24 @@ if (ON)
     message("🖊️ Grab dependent sources")
 
     if (${PLATFORM} STREQUAL "Android")
-        message("\t - Basic HTTP adapter")
-        if (ON)
-            set(CPP_HEADERS_ADDITIONALS "")
-            file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/basic/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/debug/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/debug/*.inl
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkContext.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkRequest.hpp)
-
-            set(CPP_SOURCES_ADDITIONALS "")
-            file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/basic/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/debug/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkContext.cpp)
-
-            list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
-            list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
-        endif ()
-
         if (${BACKEND} STREQUAL "Vulkan")
             message("\t - Vulkan adapter")
             set(CPP_HEADERS_ADDITIONALS "")
             file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.inl
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.inl
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/one-to-one/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/ImageResult.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.hpp)
+                    ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.hpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.inl
+                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.hpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.inl
+                    ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.hpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/ImageResult.hpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.hpp)
 
             set(CPP_SOURCES_ADDITIONALS "")
             file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/one-to-one/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.cpp)
+                    ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.cpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.cpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.cpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.cpp)
 
             list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
             list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
@@ -103,44 +78,24 @@ if (ON)
     endif ()
 
     if (${PLATFORM} STREQUAL "Windows")
-        message("\t - Basic HTTP adapter")
-        if (ON)
-            set(CPP_HEADERS_ADDITIONALS "")
-            file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/basic/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/debug/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/debug/*.inl
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkContext.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkRequest.hpp)
-
-            set(CPP_SOURCES_ADDITIONALS "")
-            file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/basic/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/debug/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/network/INetworkContext.cpp)
-
-            list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
-            list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
-        endif ()
-
         if (${BACKEND} STREQUAL "Vulkan")
             message("\t - Vulkan adapter")
             set(CPP_HEADERS_ADDITIONALS "")
             file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.inl
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.inl
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/one-to-one/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/ImageResult.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.hpp)
+                    ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.hpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.inl
+                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.hpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.inl
+                    ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.hpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/ImageResult.hpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.hpp)
 
             set(CPP_SOURCES_ADDITIONALS "")
             file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/vulkan/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/one-to-one/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.cpp)
+                    ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.cpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.cpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.cpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.cpp)
 
             list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
             list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
@@ -148,20 +103,20 @@ if (ON)
             message("\t - OpenCL adapter")
             set(CPP_HEADERS_ADDITIONALS "")
             file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.inl
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.inl
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/one-to-one/*.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/ImageResult.hpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.hpp)
+                    ${MAIN_SOURCE_DIR}/layer/presenters/opencl/*.hpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/opencl/*.inl
+                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.hpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.inl
+                    ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.hpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/ImageResult.hpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.hpp)
 
             set(CPP_SOURCES_ADDITIONALS "")
             file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/opencl/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/debug/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/one-to-one/*.cpp
-                    ${MAIN_SOURCE_DIR}/core/contexts/rendering/IRenderContext.cpp)
+                    ${MAIN_SOURCE_DIR}/layer/presenters/opencl/*.cpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.cpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.cpp
+                    ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.cpp)
 
             list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
             list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
