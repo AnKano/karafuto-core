@@ -6,7 +6,7 @@
 #include <fstream>
 #include <vector>
 
-#include "BaseSource.hpp"
+#include "../sources/BaseSource.hpp"
 #include "../geography/TileDescription.hpp"
 #include "../misc/Bindings.hpp"
 

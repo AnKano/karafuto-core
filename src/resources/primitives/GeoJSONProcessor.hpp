@@ -5,18 +5,18 @@
 #include <exception>
 #include <iostream>
 
-#include <rapidjson/document.h>
+#include "rapidjson/document.h"
 
-#include "../misc/NetworkTools.hpp"
-#include "../misc/FileTools.hpp"
+#include "../../misc/NetworkTools.hpp"
+#include "../../misc/FileTools.hpp"
 
-#include "../sources/local/geojson/primitives/GeoJSONTransObject.hpp"
-#include "../sources/local/geojson/GeoJSONObject.hpp"
+#include "GeoJSONTransObject.hpp"
+#include "GeoJSONObject.hpp"
 
 #include "meshes/PolylineMesh.hpp"
 #include "meshes/PolygonMesh.hpp"
 
-#include "../layer/LayerInterface.hpp"
+#include "../../layer/LayerInterface.hpp"
 
 namespace KCore {
     enum GeoJSONSourceType {

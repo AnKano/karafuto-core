@@ -7,11 +7,11 @@
 #include <stdexcept>
 #include <iostream>
 
-#include <mapbox/earcut.hpp>
+#include "mapbox/earcut.hpp"
 
-#include "../../sources/local/geojson/GeoJSONObject.hpp"
+#include "../GeoJSONObject.hpp"
 
-#include <glm/gtx/normal.hpp>
+#include "glm/gtx/normal.hpp"
 
 namespace KCore {
     class PolygonMesh : public BaseMesh {

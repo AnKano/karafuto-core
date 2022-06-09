@@ -5,7 +5,7 @@
 #include <vector>
 
 namespace KCore {
-    static std::vector<uint8_t> fileRead(const std::string &path) {
+    static std::vector<uint8_t> readFile(const std::string &path) {
         std::streampos fileSize;
         std::ifstream file(path, std::ios::binary);
 

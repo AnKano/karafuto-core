@@ -8,7 +8,7 @@
 #include "presenters/IRenderContext.hpp"
 #include "events/LayerEvent.hpp"
 #include "../geography/TileDescription.hpp"
-#include "../resources/meshes/GridMesh.hpp"
+#include "../resources/primitives/meshes/GridMesh.hpp"
 #include "../misc/Bindings.hpp"
 
 #include "Layer.hpp"

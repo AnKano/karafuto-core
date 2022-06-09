@@ -5,8 +5,9 @@
 #include <any>
 #include <map>
 #include <string>
+#include <exception>
 
-#include <rapidjson/document.h>
+#include "rapidjson/document.h"
 
 namespace KCore {
     enum GeoJSONObjectType {

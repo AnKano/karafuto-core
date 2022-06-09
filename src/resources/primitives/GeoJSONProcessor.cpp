@@ -86,7 +86,7 @@ namespace KCore {
     }
 
     std::vector<GeoJSONTransObject> *ProcessGeoJSONFile(LayerInterface *layerPtr, const char *path) {
-        auto download = fileRead(path);
+        auto download = readFile(path);
         auto str = std::string{download.begin(), download.end()};
         return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(str));
     }
