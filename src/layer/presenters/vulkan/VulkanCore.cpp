@@ -989,7 +989,7 @@ void VulkanCore::drawFrame() {
         auto &desc = descriptions[i];
 
         // create texture
-        textures.emplace_back(new Texture(this, desc.tex, 256, 256, 4));
+        textures.emplace_back(new Texture(this, desc.tex, 512, 512, 4));
     }
 
     for (int i = 0; i < SLOTS && i < descriptions.size(); i++) {

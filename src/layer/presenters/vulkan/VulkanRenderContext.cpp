@@ -83,14 +83,7 @@ namespace KCore {
                 auto results = core.readFrame();
 
                 std::thread([this, results, meta]() {
-                    auto image = new ImageResult{};
-                    image->width = 1024;
-                    image->height = 1024;
-                    image->size = image->width * image->height * 2;
-                    image->format = RGB565;
-
-                    image->data = new uint8_t[image->size];
-                    std::copy(results.begin(), results.end(), image->data);
+                    auto image = new ImageResult{1024, 1024, 2, results};
 
                     auto rootQuadcode = meta.getQuadcode();
                     mWorld->pushToImageEvents(LayerEvent::MakeImageEvent(rootQuadcode, image));

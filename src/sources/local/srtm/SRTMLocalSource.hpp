@@ -33,6 +33,8 @@ namespace KCore {
 
     DllExport void SRTMAddPartFile(KCore::SRTMLocalSource *sourcePtr, const char *path);
 
+#ifndef __ANDROID__
     DllExport void SRTMAddFileGlob(KCore::SRTMLocalSource *sourcePtr, const char *directory, const char *postfix);
+#endif
     }
 }
