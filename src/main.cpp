@@ -10,23 +10,38 @@
 #include "resources/ISource.hpp"
 
 int main() {
-    KCore::SRTMElevation elevationSrc;
+    auto elevationSrc = KCore::CreateSRTMElevationRepo();
 
-    //declare sources
-    {
-        elevationSrc.addSourcePart(new KCore::SRTMSource("http://192.168.0.6:8000/N45E141.hgt", KCore::SourceType::SourceUrl));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N45E142.hgt", KCore::SourceType::SourceFile));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N46E142.hgt", KCore::SourceType::SourceFile));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N46E142.hgt", KCore::SourceType::SourceFile));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N46E143.hgt", KCore::SourceType::SourceFile));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N47E142.hgt", KCore::SourceType::SourceFile));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N47E142.hgt", KCore::SourceType::SourceFile));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N47E143.hgt", KCore::SourceType::SourceFile));
-    }
+    KCore::SRTMElevationRepoAddSource(elevationSrc, "http://192.168.0.6:8000/N45E141.hgt", KCore::SourceUrl);
+    KCore::SRTMElevationRepoAddSource(elevationSrc, "http://192.168.0.6:8000/N45E142.hgt", KCore::SourceUrl);
+    KCore::SRTMElevationRepoAddSource(elevationSrc, "http://192.168.0.6:8000/N46E142.hgt", KCore::SourceUrl);
+    KCore::SRTMElevationRepoAddSource(elevationSrc, "http://192.168.0.6:8000/N46E142.hgt", KCore::SourceUrl);
+    KCore::SRTMElevationRepoAddSource(elevationSrc, "http://192.168.0.6:8000/N46E143.hgt", KCore::SourceUrl);
+    KCore::SRTMElevationRepoAddSource(elevationSrc, "http://192.168.0.6:8000/N47E142.hgt", KCore::SourceUrl);
+    KCore::SRTMElevationRepoAddSource(elevationSrc, "http://192.168.0.6:8000/N47E142.hgt", KCore::SourceUrl);
+    KCore::SRTMElevationRepoAddSource(elevationSrc, "http://192.168.0.6:8000/N47E143.hgt", KCore::SourceUrl);
 
-    auto mesh = elevationSrc.createTile(10, 918, 360, 8, 8);
+    auto mesh = KCore::CreateTileMeshXYZ(elevationSrc, 10, 918, 360, 8, 8);
 
     int a = 0;
+
+//    KCore::SRTMElevation elevationSrc;
+//
+//    //declare sources
+//    {
+//        elevationSrc.addSourcePart(new KCore::SRTMSource("http://192.168.0.6:8000/N45E141.hgt", KCore::SourceType::SourceUrl));
+//        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N45E142.hgt", KCore::SourceType::SourceFile));
+//        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N46E142.hgt", KCore::SourceType::SourceFile));
+//        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N46E142.hgt", KCore::SourceType::SourceFile));
+//        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N46E143.hgt", KCore::SourceType::SourceFile));
+//        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N47E142.hgt", KCore::SourceType::SourceFile));
+//        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N47E142.hgt", KCore::SourceType::SourceFile));
+//        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N47E143.hgt", KCore::SourceType::SourceFile));
+//    }
+//
+//    auto mesh = elevationSrc.createTile(10, 918, 360, 8, 8);
+//
+//    int a = 0;
 
 //    const uint16_t viewportWidth{1920}, viewportHeight{1080};
 //    const float aspectRatio{(float) viewportWidth / viewportHeight};

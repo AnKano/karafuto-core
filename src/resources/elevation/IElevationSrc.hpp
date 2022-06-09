@@ -58,14 +58,15 @@ namespace KCore {
     };
 
     extern "C" {
-    DllExport void CreateTileMeshXYZ(IElevationSrc *srcPtr, uint8_t zoom, uint16_t x, uint16_t y,
-                                  uint16_t slicesX, uint16_t slicesY) {
-        srcPtr->createTile(zoom, x, y, slicesX, slicesY);
+    DllExport GridMesh *CreateTileMeshXYZ(IElevationSrc *srcPtr, uint8_t zoom, uint16_t x, uint16_t y,
+                                          uint16_t slicesX, uint16_t slicesY) {
+        return srcPtr->createTile(zoom, x, y, slicesX, slicesY);
     }
 
-    DllExport void CreateTileMeshQuadcode(IElevationSrc *srcPtr, const char* quadcode, uint16_t slicesX, uint16_t slicesY) {
+    DllExport GridMesh *
+    CreateTileMeshQuadcode(IElevationSrc *srcPtr, const char *quadcode, uint16_t slicesX, uint16_t slicesY) {
         auto tilecode = GeographyConverter::quadcodeToTilecode(quadcode);
-        srcPtr->createTile(tilecode.z, tilecode.x, tilecode.y, slicesX, slicesY);
+        return srcPtr->createTile(tilecode.z, tilecode.x, tilecode.y, slicesX, slicesY);
     }
 
     }
