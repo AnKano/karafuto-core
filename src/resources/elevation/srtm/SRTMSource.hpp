@@ -2,6 +2,8 @@
 
 #include "../../ISource.hpp"
 
+#include <sstream>
+
 namespace KCore {
 
     class SRTMSource : public ISource {
