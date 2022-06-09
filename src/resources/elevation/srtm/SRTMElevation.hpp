@@ -94,4 +94,20 @@ namespace KCore {
         }
     };
 
+    extern "C" {
+    DllExport SRTMElevation* CreateSRTMElevationRepo() {
+        return new SRTMElevation();
+    }
+
+    DllExport void SRTMElevationRepoAddSource(SRTMElevation* srcPtr, const char* path, SourceType type) {
+        switch (type) {
+            case SourceFile:
+                srcPtr->addSourcePart(new SRTMSource(path, type));
+                break;
+            case SourceUrl:
+                srcPtr->addSourcePart(new SRTMSource(path, type));
+                break;
+        }
+    }
+    }
 }

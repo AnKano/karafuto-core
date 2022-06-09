@@ -104,13 +104,13 @@ namespace KCore {
 
     DllExport void ProcessGeoJSON(LayerInterface *layerPtr, GeoJSONSourceType type, const char *param) {
         switch (type) {
-            case Raw:
+            case GeoJSONRaw:
                 ProcessGeoJSONRaw(layerPtr, param);
                 break;
-            case File:
+            case GeoJSONFile:
                 ProcessGeoJSONFile(layerPtr, param);
                 break;
-            case Url:
+            case GeoJSONUrl:
                 ProcessGeoJSONUrl(layerPtr, param);
                 break;
         }

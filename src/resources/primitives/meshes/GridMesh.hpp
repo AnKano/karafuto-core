@@ -12,11 +12,11 @@ namespace KCore {
 
         GridMesh(float width, float length, int segments);
 
-        GridMesh(float width, float length, int segmentsX, int segmentsY, const uint8_t *heights);
+        GridMesh(float width, float length, int segmentsX, int segmentsY, const float *heights);
 
         ~GridMesh() = default;
 
-        void applyHeights(uint8_t *heights, const int &segmentsX, const int &segmentsY);
+        void applyHeights(float *heights, const int &segmentsX, const int &segmentsY);
 
     private:
         void createMesh() override;

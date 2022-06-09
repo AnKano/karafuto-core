@@ -20,9 +20,9 @@
 
 namespace KCore {
     enum GeoJSONSourceType {
-        Raw = 0,
-        File = 1,
-        Url = 2
+        GeoJSONRaw = 0,
+        GeoJSONFile = 1,
+        GeoJSONUrl = 2
     };
 
     std::vector<GeoJSONObject> ParseGeoJSON(const std::string &data);

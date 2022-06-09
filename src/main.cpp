@@ -5,6 +5,7 @@
 #include "layer/LayerInterface.hpp"
 #include "resources/primitives/GeoJSONProcessor.hpp"
 
+#include "resources/elevation/IElevationSrc.hpp"
 #include "resources/elevation/srtm/SRTMElevation.hpp"
 #include "resources/ISource.hpp"
 
@@ -13,18 +14,17 @@ int main() {
 
     //declare sources
     {
-        elevationSrc.addSourcePart(
-                new KCore::SRTMSource("http://192.168.0.6:8000/N45E141.hgt", KCore::SourceType::URL));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N45E142.hgt", KCore::SourceType::FILE));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N46E142.hgt", KCore::SourceType::FILE));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N46E142.hgt", KCore::SourceType::FILE));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N46E143.hgt", KCore::SourceType::FILE));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N47E142.hgt", KCore::SourceType::FILE));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N47E142.hgt", KCore::SourceType::FILE));
-        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N47E143.hgt", KCore::SourceType::FILE));
+        elevationSrc.addSourcePart(new KCore::SRTMSource("http://192.168.0.6:8000/N45E141.hgt", KCore::SourceType::SourceUrl));
+        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N45E142.hgt", KCore::SourceType::SourceFile));
+        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N46E142.hgt", KCore::SourceType::SourceFile));
+        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N46E142.hgt", KCore::SourceType::SourceFile));
+        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N46E143.hgt", KCore::SourceType::SourceFile));
+        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N47E142.hgt", KCore::SourceType::SourceFile));
+        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N47E142.hgt", KCore::SourceType::SourceFile));
+        elevationSrc.addSourcePart(new KCore::SRTMSource("assets/sources/N47E143.hgt", KCore::SourceType::SourceFile));
     }
 
-    auto result = elevationSrc.getDataForTile(10, 918, 360, 8, 8);
+    auto mesh = elevationSrc.createTile(10, 918, 360, 8, 8);
 
     int a = 0;
 

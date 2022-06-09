@@ -23,15 +23,13 @@ namespace KCore {
         createMesh(width, length, segmentsX, segmentsY);
     }
 
-    GridMesh::GridMesh(float width, float length, int segmentsX, int segmentsY, const uint8_t *heights) : BaseMesh() {
-        auto converted = reinterpret_cast<const uint16_t *>(heights);
-
+    GridMesh::GridMesh(float width, float length, int segmentsX, int segmentsY, const float *heights) : BaseMesh() {
         ElevationObject elevation;
         elevation.kernel.resize((segmentsX + 1) * (segmentsY + 1));
 
         for (int j = 0; j < segmentsY + 1; j++) {
             for (int i = 0; i < segmentsX + 1; i++) {
-                const uint16_t height = converted[j * (segmentsX + 1) + i];
+                const uint16_t height = heights[j * (segmentsX + 1) + i];
 
                 elevation.kernel[j * (segmentsX + 1) + i] = height;
 
@@ -52,11 +50,9 @@ namespace KCore {
         makeVerticalBorder(length, segmentsY - 1, -length / 2, elevation.west, true);
     }
 
-    void GridMesh::applyHeights(uint8_t *heights, const int &segmentsX, const int &segmentsY) {
-        auto converted = reinterpret_cast<uint16_t *>(heights);
-
-        for (int i = 0; i < (segmentsX + 1) * (segmentsY + 1); i++)
-            mVertices[i].y = (converted[i] > 7000.0f) ? 0.0f : converted[i];
+    void GridMesh::applyHeights(float *heights, const int &segmentsX, const int &segmentsY) {
+        for (int i = 0; i < segmentsX * segmentsY; i++)
+            mVertices[i].y = (heights[i] > 7000.0f) ? 0.0f : heights[i];
     }
 
     void GridMesh::createMesh() {

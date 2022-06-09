@@ -10,8 +10,8 @@
 
 namespace KCore {
     enum SourceType {
-        FILE = 0,
-        URL = 1
+        SourceFile = 0,
+        SourceUrl = 1
     };
 
     class ISource {
@@ -28,10 +28,10 @@ namespace KCore {
             parseFilename();
 
             switch (type) {
-                case FILE:
+                case SourceFile:
                     loadDataFromFile();
                     break;
-                case URL:
+                case SourceUrl:
                     loadDataFromUrl();
                     break;
                 default:

@@ -43,6 +43,30 @@ namespace KCore {
 
             return kernel;
         }
+
+        GridMesh *createTile(uint8_t zoom, uint16_t x, uint16_t y, uint16_t slicesX, uint16_t slicesY) {
+            auto result = getDataForTile(zoom, x, y, slicesX, slicesY);
+
+            auto mesh = new GridMesh(1.0f, 1.0f, slicesX - 1, slicesY - 1, result);
+//            mesh->applyHeights(result, slicesX, slicesY);
+
+            delete[] result;
+
+            return mesh;
+        }
+
     };
 
+    extern "C" {
+    DllExport void CreateTileMeshXYZ(IElevationSrc *srcPtr, uint8_t zoom, uint16_t x, uint16_t y,
+                                  uint16_t slicesX, uint16_t slicesY) {
+        srcPtr->createTile(zoom, x, y, slicesX, slicesY);
+    }
+
+    DllExport void CreateTileMeshQuadcode(IElevationSrc *srcPtr, const char* quadcode, uint16_t slicesX, uint16_t slicesY) {
+        auto tilecode = GeographyConverter::quadcodeToTilecode(quadcode);
+        srcPtr->createTile(tilecode.z, tilecode.x, tilecode.y, slicesX, slicesY);
+    }
+
+    }
 }

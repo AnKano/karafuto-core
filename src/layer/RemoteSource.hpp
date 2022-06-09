@@ -6,7 +6,6 @@
 #include <fstream>
 #include <vector>
 
-#include "../sources/BaseSource.hpp"
 #include "../geography/TileDescription.hpp"
 #include "../misc/Bindings.hpp"
 
@@ -21,7 +20,7 @@ namespace KCore {
          * mURLPrefix - "http://10.0.0.1:8080/"
          * mURLSuffix - ".png"
          **/
-        RemoteSource(std::string rawUrl);
+        explicit RemoteSource(std::string rawUrl);
 
         /** example prefix: "http://10.0.0.1:8080/"
          * example affix: ".png"
