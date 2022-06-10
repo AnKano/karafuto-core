@@ -23,9 +23,9 @@
 #include "Texture.hpp"
 
 //#ifdef NDEBUG
-const bool enableValidationLayers = false;
+//const bool enableValidationLayers = false;
 //#else
-//const bool enableValidationLayers = true;
+const bool enableValidationLayers = true;
 //#endif
 
 struct QueueFamilyIndices {
@@ -86,6 +86,11 @@ struct FramebufferAttachment {
 
 struct VulkanTileDescription {
     std::vector<uint8_t> tex;
+
+    int width;
+    int height;
+    int channels;
+
     glm::mat4 scale;
     glm::mat4 trans;
 };
@@ -201,7 +206,7 @@ public:
             VkMemoryPropertyFlags properties, VkImage &image, VkDeviceMemory &imageMemory
     );
 
-    void transitionImageLayout(VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout);
+    void transitionImageLayout(VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout);
 
     void copyBufferToImage(VkBuffer buffer, VkImage image, uint32_t width, uint32_t height);
 
@@ -279,5 +284,7 @@ public:
         }
     }
 
-    void declareTile(const std::vector<uint8_t> &img, const glm::mat4 &scaleMat, const glm::mat4 &translationMat);
+    void declareTile(const std::vector<uint8_t> &img,
+                     const int& width, const int& height, const int& channels,
+                     const glm::mat4 &scaleMat, const glm::mat4 &translationMat);
 };

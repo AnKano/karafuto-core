@@ -4,16 +4,10 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "stb_image.h"
 
-Texture::Texture(VulkanCore *parent, const std::string &path) : parent(parent) {
-    createTextureImage(path);
-    createTextureImageView();
-    createTextureSampler();
-}
-
 Texture::Texture(VulkanCore *parent, const std::vector<uint8_t> &data,
                  const uint32_t &width, const uint32_t &height, const uint32_t &bpp) : parent(parent) {
     createTextureImage(data, width, height, bpp);
-    createTextureImageView();
+    createTextureImageView(bpp);
     createTextureSampler();
 }
 
@@ -38,33 +32,20 @@ void Texture::prepareTexture(const uint8_t *data, const uint32_t &width, const u
     memcpy(mem, data, static_cast<size_t>(imageSize));
     vkUnmapMemory(parent->device, stagingBufferMemory);
 
+    VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
+
     parent->createImage(
-            width, height, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_TILING_OPTIMAL,
+            width, height, format, VK_IMAGE_TILING_OPTIMAL,
             VK_IMAGE_USAGE_TRANSFER_DST_BIT | VK_IMAGE_USAGE_SAMPLED_BIT, VK_MEMORY_PROPERTY_DEVICE_LOCAL_BIT,
             textureImage, textureImageMemory
     );
 
-    parent->transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB,
-                                  VK_IMAGE_LAYOUT_UNDEFINED,
-                                  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
+    parent->transitionImageLayout(textureImage, VK_IMAGE_LAYOUT_UNDEFINED, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL);
     parent->copyBufferToImage(stagingBuffer, textureImage, width, height);
-    parent->transitionImageLayout(textureImage, VK_FORMAT_R8G8B8A8_SRGB,
-                                  VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL,
-                                  VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
+    parent->transitionImageLayout(textureImage, VK_IMAGE_LAYOUT_TRANSFER_DST_OPTIMAL, VK_IMAGE_LAYOUT_SHADER_READ_ONLY_OPTIMAL);
 
     vkDestroyBuffer(parent->device, stagingBuffer, nullptr);
     vkFreeMemory(parent->device, stagingBufferMemory, nullptr);
-}
-
-void Texture::createTextureImage(const std::string &path) {
-    int texWidth, texHeight, texChannels;
-    stbi_uc *pixels = stbi_load(path.c_str(), &texWidth, &texHeight, &texChannels, STBI_rgb_alpha);
-
-    if (!pixels) throw std::runtime_error("failed to load texture image!");
-
-    prepareTexture(pixels, texWidth, texHeight, texChannels);
-
-    stbi_image_free(pixels);
 }
 
 void Texture::createTextureSampler() {
@@ -91,8 +72,9 @@ void Texture::createTextureSampler() {
     }
 }
 
-void Texture::createTextureImageView() {
-    textureImageView = parent->createImageView(textureImage, VK_FORMAT_R8G8B8A8_SRGB, VK_IMAGE_ASPECT_COLOR_BIT);
+void Texture::createTextureImageView(const uint32_t &bpp) {
+    VkFormat format = VK_FORMAT_R8G8B8A8_SRGB;
+    textureImageView = parent->createImageView(textureImage, format, VK_IMAGE_ASPECT_COLOR_BIT);
 }
 
 void Texture::manuallyDestroy() {

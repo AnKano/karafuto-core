@@ -16,8 +16,6 @@ public:
     VkDeviceMemory textureImageMemory;
     VkSampler textureSampler;
 
-    Texture(VulkanCore *parent, const std::string &path);
-
     Texture(VulkanCore *parent, const std::vector<uint8_t> &data,
             const uint32_t &width, const uint32_t &height, const uint32_t &bpp);
 
@@ -26,14 +24,12 @@ public:
     void manuallyDestroy();
 
 private:
-    void createTextureImage(const std::string &path);
-
     void createTextureImage(const std::vector<uint8_t> &data,
                             const uint32_t &width, const uint32_t &height, const uint32_t &bpp);
 
     void createTextureSampler();
 
-    void createTextureImageView();
+    void createTextureImageView(const uint32_t &bpp);
 
     void prepareTexture(const uint8_t *data, const uint32_t &width, const uint32_t &height, const uint32_t &bpp);
 };

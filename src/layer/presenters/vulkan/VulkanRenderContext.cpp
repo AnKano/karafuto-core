@@ -57,8 +57,7 @@ namespace KCore {
                     auto &data = mCachedTextures[item];
 
                     int width = -1, height = -1, channels = -1;
-                    auto image = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width,
-                                                                  height, channels);
+                    auto image = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width, height, channels);
 
                     if (channels == 3) {
                         std::vector <uint8_t> decodedImage(width * height * 4);
@@ -73,9 +72,9 @@ namespace KCore {
                                 pixel++;
                             }
                         }
-                        core.declareTile(decodedImage, scaleMatrix, translationMatrix);
+                        core.declareTile(decodedImage, width, height, 4, scaleMatrix, translationMatrix);
                     } else if (channels == 4)
-                        core.declareTile(image, scaleMatrix, translationMatrix);
+                        core.declareTile(image, width, height, channels, scaleMatrix, translationMatrix);
                 }
 
                 core.drawFrame();

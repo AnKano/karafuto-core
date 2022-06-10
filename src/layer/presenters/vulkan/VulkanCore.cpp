@@ -543,7 +543,7 @@ void VulkanCore::createImage(
 }
 
 void VulkanCore::transitionImageLayout(
-        VkImage image, VkFormat format, VkImageLayout oldLayout, VkImageLayout newLayout
+        VkImage image, VkImageLayout oldLayout, VkImageLayout newLayout
 ) {
     VkCommandBuffer commandBuffer = beginSingleTimeCommands();
 
@@ -989,14 +989,11 @@ void VulkanCore::drawFrame() {
         auto &desc = descriptions[i];
 
         // create texture
-        textures.emplace_back(new Texture(this, desc.tex, 512, 512, 4));
+        textures.emplace_back(new Texture(this, desc.tex, desc.width, desc.height, desc.channels));
     }
 
     for (int i = 0; i < SLOTS && i < descriptions.size(); i++) {
         auto &desc = descriptions[i];
-
-        // create texture
-//        Texture texture(this, desc.tex, 256, 256, 4);
 
         VkDescriptorBufferInfo bufferInfo{};
         bufferInfo.buffer = uniformBuffers[i];
@@ -1147,7 +1144,7 @@ bool VulkanCore::checkValidationLayerSupport() {
 }
 
 void VulkanCore::declareTile(const std::vector<uint8_t> &img,
-                             const glm::mat4 &scaleMat,
-                             const glm::mat4 &translationMat) {
-    descriptions.push_back({img, scaleMat, translationMat});
+                             const int& width, const int& height, const int& channels,
+                             const glm::mat4 &scaleMat, const glm::mat4 &translationMat) {
+    descriptions.push_back({img, width, height, channels, scaleMat, translationMat});
 }
