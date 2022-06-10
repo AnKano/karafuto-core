@@ -14,22 +14,7 @@ namespace KCore {
         std::vector<float> getTileElevation(uint8_t zoom, uint16_t x, uint16_t y,
                                             uint16_t slicesX, uint16_t slicesY) override {
             const auto kernel = this->getDataForXYZ(zoom, x, y, slicesX, slicesY);
-
-            // collect data for lower row and last column of tile
-            const auto south = this->getDataForXYZ(zoom, x, y + 1, slicesX, slicesY);
-            const auto east = this->getDataForXYZ(zoom, x + 1, y, slicesX, slicesY);
-            // additionally, collect corner data
-            const auto southEastCorner = this->getDataForXYZ(zoom, x + 1, y + 1, slicesX, slicesY);
-
-            for (auto y = 0; y < slicesY; y++)
-                kernel[y * slicesX + (slicesX - 1)] = east[y * slicesX];
-
-            for (auto x = 0; x < slicesX; x++)
-                kernel[x] = south[(slicesY - 1) * slicesX + x];
-
-            kernel[(slicesX - 1)] = southEastCorner[(slicesY - 1) * slicesX + 0];
-
-            std::vector<float> results{kernel, kernel + (slicesX * slicesY * sizeof(float))};
+            std::vector<float> results{kernel, kernel + ((slicesX+1) * (slicesY+1))};
             return results;
         }
 
@@ -67,14 +52,14 @@ namespace KCore {
             auto maximalX = GeographyConverter::tileToLon(x + 1, zoom);
             auto minimalY = GeographyConverter::tileToLat(y + 1, zoom);
 
-            float offsetX = std::abs(minimalX - maximalX) / slicesX;
-            float offsetY = std::abs(maximalY - minimalY) / slicesY;
+            float interVtxGapX = std::abs(minimalX - maximalX) / slicesX;
+            float interVtxGapY = std::abs(maximalY - minimalY) / slicesY;
 
-            auto elements = slicesX * slicesY;
+            auto elements = (slicesX + 1) * (slicesY + 1);
             auto *collector = new float[elements];
-            std::memset(collector, 0, elements * sizeof(uint16_t));
+            std::memset(collector, 0, elements * sizeof(float));
 
-            collectTileKernel(collector, minimalX, minimalY, offsetX, offsetY, slicesX, slicesY);
+            collectTileKernel(collector, minimalX, minimalY, interVtxGapX, interVtxGapY, slicesX, slicesY);
 
             return collector;
         }
@@ -82,13 +67,12 @@ namespace KCore {
         void collectTileKernel(float *collectorPtr,
                                const float &minimalX, const float &minimalY, const float &offsetX, const float &offsetY,
                                const uint16_t &slicesX, const uint16_t &slicesY) {
-            for (int j = 0; j < slicesY; j++) {
-                for (int i = 0; i < slicesX; i++) {
+            for (int j = 0; j <= slicesY; j++) {
+                for (int i = 0; i <= slicesX; i++) {
                     float pX = minimalX + offsetX * i;
                     float pY = minimalY + offsetY * j;
 
-                    auto val = getElevationAtLatLon(pX, pY);
-                    collectorPtr[j * slicesX + i] = val;
+                    collectorPtr[j * (slicesX+1) + i] = getElevationAtLatLon(pX, pY);
                 }
             }
         }

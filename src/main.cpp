@@ -21,7 +21,8 @@ int main() {
     KCore::SRTMElevationRepoAddSource(elevationSrc, "http://192.168.0.6:8000/N47E142.hgt", KCore::SourceUrl);
     KCore::SRTMElevationRepoAddSource(elevationSrc, "http://192.168.0.6:8000/N47E143.hgt", KCore::SourceUrl);
 
-    auto mesh = KCore::CreateTileMeshXYZ(elevationSrc, 10, 918, 360, 8, 8);
+    auto mesh = KCore::CreateTileMeshXYZ(elevationSrc, 10, 918, 360, 2, 2);
+//    auto mesh2 = KCore::CreateTileMeshQuadcode(elevationSrc, "1312201", 64, 64);
 
     int a = 0;
 

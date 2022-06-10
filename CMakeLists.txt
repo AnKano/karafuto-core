@@ -30,7 +30,6 @@ if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
     endif ()
 endif ()
 
-
 message("🖥️ Current platform: ${PLATFORM}")
 message("🖼️ Current backend: ${BACKEND} \n")
 
