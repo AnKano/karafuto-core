@@ -33,7 +33,7 @@ namespace KCore {
     }
 
     std::vector<GeoJSONTransObject> *
-    ProcessGeoJSONObjects(Layer *layer, const std::vector<GeoJSONObject> &jsonObjects) {
+    ProcessGeoJSONObjects(Layer *layer, const std::vector<GeoJSONObject> &jsonObjects, IElevationSrc* elevationSrc) {
         auto *objects = new std::vector<KCore::GeoJSONTransObject>();
 
         for (auto &geojsonObject: jsonObjects) {
@@ -45,6 +45,15 @@ namespace KCore {
             };
             auto convertedMain = std::vector<std::array<double, 2>>{};
             auto convertedHole = std::vector<std::array<double, 2>>{};
+
+            if (elevationSrc != nullptr) {
+                auto height = FLT_MAX;
+                for (const auto &item: geojsonObject.mMainShapeCoords) {
+                    auto res = elevationSrc->getElevationAtLatLon(item[0], item[1]);
+                    if (res < height) height = res;
+                }
+                obj.height = height;
+            }
 
             if (obj.mainShapeCoordsCount > 0) {
                 obj.mainShapePositions = new glm::vec3[obj.mainShapeCoordsCount];
@@ -81,20 +90,23 @@ namespace KCore {
         return objects;
     }
 
-    std::vector<GeoJSONTransObject> *ProcessGeoJSONRaw(LayerInterface *layerPtr, const char *raw) {
-        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(raw));
+    std::vector<GeoJSONTransObject> *
+    ProcessGeoJSONRaw(LayerInterface *layerPtr, const char *raw, IElevationSrc *elevationSrc) {
+        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(raw), elevationSrc);
     }
 
-    std::vector<GeoJSONTransObject> *ProcessGeoJSONFile(LayerInterface *layerPtr, const char *path) {
+    std::vector<GeoJSONTransObject> *
+    ProcessGeoJSONFile(LayerInterface *layerPtr, const char *path, IElevationSrc *elevationSrc) {
         auto download = readFile(path);
         auto str = std::string{download.begin(), download.end()};
-        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(str));
+        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(str), elevationSrc);
     }
 
-    std::vector<GeoJSONTransObject> *ProcessGeoJSONUrl(LayerInterface *layerPtr, const char *url) {
+    std::vector<GeoJSONTransObject> *
+    ProcessGeoJSONUrl(LayerInterface *layerPtr, const char *url, IElevationSrc *elevationSrc) {
         auto download = performGETRequestSync(url);
         auto str = std::string{download.begin(), download.end()};
-        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(str));
+        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(str), elevationSrc);
     }
 
     DllExport GeoJSONTransObject *EjectJSONObjectsFromVector(std::vector<GeoJSONTransObject> *vecPtr, int &length) {
@@ -102,17 +114,32 @@ namespace KCore {
         return vecPtr->data();
     }
 
-    DllExport void ProcessGeoJSON(LayerInterface *layerPtr, GeoJSONSourceType type, const char *param) {
+    DllExport std::vector<GeoJSONTransObject> *
+    ProcessGeoJSONWithElevation(LayerInterface *layerPtr, IElevationSrc *elevation, GeoJSONSourceType type,
+                                const char *param) {
         switch (type) {
             case GeoJSONRaw:
-                ProcessGeoJSONRaw(layerPtr, param);
-                break;
+                return ProcessGeoJSONRaw(layerPtr, param, elevation);
             case GeoJSONFile:
-                ProcessGeoJSONFile(layerPtr, param);
-                break;
+                return ProcessGeoJSONFile(layerPtr, param, elevation);
             case GeoJSONUrl:
-                ProcessGeoJSONUrl(layerPtr, param);
-                break;
+                return ProcessGeoJSONUrl(layerPtr, param, elevation);
         }
+
+        return nullptr;
+    }
+
+    DllExport std::vector<GeoJSONTransObject> *
+    ProcessGeoJSON(LayerInterface *layerPtr, GeoJSONSourceType type, const char *param) {
+        switch (type) {
+            case GeoJSONRaw:
+                return ProcessGeoJSONRaw(layerPtr, param);
+            case GeoJSONFile:
+                return ProcessGeoJSONFile(layerPtr, param);
+            case GeoJSONUrl:
+                return ProcessGeoJSONUrl(layerPtr, param);
+        }
+
+        return nullptr;
     }
 }
