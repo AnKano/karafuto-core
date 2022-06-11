@@ -21,5 +21,7 @@ namespace KCore {
         BaseMesh *mesh;
 
         float height;
+
+        char* properties;
     };
 }

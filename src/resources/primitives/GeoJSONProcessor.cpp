@@ -16,18 +16,17 @@ namespace KCore {
             for (const auto &feature: doc["features"].GetArray()) {
                 try {
                     accumulator.emplace_back(feature);
-                } catch (...) {
-
+                } catch (const std::exception& ex) {
+                    std::cerr << ex.what() << std::endl;
                 }
             }
         } else if (type == "Feature")
             try {
                 accumulator.emplace_back(doc);
-            } catch (...) {
-
+            } catch (const std::exception& ex) {
+                std::cerr << ex.what() << std::endl;
             }
-        else
-            throw std::runtime_error("file corrupted");
+        else throw std::runtime_error("unsupported file format!");
 
         return accumulator;
     }
@@ -41,10 +40,18 @@ namespace KCore {
                     geojsonObject.mType,
                     (int) (geojsonObject.mMainShapeCoords.size()),
                     (int) (geojsonObject.mHoleShapeCoords.size()),
-                    nullptr, nullptr
+                    nullptr, nullptr, nullptr, 0.0f, nullptr
             };
             auto convertedMain = std::vector<std::array<double, 2>>{};
             auto convertedHole = std::vector<std::array<double, 2>>{};
+
+            if (!geojsonObject.mPropertiesObject.empty()) {
+                auto len = geojsonObject.mPropertiesObject.size();
+                auto str = geojsonObject.mPropertiesObject;
+
+                obj.properties = new char[len + 1];
+                std::strcpy(obj.properties, str.c_str());
+            }
 
             if (elevationSrc != nullptr) {
                 auto height = FLT_MAX;
