@@ -15,15 +15,10 @@ struct ElevationObject {
 };
 
 namespace KCore {
-    GridMesh::GridMesh(float width, float length, int segments) {
-        createMesh(width, length, segments, segments);
-    }
-
-    GridMesh::GridMesh(float width, float length, int segmentsX, int segmentsY) : BaseMesh() {
-        createMesh(width, length, segmentsX, segmentsY);
-    }
-
-    GridMesh::GridMesh(float width, float length, int segmentsX, int segmentsY, const float *heights) : BaseMesh() {
+    GridMesh::GridMesh(float width, float length,
+                       int segmentsX, int segmentsY,
+                       bool flipUVsX, bool flipUVsY,
+                       const float *heights) : BaseMesh() {
         ElevationObject elevation;
         elevation.kernel.resize((segmentsX + 1) * (segmentsY + 1));
 
@@ -41,68 +36,20 @@ namespace KCore {
             }
         }
 
-        createGeneralSurface(width, length, segmentsX, segmentsY, elevation.kernel);
+        createGeneralSurface(width, length, segmentsX, segmentsY, flipUVsX, flipUVsY, elevation.kernel);
 
-        makeHorizontalBorder(width, segmentsX, width / 2, elevation.north, false);
-        makeHorizontalBorder(width, segmentsX, -width / 2, elevation.south, true);
+        makeHorizontalBorder(width, segmentsX, width / 2, elevation.north, false, flipUVsX, flipUVsY);
+        makeHorizontalBorder(width, segmentsX, -width / 2, elevation.south, true, flipUVsX, flipUVsY);
 
-        makeVerticalBorder(length, segmentsY, length / 2, elevation.east, false);
-        makeVerticalBorder(length, segmentsY, -length / 2, elevation.west, true);
+        makeVerticalBorder(length, segmentsY, length / 2, elevation.east, false, flipUVsX, flipUVsY);
+        makeVerticalBorder(length, segmentsY, -length / 2, elevation.west, true, flipUVsX, flipUVsY);
     }
 
-    void GridMesh::applyHeights(float *heights, const int &segmentsX, const int &segmentsY) {
-        for (int i = 0; i < segmentsX * segmentsY; i++)
-            mVertices[i].y = (heights[i] > 7000.0f) ? 0.0f : heights[i];
-    }
+    void GridMesh::createMesh() { }
 
-    void GridMesh::createMesh() {
-        createMesh(1.0f, 1.0f, 1, 1);
-    }
-
-    void GridMesh::createMesh(float width, float length, int segmentsX, int segmentsY) {
-        createGeneralSurface(width, length, segmentsX, segmentsY);
-    }
-
-    void GridMesh::createGeneralSurface(float width, float length, int segmentsX, int segmentsY) {
-        const float widthHalf = width / 2.0f;
-        const float heightHalf = length / 2.0f;
-
-        const int gridX = segmentsX + 1;
-        const int gridY = segmentsY + 1;
-
-        const float segmentWidth = width / ((float) segmentsX);
-        const float segmentHeight = length / ((float) segmentsY);
-
-        for (int iy = 0; iy < gridY; iy++) {
-            for (int ix = 0; ix < gridX; ix++) {
-                float x = ((float) ix * segmentWidth) - widthHalf;
-                float y = ((float) iy * segmentHeight) - heightHalf;
-
-                mVertices.emplace_back(-1 * x, 0.0f, -1 * y);
-                mNormals.emplace_back(0.0f, 1.0f, 0.0f);
-
-                float uvX = (float) ix / ((float) segmentsX);
-                float uvY = (float) iy / ((float) segmentsY);
-
-                mUVs.emplace_back(uvX, 1.0 - uvY);
-            }
-        }
-
-        for (int iy = 0; iy < segmentsY; iy++) {
-            for (int ix = 0; ix < segmentsX; ix++) {
-                const uint32_t a = ix + gridX * iy;
-                const uint32_t b = ix + gridX * (iy + 1);
-
-                const uint32_t c = (ix + 1) + gridX * (iy + 1);
-                const uint32_t d = (ix + 1) + gridX * iy;
-
-                mIndices.insert(mIndices.end(), {a, b, c});
-                mIndices.insert(mIndices.end(), {a, c, d});
-            }
-        }
-    }
-
-    void GridMesh::createGeneralSurface(float width, float length, int segmentsX, int segmentsY,
+    void GridMesh::createGeneralSurface(float width, float length,
+                                        int segmentsX, int segmentsY,
+                                        bool flipUVsX, bool flipUVsY,
                                         const std::vector<float> &heights) {
         const float widthHalf = width / 2.0f;
         const float heightHalf = length / 2.0f;
@@ -123,9 +70,14 @@ namespace KCore {
 
                 mVertices.emplace_back(-1 * x, height, -1 * y);
                 mNormals.emplace_back(0.0f, 1.0f, 0.0f);
+
                 float uvX = (float) ix / ((float) segmentsX);
                 float uvY = (float) iy / ((float) segmentsY);
-                mUVs.emplace_back(uvX, 1.0 - uvY);
+
+                float modUvX = (flipUVsX) ? 1.0f - uvX : uvX;
+                float modUvY = (flipUVsY) ? 1.0f - uvY : uvY;
+
+                mUVs.emplace_back(modUvX, modUvY);
             }
         }
 
@@ -143,7 +95,8 @@ namespace KCore {
     }
 
     void GridMesh::makeHorizontalBorder(float width, int segments, float constraint,
-                                        const std::vector<float> &heights, bool downBorder) {
+                                        const std::vector<float> &heights, bool downBorder,
+                                        bool flipUVsX, bool flipUVsY) {
         const auto vtxCount = mVertices.size();
 
         const float widthHalf = width / 2.0;
@@ -151,7 +104,7 @@ namespace KCore {
 
         const int grid1 = segments + 1;
 
-        const float uvs = 1.0 / segments;
+        const float uvs = 1.0f / segments;
         for (int ix = 0; ix < grid1; ix++) {
             const float x = ix * segmentWidth - widthHalf;
             const float height = (heights[ix] <= 5000.0f) ? heights[ix] : 0.0f;
@@ -160,8 +113,10 @@ namespace KCore {
 
             mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
-            if (downBorder) mUVs.emplace_back(uvs * ix, 0.0);
-            if (!downBorder) mUVs.emplace_back(uvs * ix, 1.0);
+            float modUV = (flipUVsX) ? 1.0f - (uvs * ix) : uvs * ix;
+
+            if (downBorder) mUVs.emplace_back(modUV, (flipUVsY) ? 0.0f : 1.0f);
+            if (!downBorder) mUVs.emplace_back(modUV, (flipUVsY) ? 1.0f : 0.0f);
         }
 
         for (int ix = 0; ix < grid1; ix++) {
@@ -171,8 +126,10 @@ namespace KCore {
 
             mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
-            if (downBorder) mUVs.emplace_back(uvs * ix, -0.1);
-            if (!downBorder) mUVs.emplace_back(uvs * ix, 1.1);
+            float modUV = (flipUVsX) ? 1.0f - (uvs * ix) : uvs * ix;
+
+            if (downBorder) mUVs.emplace_back(modUV, (flipUVsY) ? -0.1f : 1.1f);
+            if (!downBorder) mUVs.emplace_back(modUV, (flipUVsY) ? 1.1f : -0.1f);
         }
 
         for (int ix = 0; ix < segments; ix++) {
@@ -197,27 +154,30 @@ namespace KCore {
     }
 
     void GridMesh::makeVerticalBorder(float height, int segments, float constraint,
-                                      const std::vector<float> &heights, bool rightBorder) {
+                                      const std::vector<float> &heights, bool rightBorder,
+                                      bool flipUVsX, bool flipUVsY) {
         const auto vtxCount = mVertices.size();
 
-        const float heightHalf = height / 2.0;
+        const float heightHalf = height / 2.0f;
         const float segmentHeight = height / segments;
 
         const int grid1 = segments + 1;
 
-        const float uvs = 1.0 / (segments + 1);
+        const float uvs = 1.0f / (segments + 1);
         for (int ix = 0; ix < grid1; ix++) {
             const float x = ix * segmentHeight - heightHalf;
 
             const float val = heights[heights.size() - ix - 1];
-            const float height = (val <= 5000.0) ? val : 0.0;
+            const float height = (val <= 5000.0f) ? val : 0.0f;
 
             mVertices.emplace_back(-constraint, height, x);
 
             mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
-            if (!rightBorder) mUVs.emplace_back(0.0, uvs * ix);
-            if (rightBorder) mUVs.emplace_back(1.0, uvs * ix);
+            float modUV = (!flipUVsY) ? 1.0f - (uvs * ix) : uvs * ix;
+
+            if (rightBorder) mUVs.emplace_back((flipUVsX) ? 0.0f : 1.0f, modUV);
+            if (!rightBorder) mUVs.emplace_back((flipUVsX) ? 1.0f : 0.0f, modUV);
         }
 
         for (int ix = 0; ix < grid1; ix++) {
@@ -227,8 +187,10 @@ namespace KCore {
 
             mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
-            if (!rightBorder) mUVs.emplace_back(-0.1, uvs * ix);
-            if (rightBorder) mUVs.emplace_back(1.1, uvs * ix);
+            float modUV = (!flipUVsY) ? 1.0f - (uvs * ix) : uvs * ix;
+
+            if (rightBorder) mUVs.emplace_back((flipUVsX) ? -0.1f : 1.1f, modUV);
+            if (!rightBorder) mUVs.emplace_back((flipUVsX) ? 1.1f : -0.1f, modUV);
         }
 
         for (int ix = 0; ix < segments; ix++) {

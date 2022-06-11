@@ -13,7 +13,7 @@ namespace KCore {
 
     void IRenderContext::storeTextureInContext(const std::vector<uint8_t> &data, const std::string &quadcode) {
         std::lock_guard<std::mutex> lock{mContextLock};
-        mCachedTextures[quadcode] = data;
+        mCachedTextures.insert(quadcode, data);
     }
 
     void IRenderContext::runRenderLoop() {

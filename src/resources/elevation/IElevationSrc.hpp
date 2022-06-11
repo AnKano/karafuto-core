@@ -28,16 +28,18 @@ namespace KCore {
 
         virtual float *getDataForXYZ(uint8_t zoom, uint16_t x, uint16_t y, uint16_t slicesX, uint16_t slicesY) = 0;
 
-        GridMesh *createTile(uint8_t zoom, uint16_t x, uint16_t y, uint16_t slicesX, uint16_t slicesY);
+        GridMesh *createTile(uint8_t zoom, uint16_t x, uint16_t y,
+                             uint16_t slicesX, uint16_t slicesY,
+                             bool flipUVsX, bool flipUVsY);
     };
 
     extern "C" {
-    DllExport GridMesh *CreateTileMeshXYZ(
-            IElevationSrc *srcPtr, uint8_t zoom, uint16_t x, uint16_t y, uint16_t slicesX, uint16_t slicesY
-    );
+    DllExport GridMesh *CreateTileMeshXYZ(IElevationSrc *srcPtr, uint8_t zoom, uint16_t x, uint16_t y,
+                                          uint16_t slicesX, uint16_t slicesY,
+                                          bool flipUVsX, bool flipUVsY);
 
-    DllExport GridMesh *CreateTileMeshQuadcode(
-            IElevationSrc *srcPtr, const char *quadcode, uint16_t slicesX, uint16_t slicesY
-    );
+    DllExport GridMesh *CreateTileMeshQuadcode(IElevationSrc *srcPtr, const char *quadcode,
+                                               uint16_t slicesX, uint16_t slicesY,
+                                               bool flipUVsX, bool flipUVsY);
     }
 }

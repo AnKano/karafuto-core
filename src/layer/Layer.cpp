@@ -2,7 +2,7 @@
 
 #include "../misc/Utils.hpp"
 
-//#include "presenters/vulkan/VulkanRenderContext.hpp"
+#include "presenters/vulkan/VulkanRenderContext.hpp"
 //#include "presenters/opencl/OpenCLRenderContext.hpp"
 #include "presenters/debug/DebugRenderContext.hpp"
 #include "presenters/one-to-one/OneToOneContext.hpp"
@@ -17,8 +17,8 @@ namespace KCore {
         mOriginPosition = {latitude, 0.0f, longitude};
 
 //        mRenderContext = new OpenCL::OpenCLRenderContext{this};
-//         mRenderContext = new Vulkan::VulkanRenderContext{this};
-        mRenderContext = new OneToOne::OneToOneContext(this);
+         mRenderContext = new Vulkan::VulkanRenderContext{this};
+//        mRenderContext = new OneToOne::OneToOneContext(this);
 
         // set defaults
         setOneToOneLODMode(1.0f);

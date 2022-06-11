@@ -13,7 +13,7 @@ namespace KCore::OneToOne {
             if (!mCachedTextures.contains(relatedCode)) continue;
 
             std::thread([this, tile, relatedCode]() {
-                auto data = mCachedTextures[relatedCode];
+                auto data = mCachedTextures.get(relatedCode);
 
                 int width = -1, height = -1, channels = -1;
                 auto results = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width, height, channels);

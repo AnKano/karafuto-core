@@ -6,6 +6,8 @@
 #include <mutex>
 #include <map>
 
+#include "LRUCache17.hpp"
+
 #include "../../generics/IContext.hpp"
 #include "../../misc/STBImageUtils.hpp"
 #include "../events/LayerEvent.hpp"
@@ -22,7 +24,7 @@ namespace KCore {
 
         std::mutex mContextLock;
         std::vector<KCore::TileDescription> mLastKnownTiles;
-        std::map<std::string, std::vector<uint8_t>> mCachedTextures;
+        lru17::Cache<std::string, std::vector<uint8_t>> mCachedTextures{150, 10};
 
     public:
         explicit IRenderContext(Layer *world);

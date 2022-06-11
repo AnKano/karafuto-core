@@ -54,7 +54,7 @@ namespace KCore {
                     auto rootQuadcode = meta.getQuadcode();
                     prepareTransform(rootQuadcode, item, scaleMatrix, translationMatrix);
 
-                    auto &data = mCachedTextures[item];
+                    auto &data = mCachedTextures.get(item);
 
                     int width = -1, height = -1, channels = -1;
                     auto image = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width, height, channels);

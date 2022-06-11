@@ -63,9 +63,9 @@ int main() {
 
     auto b = KCore::ProcessGeoJSONFile(core, "assets/sources/12.geojson");
 
-    const uint32_t iterations{10000};
+    const uint32_t iterations{1000000};
     for (auto i = 0; i < iterations; i++) {
-        cameraOpenGlSpacePosition.x += 150.0f;
+        cameraOpenGlSpacePosition.x -= 10.0f;
         KCore::UpdateLayer(
                 core,
                 reinterpret_cast<float *>(&cameraProjectionMatrix),
