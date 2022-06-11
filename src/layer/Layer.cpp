@@ -2,9 +2,14 @@
 
 #include "../misc/Utils.hpp"
 
+#ifdef VULKAN_BACKEND
 #include "presenters/vulkan/VulkanRenderContext.hpp"
-//#include "presenters/opencl/OpenCLRenderContext.hpp"
-#include "presenters/debug/DebugRenderContext.hpp"
+#endif
+
+#ifdef OPENCL_BACKEND
+#include "presenters/opencl/OpenCLRenderContext.hpp"
+#endif
+
 #include "presenters/one-to-one/OneToOneContext.hpp"
 
 #include "../misc/NetworkTools.hpp"
@@ -15,10 +20,6 @@ namespace KCore {
     Layer::Layer(float latitude, float longitude) {
         mOriginLatLon = GeographyConverter::latLonToPoint({latitude, longitude});
         mOriginPosition = {latitude, 0.0f, longitude};
-
-//        mRenderContext = new OpenCL::OpenCLRenderContext{this};
-         mRenderContext = new Vulkan::VulkanRenderContext{this};
-//        mRenderContext = new OneToOne::OneToOneContext(this);
 
         // set defaults
         setOneToOneLODMode(1.0f);
@@ -48,6 +49,9 @@ namespace KCore {
     }
 
     void Layer::calculateTiles() {
+        // fallback if developer not select anything before start
+        if (mRenderContext == nullptr) setNonProcessingMode();
+
         mTiles = {};
 
         // store old tiles and clear up current
@@ -179,6 +183,22 @@ namespace KCore {
     void Layer::setRasterUrl(const char *url) {
         mRemoteSource = std::make_unique<RemoteSource>(url);
         mRequested.clear();
+    }
+
+#ifdef VULKAN_BACKEND
+    void Layer::setVulkanMode() {
+        mRenderContext = new Vulkan::VulkanRenderContext{this};
+    }
+#endif
+
+#ifdef OPENCL_BACKEND
+    void Layer::setOpenCLMode() {
+        mRenderContext = new OpenCL::OpenCLRenderContext{this};
+    }
+#endif
+
+    void Layer::setNonProcessingMode() {
+        mRenderContext = new OneToOne::OneToOneContext{this};
     }
 
     void Layer::setOneToOneLODMode(float subdivisionTarget) {

@@ -71,5 +71,17 @@ namespace KCore {
         void setOneToOneLODMode(float subdivisionTarget = 1.0f);
 
         void setOneToSubdivisionLODMode(float subdivisionTarget = 1.0f, float additionalSubdivisionTarget = 2.5f);
+
+        // ----------------
+
+#ifdef VULKAN_BACKEND
+        void setVulkanMode();
+#endif
+
+#ifdef OPENCL_BACKEND
+        void setOpenCLMode();
+#endif
+
+        void setNonProcessingMode();
     };
 }

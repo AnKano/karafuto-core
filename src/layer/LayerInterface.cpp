@@ -77,6 +77,27 @@ namespace KCore {
         }
     }
 
+    void LayerInterface::setBackendMode(BackendMode mode) {
+        std::cout << "selected mode: " << mode << std::endl;
+        switch (mode) {
+#ifdef VULKAN_BACKEND
+            case Vulkan:
+                std::cout << "selected mode: Vulkan" << std::endl;
+                mLayer.setVulkanMode();
+                break;
+#endif
+#ifdef OPENCL_BACKEND
+            case OpenCL:
+                std::cout << "selected mode: OpenCL" << std::endl;
+                mLayer.setOpenCLMode();
+                break;
+#endif
+            default:
+                std::cout << "selected mode: None" << std::endl;
+                mLayer.setNonProcessingMode();
+        }
+    }
+
     void LayerInterface::setLayerRasterUrl(const char *url) {
         mLayer.setRasterUrl(url);
     }
@@ -126,5 +147,9 @@ namespace KCore {
 
     DllExport void SetLayerMode(KCore::LayerInterface *corePtr, LayerMode mode, float param1, float param2) {
         corePtr->setLayerMode(mode, param1, param2);
+    }
+
+    DllExport void SetBackendMode(KCore::LayerInterface *corePtr, BackendMode mode) {
+        corePtr->setBackendMode(mode);
     }
 }

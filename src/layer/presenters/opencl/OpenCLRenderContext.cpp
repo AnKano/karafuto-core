@@ -100,7 +100,7 @@ namespace KCore::OpenCL {
                 auto rootQuadcode = meta.getQuadcode();
                 childTransform(rootQuadcode, item, offsetX, offsetY, depth);
 
-                auto &data = mCachedTextures[item];
+                auto &data = mCachedTextures.get(item);
 
                 int width = -1, height = -1, channels = -1;
                 auto image = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width, height, channels);

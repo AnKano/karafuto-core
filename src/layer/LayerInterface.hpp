@@ -16,9 +16,13 @@
 namespace KCore {
     enum LayerMode {
         OneToOneLOD,
-        OneToSubdivisionLOD,
-//        FixedLevel,
-//        FixedLevelWithSubdivision
+        OneToSubdivisionLOD
+    };
+
+    enum BackendMode {
+        NonProcessing = 0,
+        Vulkan = 1,
+        OpenCL = 2
     };
 
     class LayerInterface {
@@ -51,6 +55,8 @@ namespace KCore {
 
         void setLayerMode(LayerMode mode, float param1, float param2);
 
+        void setBackendMode(BackendMode mode);
+
         Layer* raw();
 
     private:
@@ -71,6 +77,7 @@ namespace KCore {
     DllExport void ReleaseEventsVector(std::vector<LayerEvent> *vecPtr);
     DllExport void SetLayerMode(KCore::LayerInterface *corePtr, LayerMode mode, float param1, float param2);
     DllExport void SetLayerRasterUrl(KCore::LayerInterface *corePtr, const char *url);
+    DllExport void SetBackendMode(KCore::LayerInterface *corePtr, BackendMode mode);
     }
 }
 
