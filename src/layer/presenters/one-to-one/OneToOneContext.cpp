@@ -6,11 +6,6 @@ namespace KCore::OneToOne {
     void OneToOneContext::initialize() {}
 
     void OneToOneContext::performLoopStep() {
-        if (mWorld->imageEventsCount() != 0) {
-            std::this_thread::sleep_for(100ms);
-            return;
-        }
-
         auto tiles = getCurrentTileState();
 
         for (const auto &tile: tiles) {
@@ -22,13 +17,18 @@ namespace KCore::OneToOne {
 
                 int width = -1, height = -1, channels = -1;
                 auto results = STBImageUtils::decodeImageBuffer(data.data(), data.size(), width, height, channels);
+
                 auto image = new ImageResult{width, height, channels, results};
                 auto rootQuadcode = tile.getQuadcode();
                 mWorld->pushToImageEvents(LayerEvent::MakeImageEvent(rootQuadcode, image));
             }).detach();
+
+            // throttle 10 ms
+            std::this_thread::sleep_for(10ms);
         }
 
-        std::this_thread::sleep_for(100ms);
+        // throttle 10 ms every stage
+        std::this_thread::sleep_for(10ms);
     }
 
     void OneToOneContext::dispose() {}
