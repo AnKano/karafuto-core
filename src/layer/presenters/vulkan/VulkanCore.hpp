@@ -23,9 +23,9 @@
 #include "Texture.hpp"
 
 //#ifdef NDEBUG
-//const bool enableValidationLayers = false;
+const bool enableValidationLayers = false;
 //#else
-const bool enableValidationLayers = true;
+//const bool enableValidationLayers = true;
 //#endif
 
 struct QueueFamilyIndices {
