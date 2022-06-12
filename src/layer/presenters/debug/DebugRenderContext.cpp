@@ -7,11 +7,6 @@ namespace KCore::Debug {
     void DebugContext::initialize() {}
 
     void DebugContext::performLoopStep() {
-        if (mWorld->imageEventsCount() != 0) {
-            std::this_thread::sleep_for(100ms);
-            return;
-        }
-
         auto tiles = getCurrentTileState();
 
         for (const auto &tile: tiles) {
@@ -29,7 +24,7 @@ namespace KCore::Debug {
             std::this_thread::sleep_for(10ms);
         }
 
-        std::this_thread::sleep_for(100ms);
+        std::this_thread::sleep_for(10ms);
     }
 
     void DebugContext::dispose() {}

@@ -43,23 +43,5 @@ namespace KCore {
 
             return event;
         }
-
-//        static LayerEvent MakeTerrainEvent(const std::string &quadcode, void* payloadPtr) {
-//            LayerEvent event{};
-//            event.type = TerrainLoaded;
-//            event.payload = payloadPtr;
-//            std::strcpy(event.quadcode, quadcode.c_str());
-//
-//            return event;
-//        }
-//
-//        static LayerEvent MakeGeoJSONEvent(const std::string &quadcode, void* payloadPtr) {
-//            LayerEvent event{};
-//            event.type = GeoJSONLoaded;
-//            event.payload = payloadPtr;
-//            std::strcpy(event.quadcode, quadcode.c_str());
-//
-//            return event;
-//        }
     };
 }

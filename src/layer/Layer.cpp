@@ -11,6 +11,7 @@
 #endif
 
 #include "presenters/one-to-one/OneToOneContext.hpp"
+#include "presenters/debug/DebugRenderContext.hpp"
 
 #include "../misc/NetworkTools.hpp"
 
