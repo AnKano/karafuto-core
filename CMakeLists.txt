@@ -19,9 +19,13 @@ if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
         set(BACKEND "Vulkan")
         add_definitions(-DVULKAN_BACKEND)
     elseif (APPLE)
-        set(PLATFORM "APPLE")
+        set(PLATFORM "MacOS")
+
         set(BACKEND "Vulkan")
         add_definitions(-DVULKAN_BACKEND)
+
+#        set(BACKEND "OpenCL")
+#        add_definitions(-DOPENCL_BACKEND)
     elseif (UNIX)
         set(PLATFORM "UNIX")
         set(BACKEND "Vulkan")
@@ -29,11 +33,11 @@ if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
     elseif (WIN32)
         set(PLATFORM "Windows")
 
-        set(BACKEND "Vulkan")
-        add_definitions(-DVULKAN_BACKEND)
+        #        set(BACKEND "Vulkan")
+        #        add_definitions(-DVULKAN_BACKEND)
 
-        #        set(BACKEND "OpenCL")
-        #        add_definitions(-DOPENCL_BACKEND)
+        set(BACKEND "OpenCL")
+        add_definitions(-DOPENCL_BACKEND)
     endif ()
 endif ()
 
@@ -58,75 +62,48 @@ endif ()
 if (ON)
     message("🖊️ Grab dependent sources")
 
-    if (${PLATFORM} STREQUAL "Android")
-        if (${BACKEND} STREQUAL "Vulkan")
-            message("\t - Vulkan adapter")
-            set(CPP_HEADERS_ADDITIONALS "")
-            file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.hpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.inl
-                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.hpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.inl
-                    ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.hpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/ImageResult.hpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.hpp)
+    if (${BACKEND} STREQUAL "Vulkan")
+        message("\t - Vulkan adapter")
+        set(CPP_HEADERS_ADDITIONALS "")
+        file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
+                ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.hpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.inl
+                ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.hpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.inl
+                ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.hpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/ImageResult.hpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.hpp)
 
-            set(CPP_SOURCES_ADDITIONALS "")
-            file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.cpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.cpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.cpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.cpp)
+        set(CPP_SOURCES_ADDITIONALS "")
+        file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
+                ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.cpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.cpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.cpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.cpp)
 
-            list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
-            list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
-        endif ()
-    endif ()
+        list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
+        list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
+    elseif (${BACKEND} STREQUAL "OpenCL")
+        message("\t - OpenCL adapter")
+        set(CPP_HEADERS_ADDITIONALS "")
+        file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
+                ${MAIN_SOURCE_DIR}/layer/presenters/opencl/*.hpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/opencl/*.inl
+                ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.hpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.inl
+                ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.hpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/ImageResult.hpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.hpp)
 
-    if (${PLATFORM} STREQUAL "Windows")
-        if (${BACKEND} STREQUAL "Vulkan")
-            message("\t - Vulkan adapter")
-            set(CPP_HEADERS_ADDITIONALS "")
-            file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.hpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.inl
-                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.hpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.inl
-                    ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.hpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/ImageResult.hpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.hpp)
+        set(CPP_SOURCES_ADDITIONALS "")
+        file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
+                ${MAIN_SOURCE_DIR}/layer/presenters/opencl/*.cpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.cpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.cpp
+                ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.cpp)
 
-            set(CPP_SOURCES_ADDITIONALS "")
-            file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/layer/presenters/vulkan/*.cpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.cpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.cpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.cpp)
-
-            list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
-            list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
-        elseif (${BACKEND} STREQUAL "OpenCL")
-            message("\t - OpenCL adapter")
-            set(CPP_HEADERS_ADDITIONALS "")
-            file(GLOB_RECURSE CPP_HEADERS_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/layer/presenters/opencl/*.hpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/opencl/*.inl
-                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.hpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.inl
-                    ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.hpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/ImageResult.hpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.hpp)
-
-            set(CPP_SOURCES_ADDITIONALS "")
-            file(GLOB_RECURSE CPP_SOURCES_ADDITIONALS
-                    ${MAIN_SOURCE_DIR}/layer/presenters/opencl/*.cpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/debug/*.cpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/one-to-one/*.cpp
-                    ${MAIN_SOURCE_DIR}/layer/presenters/IRenderContext.cpp)
-
-            list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
-            list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
-        endif ()
+        list(APPEND CPP_HEADERS ${CPP_HEADERS_ADDITIONALS})
+        list(APPEND CPP_SOURCES ${CPP_SOURCES_ADDITIONALS})
     endif ()
 endif ()
 
@@ -141,18 +118,6 @@ if (ON)
         message("\t - Declare specific C-math definitions")
         add_compile_definitions(_USE_MATH_DEFINES)
     endif ()
-
-    if (OFF)
-        #        if (APPLE)
-        #            message("MacOS: Override OpenSSL dirs")
-        #
-        #            # This is a bug in CMake that causes it to prefer the system version over
-        #            # the one in the specified ROOT folder.
-        #            set(OPENSSL_ROOT_DIR ${OPENSSL_ROOT_DIR} /usr/local/Cellar/openssl@3/3.0.1/)
-        #            set(OPENSSL_CRYPTO_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libcrypto.dylib CACHE FILEPATH "" FORCE)
-        #            set(OPENSSL_SSL_LIBRARY ${OPENSSL_ROOT_DIR}/lib/libssl.dylib CACHE FILEPATH "" FORCE)
-        #        endif ()
-    endif ()
 endif ()
 
 # Declare libraries
@@ -160,23 +125,6 @@ if (ON)
     message("🧾 Declare libraries")
 
     if (OFF)
-        #if (APPLE)
-        #    message("MacOS: Added curl as shared library")
-        #
-        #    set(BUILD_SHARED_LIBS ON)
-        #    set(HTTP_ONLY ON)
-        #    add_subdirectory(${THIRD_PARTY_DIR}/curl)
-        #    set(BUILD_SHARED_LIBS ON)
-        #
-        #    message("MacOS: Added opencl as static library")
-        #    find_package(OpenCL REQUIRED)
-        #
-        #    message("MacOS: Added glm headers")
-        #    set(BUILD_SHARED_LIBS OFF)
-        #    add_subdirectory(${THIRD_PARTY_DIR}/glm EXCLUDE_FROM_ALL)
-        #    set(BUILD_SHARED_LIBS OFF)
-        #endif ()
-        #
         #if (UNIX AND NOT APPLE)
         #    message("Unix: Added curl as shared library")
         #
@@ -215,16 +163,25 @@ if (ON)
 
         message("\t - Added LRUCache17...")
         add_subdirectory(${THIRD_PARTY_DIR}/lrucache17)
+    endif ()
 
-        #        message("\t - Added zlib...")
-        #        if (ON)
-        #            add_subdirectory(${THIRD_PARTY_DIR}/zlib)
-        #
-        #            message(${CMAKE_BINARY_DIR}/third-party/zlib)
-        #
-        #            set(ZLIB_INCLUDE_DIR ${THIRD_PARTY_DIR}/zlib "${CMAKE_BINARY_DIR}/third-party/zlib")
-        #            set(ZLIB_LIBRARY zlib)
-        #        endif ()
+    if (${PLATFORM} STREQUAL "MacOS")
+        message("\t - Added HTTPRequest")
+        add_subdirectory(${THIRD_PARTY_DIR}/HTTPRequest)
+
+        message("\t - Added GLM...")
+        add_subdirectory(${THIRD_PARTY_DIR}/glm)
+
+        message("\t - Added LRUCache17...")
+        add_subdirectory(${THIRD_PARTY_DIR}/lrucache17)
+
+        if (${BACKEND} STREQUAL "Vulkan")
+            message("\t - Added Vulkan")
+            find_package(Vulkan REQUIRED)
+        elseif (${BACKEND} STREQUAL "OpenCL")
+            message("\t - Added OpenCL")
+            find_package(OpenCL REQUIRED)
+        endif ()
     endif ()
 endif ()
 
@@ -238,25 +195,12 @@ if (ON)
     elseif (${PLATFORM} STREQUAL "Windows")
         add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
         add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
+    elseif (${PLATFORM} STREQUAL "MacOS")
+        add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
+        add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
     endif ()
 
     if (OFF)
-        #if (APPLE)
-        #    add_library(libkcore-static STATIC ${CPP_HEADERS} ${CPP_SOURCES})
-        #    add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
-        #    add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
-        #
-        #    set(LIBRARIES libcurl glm "-framework OpenCL")
-        #
-        #    target_link_libraries(libkcore PUBLIC ${LIBRARIES})
-        #    target_link_libraries(libkcore-static PUBLIC ${LIBRARIES})
-        #    target_link_libraries(karafuto_core PUBLIC ${LIBRARIES})
-        #
-        #    target_link_directories(libkcore PRIVATE ${OpenCL_LIBRARY})
-        #    target_link_directories(libkcore-static PRIVATE ${OpenCL_LIBRARY})
-        #    target_link_directories(karafuto_core PRIVATE ${OpenCL_LIBRARY})
-        #endif ()
-        #
         #if (UNIX AND NOT APPLE)
         #    add_library(libkcore-static STATIC ${CPP_HEADERS} ${CPP_SOURCES})
         #    add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
@@ -290,7 +234,6 @@ if (ON)
                 find_package(Vulkan REQUIRED)
 
                 target_link_libraries(libkcore PUBLIC ${LIBRARIES} ${Vulkan_LIBRARIES})
-                # target_link_libraries(libkcore-static PUBLIC ${LIBRARIES} ${Vulkan_LIBRARIES})
                 target_link_libraries(karafuto_core PUBLIC ${LIBRARIES} ${Vulkan_LIBRARIES})
             elseif (${BACKEND} STREQUAL "OpenCL")
                 message("\t - OpenCL libraries")
@@ -298,9 +241,25 @@ if (ON)
 
                 target_link_libraries(libkcore PUBLIC ${LIBRARIES})
                 target_link_directories(libkcore PUBLIC ${LIBRARIES} ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
-                # target_link_directories(libkcore-static PRIVATE ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
                 target_link_libraries(karafuto_core PUBLIC ${LIBRARIES})
                 target_link_directories(karafuto_core PUBLIC ${LIBRARIES} ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
+            endif ()
+        elseif (${PLATFORM} STREQUAL "MacOS")
+            if (${BACKEND} STREQUAL "Vulkan")
+                message("\t - Vulkan libraries")
+                set(LIBRARIES glm HTTPRequest Vulkan::Vulkan)
+
+                target_link_libraries(libkcore PUBLIC ${LIBRARIES})
+                target_link_libraries(karafuto_core PUBLIC ${LIBRARIES})
+            elseif (${BACKEND} STREQUAL "OpenCL")
+                message("\t - OpenCL libraries")
+                set(LIBRARIES glm HTTPRequest "-framework OpenCL")
+
+                target_link_libraries(libkcore PUBLIC ${LIBRARIES})
+                target_link_directories(libkcore PUBLIC ${OpenCL_LIBRARY})
+
+                target_link_libraries(karafuto_core PUBLIC ${LIBRARIES})
+                target_link_directories(karafuto_core PUBLIC ${OpenCL_LIBRARY})
             endif ()
         endif ()
     endif ()
@@ -308,19 +267,6 @@ if (ON)
     message("\t - Add headers")
     if (ON)
         if (OFF)
-            #            if (APPLE)
-            #                message("MacOS: Added RapidJSON, Earcut, stb-image includes")
-            #                set(INCLUDE_COMPOUND
-            #                        ${THIRD_PARTY_DIR}/rapidjson/include
-            #                        ${THIRD_PARTY_DIR}/earcut/include
-            #                        ${THIRD_PARTY_DIR}/stb-image
-            #                        ${THIRD_PARTY_DIR}/gzip-hpp/include
-            #                        )
-            #                target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
-            #                target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
-            #                target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
-            #            endif ()
-            #
             #            if (UNIX AND NOT APPLE)
             #                message("Unix: Added RapidJSON, Earcut, stb-image, gzip includes")
             #                set(INCLUDE_COMPOUND
@@ -356,8 +302,15 @@ if (ON)
                     $ENV{VULKAN_SDK}/Include
                     )
             target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
-            include_directories(${THIRD_PARTY_DIR}/zlib)
-            # target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
+            target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
+        elseif (${PLATFORM} STREQUAL "MacOS")
+            set(INCLUDE_COMPOUND
+                    ${THIRD_PARTY_DIR}/rapidjson/include
+                    ${THIRD_PARTY_DIR}/lrucache17
+                    ${THIRD_PARTY_DIR}/earcut/include
+                    ${THIRD_PARTY_DIR}/stb-image
+                    )
+            target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
             target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
         endif ()
     endif ()

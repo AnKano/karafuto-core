@@ -6,7 +6,7 @@ The easiest way to create maps in your native apps (maybe not)
     <img src="github-assets/logo.png" height="300" />
 </p>
 
-You implement the renderer yourself. The library gives only a description of your map and ready-made objects, which you can immediately load into the GPU after a little post-processing
+You implement the renderer yourself. The library gives only a description of your map and ready-made objects, which you can immediately load into the GPU after a little post-processing. Tested in Unity, Raylib, and when used with QtGraphicsScene. 
 
 ### Shortcuts
 
@@ -171,8 +171,9 @@ The result of combining all these functions is a dynamic relief scene
 
 ## TODO
 
-- :black_square_button: - CMake for MacOS and Linux
-- :black_square_button: - Make it compatible with iOS
+- :white_check_mark: - CMake for MacOS
+- :black_square_button: - Troubles on some devices when using RGB565 render target. Fallback to RGBA8888? 
+- :black_square_button: - CMake for Linux
 - :black_square_button: - GeoTIFF
 - :black_square_button: - Tests 
 

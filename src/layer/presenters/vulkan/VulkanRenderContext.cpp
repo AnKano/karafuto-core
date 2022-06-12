@@ -47,7 +47,7 @@ namespace KCore {
 
             for (const auto &meta: metas) {
                 auto items = meta.getRelatedQuadcodes();
-                for (const auto item: items) {
+                for (const auto& item: items) {
                     if (!mCachedTextures.contains(item)) continue;
 
                     glm::mat4 scaleMatrix, translationMatrix;
