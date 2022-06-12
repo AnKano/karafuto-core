@@ -192,12 +192,3 @@ Prohibited for any military use. Fuck the war!
 Please respect the licenses of dependent projects and rewrite freely those sections that do not fit you.
 
 And never forget those you love ❤️
-
-```
-I know, I know I've let you down
-I've been a fool to myself
-I thought that I could live for no one else
-But now, through all the hurt and pain
-It's time for me to respect
-The ones you love mean more than anything...
-```
