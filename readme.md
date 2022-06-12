@@ -6,7 +6,7 @@ The easiest way to create maps in your native apps (maybe not)
     <img src="github-assets/logo.png" height="300" />
 </p>
 
-You implement the renderer yourself. The library gives only a description of your map and ready-made objects, which you can immediately load into the GPU after a little post-processing. Tested in Unity, Raylib, and when used with QtGraphicsScene. 
+You implement the renderer yourself. The library gives only a description of your map and ready-made objects, which you can immediately load into the GPU after a little post-processing. Tested in Unity, Raylib, and when used with QtGraphicsScene. Works on Windows, MacOS, Linux and Android. It is possible that it can be used on iOS, since there are no special dependencies, but it has not been tested. 
 
 ### Shortcuts
 
@@ -24,7 +24,7 @@ You implement the renderer yourself. The library gives only a description of you
 - [RapidJSON](https://github.com/Tencent/rapidjson) to GeoJSON parsing
 - stb_image.h from [STB](https://github.com/nothings/stb) to decode .png and .jpg tile images
 - GPU APIs
-    - Vulkan
+    - Vulkan (MoltenVK on Apple devices)
     - OpenCL (1.2 version for GPUs that not support Vulkan for any reasons)
 
 Special thanks for [ViziCities](https://github.com/UDST/vizicities)
@@ -179,7 +179,7 @@ The result of combining all these functions is a dynamic relief scene
 
 ## License
 
-I don't know which license to choose... Let it be this one. Prohibited for any military use. Fuck the war!
+Prohibited for any military use. Fuck the war!
 
 ```
 /******************************************************************************
@@ -190,6 +190,14 @@ I don't know which license to choose... Let it be this one. Prohibited for any m
 ```
 
 Please respect the licenses of dependent projects and rewrite freely those sections that do not fit you.
+
 And never forget those you love ❤️
 
-[//]: # (If you think my skills could be useful and you can offer work in Eastern Europe, contact me :&#41;)
+```
+I know, I know I've let you down
+I've been a fool to myself
+I thought that I could live for no one else
+But now, through all the hurt and pain
+It's time for me to respect
+The ones you love mean more than anything...
+```
