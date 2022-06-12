@@ -178,7 +178,7 @@ The result of combining all these functions is a dynamic relief scene
 
 ## License
 
-I don't know which license to choose... Let it be this one. 
+I don't know which license to choose... Let it be this one. Prohibited for any military use. Fuck the war!
 
 ```
 /******************************************************************************
