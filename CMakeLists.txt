@@ -16,6 +16,7 @@ file(GLOB_RECURSE CPP_SOURCES ${MAIN_SOURCE_DIR}/*.cpp)
 if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
     if (ANDROID)
         set(PLATFORM "Android")
+
         set(BACKEND "Vulkan")
         add_definitions(-DVULKAN_BACKEND)
     elseif (APPLE)
@@ -27,9 +28,13 @@ if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
         set(BACKEND "OpenCL")
         add_definitions(-DOPENCL_BACKEND)
     elseif (UNIX)
-        set(PLATFORM "UNIX")
+        set(PLATFORM "Linux")
+
         set(BACKEND "Vulkan")
         add_definitions(-DVULKAN_BACKEND)
+
+#        set(BACKEND "OpenCL")
+#        add_definitions(-DOPENCL_BACKEND)
     elseif (WIN32)
         set(PLATFORM "Windows")
 
@@ -124,57 +129,26 @@ endif ()
 if (ON)
     message("🧾 Declare libraries")
 
-    if (OFF)
-        #if (UNIX AND NOT APPLE)
-        #    message("Unix: Added curl as shared library")
-        #
-        #    set(BUILD_SHARED_LIBS ON)
-        #    set(HTTP_ONLY ON)
-        #    add_subdirectory(${THIRD_PARTY_DIR}/curl)
-        #    set(BUILD_SHARED_LIBS ON)
-        #
-        #    message("Unix: Added opencl as static library")
-        #    find_package(OpenCL REQUIRED)
-        #
-        #    message("Unix: Added glm headers")
-        #    set(BUILD_SHARED_LIBS OFF)
-        #    add_subdirectory(${THIRD_PARTY_DIR}/glm EXCLUDE_FROM_ALL)
-        #    set(BUILD_SHARED_LIBS OFF)
-        #endif ()
-    endif ()
+    message("\t - Added HTTPRequest")
+    add_subdirectory(${THIRD_PARTY_DIR}/HTTPRequest)
 
-    if (${PLATFORM} STREQUAL "Android")
-        message("\t - Added HTTPRequest")
-        add_subdirectory(${THIRD_PARTY_DIR}/HTTPRequest)
+    message("\t - Added GLM...")
+    add_subdirectory(${THIRD_PARTY_DIR}/glm)
 
-        message("\t - Added GLM...")
-        add_subdirectory(${THIRD_PARTY_DIR}/glm)
-
-        message("\t - Added LRUCache17...")
-        add_subdirectory(${THIRD_PARTY_DIR}/lrucache17)
-    endif ()
-
-    if (${PLATFORM} STREQUAL "Windows")
-        message("\t - Added HTTPRequest")
-        add_subdirectory(${THIRD_PARTY_DIR}/HTTPRequest)
-
-        message("\t - Added GLM...")
-        add_subdirectory(${THIRD_PARTY_DIR}/glm)
-
-        message("\t - Added LRUCache17...")
-        add_subdirectory(${THIRD_PARTY_DIR}/lrucache17)
-    endif ()
+    message("\t - Added LRUCache17...")
+    add_subdirectory(${THIRD_PARTY_DIR}/lrucache17)
 
     if (${PLATFORM} STREQUAL "MacOS")
-        message("\t - Added HTTPRequest")
-        add_subdirectory(${THIRD_PARTY_DIR}/HTTPRequest)
+        if (${BACKEND} STREQUAL "Vulkan")
+            message("\t - Added Vulkan")
+            find_package(Vulkan REQUIRED)
+        elseif (${BACKEND} STREQUAL "OpenCL")
+            message("\t - Added OpenCL")
+            find_package(OpenCL REQUIRED)
+        endif ()
+    endif ()
 
-        message("\t - Added GLM...")
-        add_subdirectory(${THIRD_PARTY_DIR}/glm)
-
-        message("\t - Added LRUCache17...")
-        add_subdirectory(${THIRD_PARTY_DIR}/lrucache17)
-
+    if (${PLATFORM} STREQUAL "Linux")
         if (${BACKEND} STREQUAL "Vulkan")
             message("\t - Added Vulkan")
             find_package(Vulkan REQUIRED)
@@ -192,30 +166,9 @@ if (ON)
 
     if (${PLATFORM} STREQUAL "Android")
         add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
-    elseif (${PLATFORM} STREQUAL "Windows")
+    else ()
         add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
         add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
-    elseif (${PLATFORM} STREQUAL "MacOS")
-        add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
-        add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
-    endif ()
-
-    if (OFF)
-        #if (UNIX AND NOT APPLE)
-        #    add_library(libkcore-static STATIC ${CPP_HEADERS} ${CPP_SOURCES})
-        #    add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
-        #    add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
-        #
-        #    set(LIBRARIES libcurl glm OpenCL pthread)
-        #
-        #    target_link_libraries(libkcore PUBLIC ${LIBRARIES})
-        #    target_link_libraries(libkcore-static PUBLIC ${LIBRARIES})
-        #    target_link_libraries(karafuto_core PUBLIC ${LIBRARIES})
-        #
-        #    target_link_directories(libkcore PRIVATE ${OpenCL_LIBRARY})
-        #    target_link_directories(libkcore-static PRIVATE ${OpenCL_LIBRARY})
-        #    target_link_directories(karafuto_core PRIVATE ${OpenCL_LIBRARY})
-        #endif ()
     endif ()
 
     message("\t - Link libraries")
@@ -244,6 +197,22 @@ if (ON)
                 target_link_libraries(karafuto_core PUBLIC ${LIBRARIES})
                 target_link_directories(karafuto_core PUBLIC ${LIBRARIES} ${OCL_ROOT}/lib/x86_64 ${OCL_ROOT}/lib/x86)
             endif ()
+        elseif (${PLATFORM} STREQUAL "Linux")
+            if (${BACKEND} STREQUAL "Vulkan")
+                message("\t - OpenCL libraries")
+                set(LIBRARIES glm HTTPRequest vulkan)
+
+                target_link_libraries(libkcore PUBLIC ${LIBRARIES})
+                target_link_libraries(karafuto_core PUBLIC ${LIBRARIES})
+            elseif (${BACKEND} STREQUAL "OpenCL")
+                message("\t - OpenCL libraries")
+                set(LIBRARIES glm HTTPRequest)
+
+                target_link_libraries(libkcore PUBLIC ${LIBRARIES})
+                target_link_directories(libkcore PUBLIC ${OpenCL_LIBRARY})
+                target_link_libraries(karafuto_core PUBLIC ${LIBRARIES})
+                target_link_directories(karafuto_core PUBLIC ${OpenCL_LIBRARY})
+            endif ()
         elseif (${PLATFORM} STREQUAL "MacOS")
             if (${BACKEND} STREQUAL "Vulkan")
                 message("\t - Vulkan libraries")
@@ -256,31 +225,13 @@ if (ON)
                 set(LIBRARIES glm HTTPRequest "-framework OpenCL")
 
                 target_link_libraries(libkcore PUBLIC ${LIBRARIES})
-                target_link_directories(libkcore PUBLIC ${OpenCL_LIBRARY})
-
                 target_link_libraries(karafuto_core PUBLIC ${LIBRARIES})
-                target_link_directories(karafuto_core PUBLIC ${OpenCL_LIBRARY})
             endif ()
         endif ()
     endif ()
 
     message("\t - Add headers")
     if (ON)
-        if (OFF)
-            #            if (UNIX AND NOT APPLE)
-            #                message("Unix: Added RapidJSON, Earcut, stb-image, gzip includes")
-            #                set(INCLUDE_COMPOUND
-            #                        ${THIRD_PARTY_DIR}/rapidjson/include
-            #                        ${THIRD_PARTY_DIR}/earcut/include
-            #                        ${THIRD_PARTY_DIR}/stb-image
-            #                        ${THIRD_PARTY_DIR}/gzip-hpp/include
-            #                        )
-            #                target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
-            #                target_include_directories(libkcore-static PUBLIC ${INCLUDE_COMPOUND})
-            #                target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
-            #            endif ()
-        endif ()
-
         if (${PLATFORM} STREQUAL "Android")
             set(INCLUDE_COMPOUND
                     ${THIRD_PARTY_DIR}/rapidjson/include
@@ -304,6 +255,15 @@ if (ON)
             target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
             target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
         elseif (${PLATFORM} STREQUAL "MacOS")
+            set(INCLUDE_COMPOUND
+                    ${THIRD_PARTY_DIR}/rapidjson/include
+                    ${THIRD_PARTY_DIR}/lrucache17
+                    ${THIRD_PARTY_DIR}/earcut/include
+                    ${THIRD_PARTY_DIR}/stb-image
+                    )
+            target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
+            target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
+        elseif (${PLATFORM} STREQUAL "Linux")
             set(INCLUDE_COMPOUND
                     ${THIRD_PARTY_DIR}/rapidjson/include
                     ${THIRD_PARTY_DIR}/lrucache17

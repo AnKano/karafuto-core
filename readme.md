@@ -31,6 +31,10 @@ Special thanks for [ViziCities](https://github.com/UDST/vizicities)
 
 ## How it works
 
+First, I'm not a professional C++ developer - it was developed for fun and doesn't have any seriousness. My first experience in developing a large project. So...
+
+<img src="https://i.kym-cdn.com/entries/icons/original/000/008/342/ihave.jpg" height="250" />
+
 Using the two camera matrices: the projection matrix and the view matrix, the observable space is subdivided. Its description is sent to the queue, which can be read on the application side.
 
 ```
@@ -173,7 +177,7 @@ The result of combining all these functions is a dynamic relief scene
 
 - :white_check_mark: - CMake for MacOS
 - :black_square_button: - Troubles on some devices when using RGB565 render target. Fallback to RGBA8888? 
-- :black_square_button: - CMake for Linux
+- :white_check_mark: - CMake for Linux
 - :black_square_button: - GeoTIFF
 - :black_square_button: - Tests 
 

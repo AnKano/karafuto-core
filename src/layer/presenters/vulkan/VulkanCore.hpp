@@ -14,6 +14,7 @@
 #include <algorithm>
 #include <chrono>
 #include <vector>
+#include <memory>
 #include <cstring>
 #include <cstdlib>
 #include <cstdint>
