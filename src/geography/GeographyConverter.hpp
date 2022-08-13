@@ -17,7 +17,7 @@ namespace KCore {
         constexpr static float ECC = 6378137.0f;
         constexpr static float ECC_2 = 6378137.0f * 6378137.0f;
 
-        constexpr static float MULTIPLIER = 1.0f;
+        constexpr static float MULTIPLIER = 0.0001f;
 
     public:
         static glm::vec2 project(const glm::vec2 &latLon) {

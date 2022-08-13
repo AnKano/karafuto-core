@@ -1,15 +1,15 @@
-#include <chrono>
-#include <glm/glm.hpp>
-#include <utility>
-
-#include "layer/LayerInterface.hpp"
-#include "resources/primitives/GeoJSONProcessor.hpp"
-
-#include "resources/elevation/IElevationSrc.hpp"
-#include "resources/elevation/srtm/SRTMElevation.hpp"
-#include "resources/ISource.hpp"
-
-int main() {
+//#include <chrono>
+//#include <glm/glm.hpp>
+//#include <utility>
+//
+//#include "layer/LayerInterface.hpp"
+//#include "resources/primitives/GeoJSONProcessor.hpp"
+//
+//#include "resources/elevation/IElevationSrc.hpp"
+//#include "resources/elevation/srtm/SRTMElevation.hpp"
+//#include "resources/ISource.hpp"
+//
+//int main() {
 //    auto elevationSrc = KCore::CreateSRTMElevationRepo();
 //
 //    KCore::SRTMElevationRepoAddSource(elevationSrc, "http://192.168.0.6:8000/N45E141.hgt", KCore::SourceUrl);
@@ -59,9 +59,9 @@ int main() {
 //    cameraViewMatrix = glm::lookAt(cameraOpenGlSpacePosition, cameraOpenGlSpaceTarget, cameraOpenGlSpaceUp);
 //    cameraProjectionMatrix = glm::perspective(glm::radians(60.0f), aspectRatio, 0.1f, 2500000.0f);
 //
-    auto *core = KCore::CreateTileLayerOSM(46.9181f, 142.7189f);
-
-    auto b = KCore::ProcessGeoJSONFile(core, "assets/sources/12.geojson");
+//    auto *core = KCore::CreateTileLayerOSM(46.9181f, 142.7189f);
+//
+//    auto b = KCore::ProcessGeoJSONFile(core, "assets/sources/12.geojson");
 
 //    const uint32_t iterations{1000000};
 //    for (auto i = 0; i < iterations; i++) {
@@ -90,5 +90,5 @@ int main() {
 //        }
 //    }
 
-    return 0;
-}
+//    return 0;
+//}

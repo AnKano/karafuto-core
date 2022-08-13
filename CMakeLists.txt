@@ -1,4 +1,4 @@
-cmake_minimum_required(VERSION 3.18)
+cmake_minimum_required(VERSION 3.4)
 project(karafuto_core)
 
 set(CMAKE_CXX_STANDARD 20)
@@ -6,7 +6,8 @@ set(CMAKE_CXX_STANDARD 20)
 set(MAIN_SOURCE_DIR "${CMAKE_CURRENT_SOURCE_DIR}/src")
 set(THIRD_PARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party")
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/build)
+set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
 # Grab all sources
 file(GLOB_RECURSE CPP_HEADERS ${MAIN_SOURCE_DIR}/*.hpp ${MAIN_SOURCE_DIR}/*.inl)
@@ -22,8 +23,8 @@ if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
     elseif (APPLE)
         set(PLATFORM "MacOS")
 
-#        set(BACKEND "Vulkan")
-#        add_definitions(-DVULKAN_BACKEND)
+        #        set(BACKEND "Vulkan")
+        #        add_definitions(-DVULKAN_BACKEND)
 
         set(BACKEND "OpenCL")
         add_definitions(-DOPENCL_BACKEND)
@@ -33,16 +34,16 @@ if (NOT EXISTS PLATFORM OR NOT EXISTS BACKEND)
         set(BACKEND "Vulkan")
         add_definitions(-DVULKAN_BACKEND)
 
-#        set(BACKEND "OpenCL")
-#        add_definitions(-DOPENCL_BACKEND)
+        #        set(BACKEND "OpenCL")
+        #        add_definitions(-DOPENCL_BACKEND)
     elseif (WIN32)
         set(PLATFORM "Windows")
 
-        #        set(BACKEND "Vulkan")
-        #        add_definitions(-DVULKAN_BACKEND)
-
-        set(BACKEND "OpenCL")
-        add_definitions(-DOPENCL_BACKEND)
+        set(BACKEND "Vulkan")
+        add_definitions(-DVULKAN_BACKEND)
+        #
+        #        set(BACKEND "OpenCL")
+        #        add_definitions(-DOPENCL_BACKEND)
     endif ()
 endif ()
 
@@ -120,8 +121,12 @@ if (ON)
         # find better way to do it
         set(OCL_ROOT "C:/Program Files (x86)/OCL_SDK_Light")
 
-        message("\t - Declare specific C-math definitions")
-        add_compile_definitions(_USE_MATH_DEFINES)
+        if (MSVC)
+            message("\t - Declare specific C-math definitions")
+            add_compile_definitions(_USE_MATH_DEFINES)
+        endif ()
+        # build msvc
+        set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS 1)
     endif ()
 endif ()
 

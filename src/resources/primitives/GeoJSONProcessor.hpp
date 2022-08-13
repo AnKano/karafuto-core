@@ -17,6 +17,7 @@
 #include "meshes/PolygonMesh.hpp"
 
 #include "../../layer/LayerInterface.hpp"
+#include "../../layer/Layer.hpp"
 #include "../elevation/IElevationSrc.hpp"
 
 namespace KCore {

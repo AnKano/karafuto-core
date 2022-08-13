@@ -3,7 +3,7 @@
 #include <cstring>
 
 #include "../../geography/TileDescription.hpp"
-#include "../../layer/presenters/ImageResult.hpp"
+#include "EventPayloads.hpp"
 
 namespace KCore {
     enum LayerEventType {

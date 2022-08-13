@@ -1,12 +1,15 @@
 #pragma once
 
 #include <functional>
+#include <mutex>
 
-#include "presenters/IRenderContext.hpp"
 #include "events/LayerEvent.hpp"
 #include "../misc/FrustumCulling.hpp"
 #include "../geography/TileDescription.hpp"
 #include "RemoteSource.hpp"
+#include "../network/INetworkAdapter.hpp"
+
+#include "LRUCache17.hpp"
 
 namespace KCore {
     class Layer {
@@ -19,15 +22,13 @@ namespace KCore {
         std::vector<TileDescription> mTiles{};
         std::map<std::string, TileDescription> mPrevTiles, mCurrTiles{};
 
-        IRenderContext* mRenderContext{nullptr};
+        INetworkAdapter *mNetworkAdapter;
 
         std::map<std::string, bool> mRequested;
         std::unique_ptr<RemoteSource> mRemoteSource{nullptr};
 
         std::mutex mQueueLock;
         std::vector<LayerEvent> mCoreEventsQueue, mImageEventsQueue;
-
-        std::function<void()> mTileProcessor;
 
     public:
         Layer();
@@ -43,6 +44,8 @@ namespace KCore {
         void setPosition(const glm::vec3 &position);
 
         void update();
+
+        void processTiles(float target = 1.0f);
 
         void pushToCoreEvents(const LayerEvent &event);
 
@@ -60,28 +63,10 @@ namespace KCore {
 
         TileDescription createTile(const std::string &quadcode);
 
-        std::vector<LayerEvent> getEventsCopyAndClearQueue();
+        std::vector<LayerEvent> getCoreEventsCopyAndClearQueue();
 
-        // ----------------
+        std::vector<LayerEvent> getImageEventsCopyAndClearQueue();
 
-        void setRasterUrl(const char* url);
-
-        // ----------------
-
-        void setOneToOneLODMode(float subdivisionTarget = 1.0f);
-
-        void setOneToSubdivisionLODMode(float subdivisionTarget = 1.0f, float additionalSubdivisionTarget = 2.5f);
-
-        // ----------------
-
-#ifdef VULKAN_BACKEND
-        void setVulkanMode();
-#endif
-
-#ifdef OPENCL_BACKEND
-        void setOpenCLMode();
-#endif
-
-        void setNonProcessingMode();
+        void setRasterUrl(const char *url);
     };
 }

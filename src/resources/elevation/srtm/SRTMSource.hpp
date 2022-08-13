@@ -3,6 +3,8 @@
 #include "../../ISource.hpp"
 
 #include <sstream>
+#include <regex>
+#include <exception>
 
 namespace KCore {
 
@@ -14,64 +16,35 @@ namespace KCore {
 
     public:
         SRTMSource(const char *path, SourceType type) : ISource(path, type) {
-            restoreMetaFromFilename();
+            restoreFromFilename();
         }
 
     private:
-        static int8_t parseSRTMSignByIterator(const std::string &string, uint64_t &position, uint8_t stage) {
-            if (position > string.length()) throw std::runtime_error("Found EOL in filename!");
+        void restoreFromFilename() {
+            std::regex rgx("([NS])([0-9]+)([EW])([0-9]+)");
+            std::smatch matches;
 
-            auto ch = string[position++];
+            if (std::regex_search(mFileNameBase, matches, rgx)) {
+                std::cout << "Match found\n";
 
-            switch (stage) {
-                case 1:
-                    if (ch == 'N') return 1;
-                    if (ch == 'S') return -1;
-                case 2:
-                    if (ch == 'E') return 1;
-                    if (ch == 'W') return -1;
-                default: throw std::runtime_error("Wrong char in filename!");
-            }
-        }
+                auto mYSign = (std::stoi(matches[0]) == 'N') ? 1 : -1;
+                auto mYVal = std::stoi(matches[1]);
+                auto mY = mYSign * mYVal;
 
-        static uint16_t parseNumberByIterator(const std::string &string, uint64_t &position) {
-            if (position > string.length()) throw std::runtime_error("Found EOL in filename!");
+                auto mXSign = (std::stoi(matches[2]) == 'E') ? 1 : -1;
+                auto mXVal = std::stoi(matches[3]);
+                auto mX = mXSign * mXVal;
 
-            std::stringstream collector;
+                mYOrigin = mY + 1.0;
+                mYOpposite = mY;
 
-            while (position <= string.length() && string[position] >= '0' && string[position] <= '9') {
-                collector << string[position];
-                position++;
-            }
+                mXOrigin = mX;
+                mXOpposite = mX + 1.0;
 
-            collector.seekg(0, std::ios::end);
-            if (!collector.tellg()) throw std::runtime_error("Wrong number in filename!");
-
-            collector.seekg(0, std::ios::beg);
-
-            uint16_t value = 0.0;
-            collector >> value;
-            return value;
-        }
-
-        void restoreMetaFromFilename() {
-            const int stages = 2;
-
-            uint64_t pos = 0;
-
-            std::array<int, stages> values{};
-            for (int i = 0; i < stages; i++) {
-                parseSRTMSignByIterator(mFileNameBase, pos, i + 1);
-                values[i] = parseNumberByIterator(mFileNameBase, pos);
-            }
-            mYOrigin = values[0] + 1.0;
-            mYOpposite = values[0];
-
-            mXOrigin = values[1];
-            mXOpposite = values[1] + 1.0;
-
-            mPixelWidth = 1.0 / 3601.0;
-            mPixelHeight = mPixelWidth;
+                mPixelWidth = 1.0 / 3601.0;
+                mPixelHeight = mPixelWidth;
+            } else
+                throw std::runtime_error("Wrong SRTM-file filename: unable to parse sensitive meta!");
         };
 
     };

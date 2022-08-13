@@ -7,7 +7,7 @@
 
 namespace KCore {
     static void performGETRequestAsync(const std::string &url,
-                                       const std::function<void(const std::vector<uint8_t> &)>& callback) {
+                                       const std::function<void(const std::vector<uint8_t> &)> &callback) {
         std::thread{[url, callback]() {
             try {
                 http::Request request{url};
@@ -16,7 +16,8 @@ namespace KCore {
                         {"User-Agent",   "KarafutoMapCore/0.1"},
                 });
 
-                callback({response.body.begin(), response.body.end()});
+                if (response.status.code == http::Status::Ok)
+                    callback({response.body.begin(), response.body.end()});
             } catch (const std::exception &e) {
                 std::cerr << "Request failed, error: " << e.what() << '\n';
             }

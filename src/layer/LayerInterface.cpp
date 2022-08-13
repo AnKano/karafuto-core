@@ -2,9 +2,9 @@
 
 #include <glm/gtc/type_ptr.hpp>
 
-#include "../misc/Utils.hpp"
-
 namespace KCore {
+    LayerInterface::LayerInterface() : LayerInterface(0.0f, 0.0f) {}
+
     LayerInterface::LayerInterface(float latitude, float longitude) : mLayer(latitude, longitude) {}
 
     LayerInterface::LayerInterface(float latitude, float longitude, const char *url) : mLayer(latitude, longitude) {
@@ -62,40 +62,14 @@ namespace KCore {
         mLayer.update();
     }
 
-    std::vector<LayerEvent> LayerInterface::getEvents() {
-        return mLayer.getEventsCopyAndClearQueue();
+    std::vector<LayerEvent> LayerInterface::getCoreEvents() {
+        auto res = mLayer.getCoreEventsCopyAndClearQueue();
+        return res;
     }
 
-    void LayerInterface::setLayerMode(LayerMode mode, float param1, float param2) {
-        switch (mode) {
-            case OneToOneLOD:
-                mLayer.setOneToOneLODMode(param1);
-                break;
-            case OneToSubdivisionLOD:
-                mLayer.setOneToSubdivisionLODMode(param1, param2);
-                break;
-        }
-    }
-
-    void LayerInterface::setBackendMode(BackendMode mode) {
-        std::cout << "selected mode: " << mode << std::endl;
-        switch (mode) {
-#ifdef VULKAN_BACKEND
-            case Vulkan:
-                std::cout << "selected mode: Vulkan" << std::endl;
-                mLayer.setVulkanMode();
-                break;
-#endif
-#ifdef OPENCL_BACKEND
-            case OpenCL:
-                std::cout << "selected mode: OpenCL" << std::endl;
-                mLayer.setOpenCLMode();
-                break;
-#endif
-            default:
-                std::cout << "selected mode: None" << std::endl;
-                mLayer.setNonProcessingMode();
-        }
+    std::vector<LayerEvent> LayerInterface::getImageEvents() {
+        auto res = mLayer.getImageEventsCopyAndClearQueue();
+        return res;
     }
 
     void LayerInterface::setLayerRasterUrl(const char *url) {
@@ -125,7 +99,7 @@ namespace KCore {
     }
 
     DllExport std::vector<LayerEvent> *GetEventsVector(KCore::LayerInterface *layerPtr) {
-        return new std::vector<LayerEvent>(layerPtr->getEvents());
+        return new std::vector<LayerEvent>(layerPtr->getCoreEvents());
     }
 
     DllExport LayerEvent *EjectEventsFromVector(std::vector<LayerEvent> *vecPtr, int &length) {
@@ -143,13 +117,5 @@ namespace KCore {
         }
 
         delete vecPtr;
-    }
-
-    DllExport void SetLayerMode(KCore::LayerInterface *corePtr, LayerMode mode, float param1, float param2) {
-        corePtr->setLayerMode(mode, param1, param2);
-    }
-
-    DllExport void SetBackendMode(KCore::LayerInterface *corePtr, BackendMode mode) {
-        corePtr->setBackendMode(mode);
     }
 }

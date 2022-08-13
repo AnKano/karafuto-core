@@ -99,21 +99,24 @@ namespace KCore {
 
     std::vector<GeoJSONTransObject> *
     ProcessGeoJSONRaw(LayerInterface *layerPtr, const char *raw, IElevationSrc *elevationSrc) {
-        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(raw), elevationSrc);
+//        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(raw), elevationSrc);
+return nullptr;
     }
 
     std::vector<GeoJSONTransObject> *
     ProcessGeoJSONFile(LayerInterface *layerPtr, const char *path, IElevationSrc *elevationSrc) {
         auto download = readFile(path);
         auto str = std::string{download.begin(), download.end()};
-        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(str), elevationSrc);
+//        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(str), elevationSrc);
+return nullptr;
     }
 
     std::vector<GeoJSONTransObject> *
     ProcessGeoJSONUrl(LayerInterface *layerPtr, const char *url, IElevationSrc *elevationSrc) {
         auto download = performGETRequestSync(url);
         auto str = std::string{download.begin(), download.end()};
-        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(str), elevationSrc);
+//        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(str), elevationSrc);
+return nullptr;
     }
 
     DllExport GeoJSONTransObject *EjectJSONObjectsFromVector(std::vector<GeoJSONTransObject> *vecPtr, int &length) {
