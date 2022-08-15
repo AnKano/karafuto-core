@@ -18,21 +18,26 @@ namespace KCore {
 
         LayerInterface(float latitude, float longitude, const char *url);
 
-        void update(const glm::mat4 &cameraProjectionMatrix,
-                    const glm::mat4 &cameraViewMatrix,
-                    const glm::vec3 &cameraPosition);
+        void updateProjectionMatrix(const glm::mat4 &projectionMatrix);
+        void updateProjectionMatrix(const float *projectionMatrix_ptr, bool transpose = false);
 
-        void update(const float *cameraProjectionMatrix_ptr,
-                    const float *cameraViewMatrix_ptr,
-                    const float *cameraPosition_ptr,
-                    bool transposeProjectionMatrix = false,
-                    bool transposeViewMatrix = false
-        );
+        void updateProjectionMatrixFromParams(const float fov, const float aspectRatio,
+                                              const float near, const float far);
 
-        void update2D(const float &aspectRatio, const float &zoom, const float &cameraPositionX,
-                      const float &cameraPositionY);
+        void updateViewMatrix(const glm::mat4 &viewMatrix);
+        void updateViewMatrix(const float *viewMatrix_ptr, bool transpose = false);
+
+        void updateViewMatrixFromParams(const glm::vec3 &positionVector, const glm::vec3 &rotationVector);
+        void updateViewMatrixFromParams(const float *positionVector_ptr, const float *rotationVector_ptr);
+
+        void update(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix);
+        void update(const float *projectionMatrix_ptr, const float *viewMatrix_ptr,
+                    bool transposeProjectionMatrix = false, bool transposeViewMatrix = false);
+
+        void calculate();
 
         std::vector<LayerEvent> getCoreEvents();
+
         std::vector<LayerEvent> getImageEvents();
 
         Layer *raw();
@@ -45,14 +50,23 @@ namespace KCore {
 
     extern "C" {
     DllExport KCore::LayerInterface *CreateTileLayerWithURL(float latitude, float longitude, const char *url);
-    DllExport KCore::LayerInterface *CreateTileLayerOSM(float latitude, float longitude);
-    DllExport void UpdateLayer(KCore::LayerInterface *corePtr,
-                               float *cameraProjectionMatrix,
-                               float *cameraViewMatrix,
-                               float *cameraPosition);
-    DllExport std::vector<LayerEvent> *GetEventsVector(KCore::LayerInterface *layerPtr);
-    DllExport LayerEvent *EjectEventsFromVector(std::vector<LayerEvent> *vecPtr, int &length);
-    DllExport void ReleaseEventsVector(std::vector<LayerEvent> *vecPtr);
-    DllExport void SetLayerRasterUrl(KCore::LayerInterface *corePtr, const char *url);
+    DllExport KCore::LayerInterface *CreateTileLayer(float latitude, float longitude);
+
+    DllExport void Update(KCore::LayerInterface *layer_ptr, float *projectionMatrix_ptr, float *viewMatrix_ptr, bool projectionMatrixTranspose = false, bool viewMatrixTranspose = false);
+
+    DllExport void UpdateProjectionMatrix(KCore::LayerInterface *layer_ptr, float *projectionMatrix_ptr, bool transpose = false);
+    DllExport void UpdateProjectionMatrixFromParams(KCore::LayerInterface *layer_ptr, float fov, float aspectRatio, float near, float far);
+
+    DllExport void UpdateViewMatrix(KCore::LayerInterface *layer_ptr, float *viewMatrix_ptr, bool transpose = false);
+    DllExport void UpdateViewMatrixFromParams(KCore::LayerInterface *layer_ptr, float *positionVector_ptr, float *rotationVector_ptr);
+
+    DllExport void Calculate(KCore::LayerInterface *layer_ptr);
+
+    DllExport std::vector<LayerEvent> *GetCoreEventsVector(KCore::LayerInterface *layer_ptr);
+    DllExport std::vector<LayerEvent> *GetImageEventsVector(KCore::LayerInterface *layer_ptr);
+    DllExport LayerEvent *EjectEventsFromVector(std::vector<LayerEvent> *vector_ptr, int &length);
+    DllExport void ReleaseEventsVector(std::vector<LayerEvent> *vector_ptr);
+
+    DllExport void SetLayerRasterUrl(KCore::LayerInterface *layer_ptr, const char *url);
     }
 }

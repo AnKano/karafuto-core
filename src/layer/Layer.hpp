@@ -68,5 +68,9 @@ namespace KCore {
         std::vector<LayerEvent> getImageEventsCopyAndClearQueue();
 
         void setRasterUrl(const char *url);
+
+        // !TODO: remove later
+
+        int test();
     };
 }

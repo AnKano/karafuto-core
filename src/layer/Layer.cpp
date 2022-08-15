@@ -222,4 +222,8 @@ namespace KCore {
                 pushToCoreEvents(LayerEvent::MakeNotInFrustumEvent(item));
         }
     }
+
+    int Layer::test() {
+        return 99887766;
+    }
 }

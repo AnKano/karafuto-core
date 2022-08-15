@@ -11,45 +11,56 @@ namespace KCore {
         setLayerRasterUrl(url);
     }
 
-    void LayerInterface::update(const float *cameraProjectionMatrix_ptr,
-                                const float *cameraViewMatrix_ptr,
-                                const float *cameraPosition_ptr,
-                                bool transposeProjectionMatrix,
-                                bool transposeViewMatrix) {
-        auto viewMatrix = glm::make_mat4x4(cameraViewMatrix_ptr);
-        if (transposeViewMatrix) viewMatrix = glm::transpose(viewMatrix);
-
-        auto projectionMatrix = glm::make_mat4x4(cameraProjectionMatrix_ptr);
-        if (transposeProjectionMatrix) projectionMatrix = glm::transpose(projectionMatrix);
-
-        mCameraViewMatrix = viewMatrix;
+    void LayerInterface::updateProjectionMatrix(const glm::mat4 &projectionMatrix) {
         mCameraProjectionMatrix = projectionMatrix;
-        mCameraPosition = glm::make_vec3(cameraPosition_ptr);
-
-        performUpdate();
     }
 
-    void LayerInterface::update(const glm::mat4 &cameraProjectionMatrix,
-                                const glm::mat4 &cameraViewMatrix,
-                                const glm::vec3 &cameraPosition) {
-        mCameraViewMatrix = cameraViewMatrix;
-        mCameraProjectionMatrix = cameraProjectionMatrix;
-        mCameraPosition = cameraPosition;
-
-        performUpdate();
+    void LayerInterface::updateProjectionMatrix(const float *projectionMatrix_ptr, bool transpose) {
+        auto cameraProjMatrix = glm::make_mat4x4(projectionMatrix_ptr);
+        if (transpose) cameraProjMatrix = glm::transpose(cameraProjMatrix);
+        updateProjectionMatrix(cameraProjMatrix);
     }
 
-    void LayerInterface::update2D(const float &aspectRatio, const float &zoom,
-                                  const float &cameraPositionX, const float &cameraPositionY) {
-        mCameraPosition = glm::vec3{-cameraPositionX, zoom, cameraPositionY};
-        mCameraViewMatrix = glm::lookAt(mCameraPosition,
-                                        {mCameraPosition.x, 0.0f, mCameraPosition.z},
-                                        {0.0f, 0.0f, 1.0f});
+    void LayerInterface::updateViewMatrix(const glm::mat4 &viewMatrix) {
+        mCameraViewMatrix = viewMatrix;
+        auto invViewMatrix = glm::inverse(viewMatrix);
+        mCameraPosition = invViewMatrix[3];
+    }
 
-        mCameraProjectionMatrix = glm::perspective(
-                glm::radians(45.0f), aspectRatio, 100.0f, 2500000.0f
-        );
+    void LayerInterface::updateViewMatrix(const float *viewMatrix_ptr, bool transpose) {
+        auto cameraViewMatrix = glm::make_mat4x4(viewMatrix_ptr);
+        if (transpose) cameraViewMatrix = glm::transpose(cameraViewMatrix);
+        updateViewMatrix(cameraViewMatrix);
+    }
 
+    void LayerInterface::updateViewMatrixFromParams(const glm::vec3 &positionVector, const glm::vec3 &rotationVector) {
+        glm::mat4 viewMatrix(1.0f);
+        viewMatrix *= glm::rotate(-rotationVector.x, glm::vec3(1.0f, 0.0f, 0.0f));
+        viewMatrix *= glm::rotate(-rotationVector.y, glm::vec3(0.0f, 1.0f, 0.0f));
+        viewMatrix *= glm::rotate(-rotationVector.z, glm::vec3(0.0f, 0.0f, 1.0f));
+        viewMatrix *= glm::translate(-positionVector);
+
+        updateViewMatrix(viewMatrix);
+    }
+
+    void LayerInterface::updateViewMatrixFromParams(const float *positionVector_ptr, const float *rotationVector_ptr) {
+        auto position = glm::make_vec3(positionVector_ptr);
+        auto rotation = glm::make_vec3(rotationVector_ptr);
+        updateViewMatrixFromParams(position, rotation);
+    }
+
+    void LayerInterface::update(const float *projectionMatrix_ptr, const float *viewMatrix_ptr,
+                                bool transposeProjectionMatrix, bool transposeViewMatrix) {
+        updateProjectionMatrix(projectionMatrix_ptr, transposeProjectionMatrix);
+        updateViewMatrix(viewMatrix_ptr, transposeViewMatrix);
+    }
+
+    void LayerInterface::update(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) {
+        updateProjectionMatrix(projectionMatrix);
+        updateViewMatrix(viewMatrix);
+    }
+
+    void LayerInterface::calculate() {
         performUpdate();
     }
 
@@ -80,7 +91,13 @@ namespace KCore {
         return &mLayer;
     }
 
-    DllExport KCore::LayerInterface *CreateTileLayerOSM(float latitude, float longitude) {
+    void LayerInterface::updateProjectionMatrixFromParams(const float fov, const float aspectRatio,
+                                                          const float near, const float far) {
+        auto projectionMatrix = glm::perspective(fov, aspectRatio, near, far);
+        updateProjectionMatrix(projectionMatrix);
+    }
+
+    DllExport KCore::LayerInterface *CreateTileLayer(float latitude, float longitude) {
         return new KCore::LayerInterface(latitude, longitude);
     }
 
@@ -88,27 +105,56 @@ namespace KCore {
         return new KCore::LayerInterface(latitude, longitude, url);
     }
 
-    DllExport void UpdateLayer(KCore::LayerInterface *corePtr,
-                               float *cameraProjectionMatrix,
-                               float *cameraViewMatrix,
-                               float *cameraPosition) {
-        corePtr->update(cameraProjectionMatrix,
-                        cameraViewMatrix,
-                        cameraPosition,
-                        false, false);
+    DllExport void Update(KCore::LayerInterface *layer_ptr,
+                          float *projectionMatrix_ptr, float *viewMatrix_ptr,
+                          bool projectionMatrixTranspose, bool viewMatrixTranspose) {
+        layer_ptr->update(
+                projectionMatrix_ptr, viewMatrix_ptr,
+                projectionMatrixTranspose, viewMatrixTranspose
+        );
     }
 
-    DllExport std::vector<LayerEvent> *GetEventsVector(KCore::LayerInterface *layerPtr) {
-        return new std::vector<LayerEvent>(layerPtr->getCoreEvents());
+    DllExport void UpdateProjectionMatrix(KCore::LayerInterface *layer_ptr,
+                                          float *projectionMatrix_ptr, bool transpose) {
+        layer_ptr->updateProjectionMatrix(projectionMatrix_ptr, transpose);
     }
 
-    DllExport LayerEvent *EjectEventsFromVector(std::vector<LayerEvent> *vecPtr, int &length) {
-        length = (int) vecPtr->size();
-        return vecPtr->data();
+    DllExport void UpdateProjectionMatrixFromParams(KCore::LayerInterface *layer_ptr,
+                                                    const float fov, const float aspectRatio,
+                                                    const float near, const float far) {
+        layer_ptr->updateProjectionMatrixFromParams(fov, aspectRatio, near, far);
     }
 
-    DllExport void ReleaseEventsVector(std::vector<LayerEvent> *vecPtr) {
-        for (const auto &item: *vecPtr) {
+
+    DllExport void UpdateViewMatrix(KCore::LayerInterface *layer_ptr,
+                                    float *viewMatrix_ptr, bool transpose) {
+        layer_ptr->updateViewMatrix(viewMatrix_ptr, transpose);
+    }
+
+    DllExport void UpdateViewMatrixFromParams(KCore::LayerInterface *layer_ptr,
+                                              float *positionVector_ptr, float *rotationVector_ptr) {
+        layer_ptr->updateViewMatrixFromParams(positionVector_ptr, rotationVector_ptr);
+    }
+
+    DllExport void Calculate(KCore::LayerInterface *layer_ptr) {
+        layer_ptr->calculate();
+    }
+
+    DllExport std::vector<LayerEvent> *GetCoreEventsVector(KCore::LayerInterface *layer_ptr) {
+        return new std::vector<LayerEvent>(layer_ptr->getCoreEvents());
+    }
+
+    DllExport std::vector<LayerEvent> *GetImageEventsVector(KCore::LayerInterface *layer_ptr) {
+        return new std::vector<LayerEvent>(layer_ptr->getImageEvents());
+    }
+
+    DllExport LayerEvent *EjectEventsFromVector(std::vector<LayerEvent> *vector_ptr, int &length) {
+        length = (int) vector_ptr->size();
+        return vector_ptr->data();
+    }
+
+    DllExport void ReleaseEventsVector(std::vector<LayerEvent> *vector_ptr) {
+        for (const auto &item: *vector_ptr) {
             if (item.type == ImageReady) {
                 auto *castedPayload = (ImageResult *) item.payload;
                 delete[] castedPayload->data;
@@ -116,6 +162,6 @@ namespace KCore {
             }
         }
 
-        delete vecPtr;
+        delete vector_ptr;
     }
 }
