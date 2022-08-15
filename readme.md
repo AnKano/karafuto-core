@@ -106,10 +106,10 @@ enum BackendMode {
 
 ```
 // process GeoJSON file and try to get elevation value from related SRTM source 
-SRTMElevation* CreateSRTMElevationRepo();
+SRTMElevation* CreateSRTMElevationSource();
  
 // process GeoJSON file and without elevation search  
-DllExport void SRTMElevationRepoAddSource(SRTMElevation* srcPtr, const char* path, SourceType type);
+DllExport void AddPieceToSRTMElevationSource(SRTMElevation* srcPtr, const char* path, SourceType type);
 
 <...>
 

@@ -1,6 +1,5 @@
 #include "GeoJSONProcessor.hpp"
 
-
 namespace KCore {
     std::vector<GeoJSONObject> ParseGeoJSON(const std::string &data) {
         std::vector<GeoJSONObject> accumulator;
@@ -16,14 +15,14 @@ namespace KCore {
             for (const auto &feature: doc["features"].GetArray()) {
                 try {
                     accumulator.emplace_back(feature);
-                } catch (const std::exception& ex) {
+                } catch (const std::exception &ex) {
                     std::cerr << ex.what() << std::endl;
                 }
             }
         } else if (type == "Feature")
             try {
                 accumulator.emplace_back(doc);
-            } catch (const std::exception& ex) {
+            } catch (const std::exception &ex) {
                 std::cerr << ex.what() << std::endl;
             }
         else throw std::runtime_error("unsupported file format!");
@@ -32,7 +31,7 @@ namespace KCore {
     }
 
     std::vector<GeoJSONTransObject> *
-    ProcessGeoJSONObjects(Layer *layer, const std::vector<GeoJSONObject> &jsonObjects, IElevationSrc* elevationSrc) {
+    ProcessGeoJSONObjects(Layer *layer, const std::vector<GeoJSONObject> &jsonObjects, IElevationSrc *elevationSrc) {
         auto *objects = new std::vector<KCore::GeoJSONTransObject>();
 
         for (auto &geojsonObject: jsonObjects) {
@@ -100,7 +99,7 @@ namespace KCore {
     std::vector<GeoJSONTransObject> *
     ProcessGeoJSONRaw(LayerInterface *layerPtr, const char *raw, IElevationSrc *elevationSrc) {
 //        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(raw), elevationSrc);
-return nullptr;
+        return nullptr;
     }
 
     std::vector<GeoJSONTransObject> *
@@ -108,15 +107,15 @@ return nullptr;
         auto download = readFile(path);
         auto str = std::string{download.begin(), download.end()};
 //        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(str), elevationSrc);
-return nullptr;
+        return nullptr;
     }
 
     std::vector<GeoJSONTransObject> *
     ProcessGeoJSONUrl(LayerInterface *layerPtr, const char *url, IElevationSrc *elevationSrc) {
-        auto download = performGETRequestSync(url);
+        auto download = NetworkTools::performGETRequestSync(url);
         auto str = std::string{download.begin(), download.end()};
 //        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(str), elevationSrc);
-return nullptr;
+        return nullptr;
     }
 
     DllExport GeoJSONTransObject *EjectJSONObjectsFromVector(std::vector<GeoJSONTransObject> *vecPtr, int &length) {

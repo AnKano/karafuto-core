@@ -53,7 +53,7 @@ namespace KCore {
         }
 
         void loadDataFromUrl() {
-            mData = performGETRequestSync(mPathOrUrl);
+            mData = NetworkTools::performGETRequestSync(mPathOrUrl);
         }
     };
 

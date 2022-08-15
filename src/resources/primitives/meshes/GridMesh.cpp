@@ -66,7 +66,7 @@ namespace KCore {
                 const float x = ix * segment_width - widthHalf;
 
                 const float val = heights[iy * (gridX1) + ix];
-                const auto height = (val <= 5000.0f) ? heights[iy * (gridX1) + ix] : 0.0;
+                const auto height = (val <= 5000.0f) ? val * 0.001 : 0.0;
 
                 mVertices.emplace_back(-1 * x, height, -1 * y);
                 mNormals.emplace_back(0.0f, 1.0f, 0.0f);
@@ -107,9 +107,9 @@ namespace KCore {
         const float uvs = 1.0f / segments;
         for (int ix = 0; ix < grid1; ix++) {
             const float x = ix * segmentWidth - widthHalf;
-            const float height = (heights[ix] <= 5000.0f) ? heights[ix] : 0.0f;
+            const float height = (heights[ix] <= 5000.0f) ? heights[ix] * 0.001 : 0.0f;
 
-            mVertices.emplace_back(-x, height, -constraint);
+            mVertices.emplace_back(-x, height , -constraint);
 
             mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
@@ -122,7 +122,7 @@ namespace KCore {
         for (int ix = 0; ix < grid1; ix++) {
             const float x = ix * segmentWidth - widthHalf;
 
-            mVertices.emplace_back(-x, -100.0f, -constraint);
+            mVertices.emplace_back(-x, -1.0f, -constraint);
 
             mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
@@ -168,7 +168,7 @@ namespace KCore {
             const float x = ix * segmentHeight - heightHalf;
 
             const float val = heights[heights.size() - ix - 1];
-            const float height = (val <= 5000.0f) ? val : 0.0f;
+            const float height = (val <= 5000.0f) ? val * 0.001: 0.0f;
 
             mVertices.emplace_back(-constraint, height, x);
 
@@ -183,7 +183,7 @@ namespace KCore {
         for (int ix = 0; ix < grid1; ix++) {
             const float x = ix * segmentHeight - heightHalf;
 
-            mVertices.emplace_back(-constraint, -100.0f, x);
+            mVertices.emplace_back(-constraint, -1.0f, x);
 
             mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
