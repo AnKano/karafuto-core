@@ -17,30 +17,33 @@ namespace KCore {
         char quadcode[32];
         void *payload;
 
-        static LayerEvent MakeInFrustumEvent(const std::string &quadcode, TilePayload* payloadPtr) {
-            LayerEvent event{};
-            event.type = InFrustum;
-            event.payload = payloadPtr;
-            std::strcpy(event.quadcode, quadcode.c_str());
-
+        static LayerEvent MakeInFrustumEvent(const std::string &quadcode, const TileDescription &description) {
+            LayerEvent event{.type = InFrustum, .payload = new TilePayloadEvent(description)};
+#if defined(_MSC_VER)
+            strcpy_s(event.quadcode, quadcode.c_str());
+#elif defined(__GNUC__)
+            strcpy(event.quadcode, quadcode.c_str());
+#endif
             return event;
         }
 
         static LayerEvent MakeNotInFrustumEvent(const std::string &quadcode) {
-            LayerEvent event{};
-            event.type = NotInFrustum;
-            event.payload = nullptr;
-            std::strcpy(event.quadcode, quadcode.c_str());
-
+            LayerEvent event{.type = NotInFrustum, .payload = nullptr};
+#if defined(_MSC_VER)
+            strcpy_s(event.quadcode, quadcode.c_str());
+#elif defined(__GNUC__)
+            strcpy(event.quadcode, quadcode.c_str());
+#endif
             return event;
         }
 
-        static LayerEvent MakeImageEvent(const std::string &quadcode, ImageResult* payloadPtr) {
-            LayerEvent event{};
-            event.type = ImageReady;
-            event.payload = payloadPtr;
-            std::strcpy(event.quadcode, quadcode.c_str());
-
+        static LayerEvent MakeImageEvent(const std::string &quadcode, const std::vector<uint8_t> &result) {
+            LayerEvent event{.type = ImageReady, .payload = new ImageResultEvent(result)};
+#if defined(_MSC_VER)
+            strcpy_s(event.quadcode, quadcode.c_str());
+#elif defined(__GNUC__)
+            strcpy(event.quadcode, quadcode.c_str());
+#endif
             return event;
         }
     };

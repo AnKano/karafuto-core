@@ -1,9 +1,7 @@
 #include "Layer.hpp"
 
 #include "../misc/Utils.hpp"
-
 #include "../network/HTTPRequestAdapter/HTTPRequestNetworkAdapter.hpp"
-#include "../misc/STBImageUtils.hpp"
 
 namespace KCore {
     Layer::Layer() : Layer(0.0f, 0.0f) {}
@@ -22,12 +20,12 @@ namespace KCore {
         calculateTiles();
     }
 
-    glm::vec2 Layer::latLonToWorldPosition(const glm::vec2 &latLon) {
+    glm::vec2 Layer::latLonToWorldPosition(const glm::vec2 &latLon) const {
         auto projectedPoint = GeographyConverter::latLonToPoint(latLon);
         return projectedPoint - mOriginLatLon;
     }
 
-    glm::vec2 Layer::worldPositionToLatLon(const glm::vec2 &point) {
+    glm::vec2 Layer::worldPositionToLatLon(const glm::vec2 &point) const {
         auto projectedPoint = point + mOriginLatLon;
         return GeographyConverter::pointToLatLon(projectedPoint);
     }
@@ -60,11 +58,6 @@ namespace KCore {
         mImageEventsQueue.push_back(event);
     }
 
-    std::size_t Layer::imageEventsCount() {
-        std::lock_guard<std::mutex> lock{mQueueLock};
-        return mImageEventsQueue.size();
-    }
-
     std::vector<LayerEvent> Layer::getCoreEventsCopyAndClearQueue() {
         std::lock_guard<std::mutex> lock{mQueueLock};
 
@@ -92,7 +85,7 @@ namespace KCore {
 
         // create tiles
         for (const auto &item: std::vector{"0", "1", "2", "3"})
-            tiles.push_back(createTile(item));
+            tiles.emplace_back(this, item);
 
         std::size_t count = 0;
         while (count != tiles.size()) {
@@ -104,50 +97,13 @@ namespace KCore {
                 tile->setVisibility(TileVisibility::Hide);
 
                 for (const auto &item: std::vector{"0", "1", "2", "3"})
-                    tiles.push_back(createTile(quadcode + item));
+                    tiles.emplace_back(this, quadcode + item);
             }
 
             count++;
         }
 
         return tiles;
-    }
-
-    TileDescription Layer::createTile(const std::string &quadcode) {
-        TileDescription tile(quadcode);
-
-        tile.setTilecode(GeographyConverter::quadcodeToTilecode(quadcode));
-
-        {
-            auto tilecode = tile.getTilecode();
-
-            auto w = GeographyConverter::tileToLon(tilecode[0], tilecode[2]);
-            auto s = GeographyConverter::tileToLat(tilecode[1] + 1, tilecode[2]);
-            auto e = GeographyConverter::tileToLon(tilecode[0] + 1, tilecode[2]);
-            auto n = GeographyConverter::tileToLat(tilecode[1], tilecode[2]);
-
-            tile.setBoundsLatLon({w, s, e, n});
-        }
-
-        {
-            auto boundsLatLon = tile.getBoundsLatLon();
-
-            auto sw = latLonToWorldPosition({boundsLatLon[1], boundsLatLon[0]});
-            auto ne = latLonToWorldPosition({boundsLatLon[3], boundsLatLon[2]});
-
-            tile.setBoundsWorld({sw.x, sw.y, ne.x, ne.y});
-        }
-
-        {
-            auto boundsWorld = tile.getBoundsWorld();
-            auto x = boundsWorld[0] + (boundsWorld[2] - boundsWorld[0]) / 2;
-            auto y = boundsWorld[1] + (boundsWorld[3] - boundsWorld[1]) / 2;
-
-            tile.setCenter({x, y});
-            tile.setSideLength(boundsWorld[1] - boundsWorld[3]);
-        }
-
-        return tile;
     }
 
     bool Layer::screenSpaceError(TileDescription &tile, float target, float quality) {
@@ -161,14 +117,14 @@ namespace KCore {
 
         auto center = tile.getCenter();
         auto distance = glm::length(glm::vec3(center.x, 0, center.y) - mOriginPosition);
-        auto error = quality * tile.getSideLength() / distance;
+        auto error = quality * tile.getScale() / distance;
 
         return error > target;
     }
 
     bool Layer::checkTileInFrustum(const TileDescription &tile) {
         auto pos = tile.getCenter();
-        auto scale = tile.getSideLength();
+        auto scale = tile.getScale();
 
         float minX = pos.x - scale / 2.0f;
         float maxX = pos.x + scale / 2.0f;
@@ -191,39 +147,32 @@ namespace KCore {
         for (auto &item: subdivisionResult) {
             if (item.getVisibility() == Visible) {
                 mCurrTiles[item.getQuadcode()] = item;
-                item.setRelatedQuadcodes({item.getQuadcode()});
                 mTiles.push_back(item);
             }
         }
 
         auto diff = mapKeysDifference<std::string>(mCurrTiles, mPrevTiles);
         auto inter = mapKeysIntersection<std::string>(mCurrTiles, mPrevTiles);
-        for (auto &item: diff) {
-            bool inPrev = mPrevTiles.contains(item);
-            bool inNew = mCurrTiles.contains(item);
+
+        for (auto &quadcode: diff) {
+            bool inPrev = mPrevTiles.contains(quadcode);
+            bool inNew = mCurrTiles.contains(quadcode);
+
             if (inNew) {
-                auto payload = &mCurrTiles[item].mPayload;
-                pushToCoreEvents(LayerEvent::MakeInFrustumEvent(item, payload));
-                auto desc = mCurrTiles[item];
+                auto desc = mCurrTiles[quadcode];
+
+                pushToCoreEvents(LayerEvent::MakeInFrustumEvent(quadcode, mCurrTiles[quadcode]));
 
                 mNetworkAdapter->AsyncGETRequest(
                         mRemoteSource->bakeUrl(desc),
-                        [this, desc](const std::vector<uint8_t> &result) {
-                            int width = -1, height = -1, channels = -1;
-                            auto results = STBImageUtils::decodeImageBuffer(
-                                    result.data(), result.size(), width, height, channels
-                            );
-                            auto image = new ImageResult{width, height, channels, results};
-                            pushToImageEvents(LayerEvent::MakeImageEvent(desc.getQuadcode(), image));
+                        [this, quadcode](const std::vector<uint8_t> &result) {
+                            pushToImageEvents(LayerEvent::MakeImageEvent(quadcode, result));
                         }
                 );
             }
-            if (inPrev)
-                pushToCoreEvents(LayerEvent::MakeNotInFrustumEvent(item));
-        }
-    }
 
-    int Layer::test() {
-        return 99887766;
+            if (inPrev)
+                pushToCoreEvents(LayerEvent::MakeNotInFrustumEvent(quadcode));
+        }
     }
 }

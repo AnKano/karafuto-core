@@ -1,41 +1,60 @@
 #include "TileDescription.hpp"
 
 #include <iostream>
-#include <cstring>
+#include <sstream>
+
+#include "../layer/Layer.hpp"
 
 namespace KCore {
-    TileDescription::TileDescription() = default;
-
-    TileDescription::TileDescription(const std::string &quadcode) {
-        if (quadcode.empty()) throw std::invalid_argument("Provided empty quadcode");
+    TileDescription::TileDescription(const Layer *parent, const std::string &quadcode) {
+        if (quadcode.empty()) throw std::invalid_argument("Provided empty quadcode!");
         setQuadcode(quadcode);
+
+        setTilecode(GeographyConverter::quadcodeToTilecode(quadcode));
+
+        {
+            const auto &tilecode = getTilecode();
+
+            auto w = GeographyConverter::tileToLon(tilecode[0], tilecode[2]);
+            auto s = GeographyConverter::tileToLat(tilecode[1] + 1, tilecode[2]);
+            auto e = GeographyConverter::tileToLon(tilecode[0] + 1, tilecode[2]);
+            auto n = GeographyConverter::tileToLat(tilecode[1], tilecode[2]);
+
+            setBoundsLatLon({w, s, e, n});
+        }
+
+        {
+            const auto &boundsLatLon = getBoundsLatLon();
+
+            auto sw = parent->latLonToWorldPosition({boundsLatLon[1], boundsLatLon[0]});
+            auto ne = parent->latLonToWorldPosition({boundsLatLon[3], boundsLatLon[2]});
+
+            setBoundsWorld({sw.x, sw.y, ne.x, ne.y});
+        }
+
+        {
+            const auto &boundsWorld = getBoundsWorld();
+            auto x = boundsWorld[0] + (boundsWorld[2] - boundsWorld[0]) / 2;
+            auto y = boundsWorld[1] + (boundsWorld[3] - boundsWorld[1]) / 2;
+
+            setCenter({x, y});
+            setScale(boundsWorld[1] - boundsWorld[3]);
+        }
     }
 
-    std::string TileDescription::tileURL() const {
-        auto composite =
-                std::to_string(mTilecode.z) + "/" +
-                std::to_string(mTilecode.x) + "/" +
-                std::to_string(mTilecode.y);
-        return composite;
+    std::string TileDescription::createTileURL() const {
+        std::stringstream strstream;
+        strstream << std::to_string(mTilecode.z) << "/"
+                  << std::to_string(mTilecode.x) << "/"
+                  << std::to_string(mTilecode.y);
+        return strstream.str();
     }
 
     void TileDescription::setQuadcode(const std::string &quadcode) {
-#if defined(_MSC_VER)
-        strcpy_s(TileDescription::mPayload.Quadcode, quadcode.c_str());
-#elif defined(__GNUC__)
-        strcpy(TileDescription::mPayload.Quadcode, quadcode.c_str());
-#endif
         TileDescription::mQuadcode = quadcode;
     }
 
-    void TileDescription::setRelatedQuadcodes(const std::vector<std::string> &quadcodes) {
-        mRelatedQuadcodes = quadcodes;
-    }
-
     void TileDescription::setTilecode(const glm::ivec3 &tilecode) {
-        TileDescription::mPayload.Tilecode.x = static_cast<int32_t>(tilecode.x);
-        TileDescription::mPayload.Tilecode.y = static_cast<int32_t>(tilecode.y);
-        TileDescription::mPayload.Tilecode.z = static_cast<int32_t>(tilecode.z);
         TileDescription::mTilecode = tilecode;
     }
 
@@ -48,32 +67,23 @@ namespace KCore {
     }
 
     void TileDescription::setCenter(const glm::vec2 &center) {
-        TileDescription::mPayload.Center[0] = center.x;
-        TileDescription::mPayload.Center[1] = center.y;
         TileDescription::mCenter = center;
     }
 
-    void TileDescription::setSideLength(float sideLength) {
-        TileDescription::mPayload.SideLength = sideLength;
-        TileDescription::mSideLength = sideLength;
+    void TileDescription::setScale(float scale) {
+        TileDescription::mScale = scale;
     }
 
     void TileDescription::setType(TileType type) {
-        TileDescription::mPayload.Type = type;
         TileDescription::mType = type;
     }
 
     void TileDescription::setVisibility(TileVisibility visibility) {
-        TileDescription::mPayload.Visibility = visibility;
         TileDescription::mVisibility = visibility;
     }
 
     const std::string &TileDescription::getQuadcode() const {
         return mQuadcode;
-    }
-
-    const std::vector<std::string> &TileDescription::getRelatedQuadcodes() const {
-        return mRelatedQuadcodes;
     }
 
     const glm::ivec3 &TileDescription::getTilecode() const {
@@ -92,8 +102,8 @@ namespace KCore {
         return mCenter;
     }
 
-    float TileDescription::getSideLength() const {
-        return mSideLength;
+    float TileDescription::getScale() const {
+        return mScale;
     }
 
     TileType TileDescription::getType() const {

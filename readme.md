@@ -135,7 +135,7 @@ DllExport GridMesh *CreateTileMeshXYZ(IElevationSrc *srcPtr, uint8_t zoom,
                                       uint16_t slicesX, uint16_t slicesY,
                                       bool flipUVsX, bool flipUVsY);
                                       
-// create tile using Quadcode with count of segments passed in 3 and 4 arguements  
+// create tile using quadcode with count of segments passed in 3 and 4 arguements  
 DllExport GridMesh *CreateTileMeshQuadcode(IElevationSrc *srcPtr, const char *quadcode,
                                            uint16_t slicesX, uint16_t slicesY,
                                            bool flipUVsX, bool flipUVsY);

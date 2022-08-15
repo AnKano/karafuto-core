@@ -11,7 +11,7 @@ namespace KCore {
     }
 
     std::string RemoteSource::bakeUrl(const TileDescription &desc) {
-        return mURLPrefix + desc.tileURL() + mURLSuffix;
+        return mURLPrefix + desc.createTileURL() + mURLSuffix;
     }
 
     void RemoteSource::restoreRawUrl() {

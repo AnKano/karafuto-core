@@ -156,7 +156,7 @@ namespace KCore {
     DllExport void ReleaseEventsVector(std::vector<LayerEvent> *vector_ptr) {
         for (const auto &item: *vector_ptr) {
             if (item.type == ImageReady) {
-                auto *castedPayload = (ImageResult *) item.payload;
+                auto *castedPayload = (ImageResultEvent *) item.payload;
                 delete[] castedPayload->data;
                 delete castedPayload;
             }

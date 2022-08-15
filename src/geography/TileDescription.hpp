@@ -11,6 +11,7 @@
 #include <map>
 
 namespace KCore {
+    class Layer;
     class TileDescription;
 
     enum TileType {
@@ -24,22 +25,9 @@ namespace KCore {
         Visible = 1
     };
 
-    struct TilePayload {
-        glm::ivec3 Tilecode{0, 0, 0};              /* 00..04..08..12 bytes */
-        float Center[2]{0.0f, 0.0f};               /* 12..16..20     bytes */
-        float SideLength{0.0f};                    /* 20..24         bytes */
-        TileType Type{Leaf};                       /* 24..28         bytes */
-        TileVisibility Visibility{Visible};        /* 28..32         bytes */
-        char Quadcode[32];                         /* 32..64         bytes */
-    };
-
     class TileDescription {
-    public:
-        TilePayload mPayload;
-
     private:
         std::string mQuadcode;
-        std::vector<std::string> mRelatedQuadcodes;
 
         glm::ivec3 mTilecode{};
         glm::vec4 mBoundsLatLon{};
@@ -49,21 +37,16 @@ namespace KCore {
         TileType mType = Leaf;
         TileVisibility mVisibility = Visible;
 
-        float mSideLength{};
+        float mScale{};
 
     public:
-        TileDescription();
+        TileDescription() = default;
 
-        TileDescription(const std::string &quadcode);
+        TileDescription(const Layer* parent, const std::string &quadcode);
 
         ~TileDescription() = default;
 
-        [[nodiscard]]
-        std::string tileURL() const;
-
         void setQuadcode(const std::string &quadcode);
-
-        void setRelatedQuadcodes(const std::vector<std::string> &quadcodes);
 
         void setTilecode(const glm::ivec3 &tilecode);
 
@@ -75,15 +58,12 @@ namespace KCore {
 
         void setVisibility(TileVisibility visibility);
 
-        void setSideLength(float sideLength);
+        void setScale(float scale);
 
         void setType(TileType type);
 
         [[nodiscard]]
         const std::string &getQuadcode() const;
-
-        [[nodiscard]]
-        const std::vector<std::string> &getRelatedQuadcodes() const;
 
         [[nodiscard]]
         const glm::ivec3 &getTilecode() const;
@@ -101,9 +81,12 @@ namespace KCore {
         TileVisibility getVisibility() const;
 
         [[nodiscard]]
-        float getSideLength() const;
+        float getScale() const;
 
         [[nodiscard]]
         TileType getType() const;
+
+        [[nodiscard]]
+        std::string createTileURL() const;
     };
 }

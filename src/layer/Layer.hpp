@@ -3,10 +3,10 @@
 #include <functional>
 #include <mutex>
 
+#include "RemoteSource.hpp"
 #include "events/LayerEvent.hpp"
 #include "../misc/FrustumCulling.hpp"
 #include "../geography/TileDescription.hpp"
-#include "RemoteSource.hpp"
 #include "../network/INetworkAdapter.hpp"
 
 #include "LRUCache17.hpp"
@@ -35,9 +35,11 @@ namespace KCore {
 
         Layer(float latitude, float longitude);
 
-        glm::vec2 latLonToWorldPosition(const glm::vec2 &latLon);
+        [[nodiscard]]
+        glm::vec2 latLonToWorldPosition(const glm::vec2 &latLon) const;
 
-        glm::vec2 worldPositionToLatLon(const glm::vec2 &point);
+        [[nodiscard]]
+        glm::vec2 worldPositionToLatLon(const glm::vec2 &point) const;
 
         void updateFrustum(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix);
 
@@ -51,8 +53,6 @@ namespace KCore {
 
         void pushToImageEvents(const LayerEvent &event);
 
-        std::size_t imageEventsCount();
-
         std::vector<TileDescription> subdivideSpace(float target = 1.0);
 
         void calculateTiles();
@@ -61,16 +61,10 @@ namespace KCore {
 
         bool checkTileInFrustum(const TileDescription &tile);
 
-        TileDescription createTile(const std::string &quadcode);
-
         std::vector<LayerEvent> getCoreEventsCopyAndClearQueue();
 
         std::vector<LayerEvent> getImageEventsCopyAndClearQueue();
 
         void setRasterUrl(const char *url);
-
-        // !TODO: remove later
-
-        int test();
     };
 }
