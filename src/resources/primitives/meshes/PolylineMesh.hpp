@@ -122,7 +122,7 @@ namespace KCore {
 //            }
 
             for (const auto &item: collector[0]) {
-                mVertices.insert(mVertices.end(), {item[0], 0.0f, item[1]});
+                mPositions.insert(mPositions.end(), {item[0], 0.0f, item[1]});
                 mNormals.insert(mNormals.end(), {0.0f, 1.0f, 0.0f});
                 mUVs.insert(mUVs.end(), {0.0f, 0.0f});
             }

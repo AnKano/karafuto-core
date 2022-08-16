@@ -4,7 +4,7 @@ namespace KCore {
     void BaseMesh::createMesh() {}
 
     const std::vector<glm::vec3> &BaseMesh::getVertices() const {
-        return mVertices;
+        return mPositions;
     }
 
     const std::vector<glm::vec3> &BaseMesh::getNormals() const {

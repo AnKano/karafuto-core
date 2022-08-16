@@ -1,11 +1,11 @@
 #pragma once
 
+#include <vector>
+
 #include "glm/glm.hpp"
 #include "BaseMesh.hpp"
 
 #include "../../elevation/Elevation.hpp"
-
-#include <vector>
 
 namespace KCore {
     class GridMesh : public BaseMesh {
@@ -16,7 +16,6 @@ namespace KCore {
         glm::ivec2 mSegments;
         glm::bvec2 mFlipUVs;
 
-
     public:
         GridMesh(const glm::vec2 &dims, const glm::ivec2 &segments,
                  const glm::bvec2 &flipUVs, Elevation elevation);
@@ -26,10 +25,18 @@ namespace KCore {
     private:
         void buildUpSurface();
 
-        void makeHorizontalBorder
-                (const float &constraint, const bool &downBorder);
+        void produceNorthBorder();
 
-        void makeVerticalBorder
-                (const float &constraint, const bool &rightBorder);
+        void produceSouthBorder();
+
+        void produceEastBorder();
+
+        void produceWestBorder();
+
+        void connectLastVertices
+                (const int &num, const int &segments, const bool &opposite);
+
+        void buildBorder
+                (const bool &horizontal, const bool &opposite);
     };
 }

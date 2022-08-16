@@ -26,8 +26,14 @@ namespace KCore {
             uint32_t col = std::floor(imy / raster->mPixelHeight);
 
             uint32_t offset = sizeof(uint16_t) * ((col * 3601) + row);
+            auto actual_value = float((raster->mData[offset] << 8) | raster->mData[offset + 1]);
 
-            return float((raster->mData[offset] << 8) | raster->mData[offset + 1]);
+            // avoid extremal height values
+            // allow values from 0 m. to  8849 m.
+            const auto MAXIMAL_VALUE = 8849.0f;
+            actual_value = (actual_value <= MAXIMAL_VALUE) ? actual_value : 0.0f;
+
+            return actual_value;
         }
 
         return 0.0f;
@@ -59,8 +65,8 @@ namespace KCore {
              const uint16_t &slicesX, const uint16_t &slicesY) {
         for (int j = 0; j <= slicesY; j++) {
             for (int i = 0; i <= slicesX; i++) {
-                float pX = minimalX + offsetX * i;
-                float pY = minimalY + offsetY * j;
+                float pX = minimalX + offsetX * (float) i;
+                float pY = minimalY + offsetY * (float) j;
 
                 collector[j][i] = getElevationAtLatLon(pX, pY);
             }

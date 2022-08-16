@@ -35,12 +35,10 @@ namespace KCore {
 
         Layer(float latitude, float longitude);
 
-        [[nodiscard]]
-        glm::vec2 latLonToWorldPosition
+        [[nodiscard]] glm::vec2 latLonToWorldPosition
                 (const glm::vec2 &latLon) const;
 
-        [[nodiscard]]
-        glm::vec2 worldPositionToLatLon
+        [[nodiscard]] glm::vec2 worldPositionToLatLon
                 (const glm::vec2 &point) const;
 
         void updateFrustum

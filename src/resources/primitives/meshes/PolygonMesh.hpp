@@ -71,17 +71,17 @@ namespace KCore {
 
             for (const auto &constant: std::vector<float>{150.0f}) {
                 for (const auto &item: collector[0]) {
-                    mVertices.insert(mVertices.end(), {item[0], constant, item[1]});
+                    mPositions.insert(mPositions.end(), {item[0], constant, item[1]});
                     mUVs.insert(mUVs.end(), {0.0f, 0.0f});
                 }
 
                 for (const auto &item: collector[1]) {
-                    mVertices.insert(mVertices.end(), {item[0], constant, item[1]});
+                    mPositions.insert(mPositions.end(), {item[0], constant, item[1]});
                     mUVs.insert(mUVs.end(), {0.0f, 0.0f});
                 }
             }
 
-            uint32_t lastIdx = mVertices.size();
+            uint32_t lastIdx = mPositions.size();
 
             ShapeOrientation mainShapeOrient = calculateShapeOrientation(convertedMainCoords);
 
@@ -102,10 +102,10 @@ namespace KCore {
                 auto ptC = glm::vec3{a[0], 0.0f, a[1]};
                 auto ptD = glm::vec3{b[0], 0.0f, b[1]};
 
-                mVertices.insert(mVertices.end(), ptA);
-                mVertices.insert(mVertices.end(), ptB);
-                mVertices.insert(mVertices.end(), ptC);
-                mVertices.insert(mVertices.end(), ptD);
+                mPositions.insert(mPositions.end(), ptA);
+                mPositions.insert(mPositions.end(), ptB);
+                mPositions.insert(mPositions.end(), ptC);
+                mPositions.insert(mPositions.end(), ptD);
 
                 for (int j = 0; j < 4; j++)
                     mUVs.insert(mUVs.end(), {0.0f, 0.0f});
@@ -141,10 +141,10 @@ namespace KCore {
                     auto ptC = glm::vec3{a[0], 0.0f, a[1]};
                     auto ptD = glm::vec3{b[0], 0.0f, b[1]};
 
-                    mVertices.insert(mVertices.end(), ptA);
-                    mVertices.insert(mVertices.end(), ptB);
-                    mVertices.insert(mVertices.end(), ptC);
-                    mVertices.insert(mVertices.end(), ptD);
+                    mPositions.insert(mPositions.end(), ptA);
+                    mPositions.insert(mPositions.end(), ptB);
+                    mPositions.insert(mPositions.end(), ptC);
+                    mPositions.insert(mPositions.end(), ptD);
 
                     for (int j = 0; j < 4; j++)
                         mUVs.insert(mUVs.end(), {0.0f, 0.0f});
@@ -161,7 +161,7 @@ namespace KCore {
                 }
             }
 
-            mNormals = std::vector<glm::vec3>(mVertices.size());
+            mNormals = std::vector<glm::vec3>(mPositions.size());
 
             const std::function<glm::vec3(glm::vec3, glm::vec3, glm::vec3)> computeFaceNormal =
                     [](glm::vec3 p1, glm::vec3 p2, glm::vec3 p3) {
@@ -171,9 +171,9 @@ namespace KCore {
                     };
 
             for (unsigned int i = 0; i < mIndices.size(); i += 3) {
-                glm::vec3 A = mVertices[mIndices[i]];
-                glm::vec3 B = mVertices[mIndices[i + 1]];
-                glm::vec3 C = mVertices[mIndices[i + 2]];
+                glm::vec3 A = mPositions[mIndices[i]];
+                glm::vec3 B = mPositions[mIndices[i + 1]];
+                glm::vec3 C = mPositions[mIndices[i + 2]];
                 glm::vec3 normal = computeFaceNormal(A, B, C);
 
                 mNormals[mIndices[i]] += normal;
@@ -199,12 +199,12 @@ namespace KCore {
 
             for (const auto &constant: std::vector<float>{0.0f}) {
                 for (const auto &item: collector[0]) {
-                    mVertices.insert(mVertices.end(), {item[0], constant, item[1]});
+                    mPositions.insert(mPositions.end(), {item[0], constant, item[1]});
                     mUVs.insert(mUVs.end(), {0.0f, 0.0f});
                 }
 
                 for (const auto &item: collector[1]) {
-                    mVertices.insert(mVertices.end(), {item[0], constant, item[1]});
+                    mPositions.insert(mPositions.end(), {item[0], constant, item[1]});
                     mUVs.insert(mUVs.end(), {0.0f, 0.0f});
                 }
             }

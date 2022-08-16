@@ -1,8 +1,6 @@
 #include "IElevationSource.hpp"
 
-#include <utility>
 #include "../../geography/GeographyConverter.hpp"
-
 #include "Elevation.hpp"
 
 namespace KCore {

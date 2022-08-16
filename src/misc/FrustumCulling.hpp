@@ -56,8 +56,7 @@ namespace KCore {
             pzW = mProjectViewMatrix[3][3] - mProjectViewMatrix[3][2];
         }
 
-        [[nodiscard]]
-        bool testAABB
+        [[nodiscard]] bool testAABB
                 (float minX, float minY, float minZ, float maxX, float maxY, float maxZ) const {
             return nxX * (nxX < 0 ? minX : maxX) +
                    nxY * (nxY < 0 ? minY : maxY) +

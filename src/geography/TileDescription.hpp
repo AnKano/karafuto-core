@@ -72,31 +72,22 @@ namespace KCore {
         void setType
                 (const TileType &type);
 
-        [[nodiscard]]
-        const std::string &getQuadcode() const;
+        [[nodiscard]] const std::string &getQuadcode() const;
 
-        [[nodiscard]]
-        const glm::ivec3 &getTilecode() const;
+        [[nodiscard]] const glm::ivec3 &getTilecode() const;
 
-        [[nodiscard]]
-        const glm::vec4 &getBoundsLatLon() const;
+        [[nodiscard]] const glm::vec4 &getBoundsLatLon() const;
 
-        [[nodiscard]]
-        const glm::vec4 &getBoundsWorld() const;
+        [[nodiscard]] const glm::vec4 &getBoundsWorld() const;
 
-        [[nodiscard]]
-        const glm::vec2 &getCenter() const;
+        [[nodiscard]] const glm::vec2 &getCenter() const;
 
-        [[nodiscard]]
-        TileVisibility getVisibility() const;
+        [[nodiscard]] TileVisibility getVisibility() const;
 
-        [[nodiscard]]
-        float getScale() const;
+        [[nodiscard]] float getScale() const;
 
-        [[nodiscard]]
-        TileType getType() const;
+        [[nodiscard]] TileType getType() const;
 
-        [[nodiscard]]
-        std::string createTileURL() const;
+        [[nodiscard]] std::string createTileURL() const;
     };
 }

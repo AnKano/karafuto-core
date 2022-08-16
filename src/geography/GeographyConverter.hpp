@@ -13,15 +13,13 @@
 
 namespace KCore {
     class GeographyConverter {
+    public:
         constexpr static float R = 6378137.0f;
         constexpr static float MAX_LATITUDE = 85.0511287798f;
 
-        constexpr static float ECC = 6378137.0f;
-        constexpr static float ECC_2 = 6378137.0f * 6378137.0f;
-
         constexpr static float MULTIPLIER = 0.0001f;
+        constexpr static float MESH_MULTIPLIER = 0.001f;
 
-    public:
         static glm::vec2 project
                 (const glm::vec2 &latLon) {
             auto max = MAX_LATITUDE;
@@ -90,25 +88,24 @@ namespace KCore {
 
         static float tileToLon
                 (uint16_t x, uint16_t z) {
-            return x / powf(2.0f, z) * 360.0f - 180.0f;
+            return (float) x / powf(2.0f, z) * 360.0f - 180.0f;
         }
 
         static float tileToLat
                 (uint16_t y, uint16_t z) {
             float n = M_PI - 2.0f * M_PI * y / powf(2.0f, z);
-            return 180.0f / (float) M_PI * (float) atan(0.5f * (expf(n) - expf(-n)));
+            return 180.0f / (float) M_PI * (float) atanf(0.5f * (expf(n) - expf(-n)));
         }
 
-        static int lonToTileX
+        [[maybe_unused]] static int lonToTileX
                 (double lon, int z) {
             return (int) (floor((lon + 180.0) / 360.0 * (1 << z)));
         }
 
-        static int lat2TileY
+        [[maybe_unused]] static int lat2TileY
                 (double lat, int z) {
             double latrad = lat * M_PI / 180.0;
             return (int) (floor((1.0 - asinh(tan(latrad)) / M_PI) / 2.0 * (1 << z)));
         }
-
     };
 }

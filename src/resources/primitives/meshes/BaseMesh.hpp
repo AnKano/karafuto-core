@@ -9,7 +9,7 @@
 namespace KCore {
     class BaseMesh {
     protected:
-        std::vector<glm::vec3> mVertices;
+        std::vector<glm::vec3> mPositions;
         std::vector<glm::vec3> mNormals;
         std::vector<glm::vec2> mUVs;
         std::vector<uint32_t> mIndices;
@@ -20,17 +20,13 @@ namespace KCore {
     public:
         BaseMesh() = default;
 
-        [[nodiscard]]
-        const std::vector<glm::vec3> &getVertices() const;
+        [[nodiscard]] const std::vector<glm::vec3> &getVertices() const;
 
-        [[nodiscard]]
-        const std::vector<glm::vec3> &getNormals() const;
+        [[nodiscard]] const std::vector<glm::vec3> &getNormals() const;
 
-        [[nodiscard]]
-        const std::vector<glm::vec2> &getUVs() const;
+        [[nodiscard]] const std::vector<glm::vec2> &getUVs() const;
 
-        [[nodiscard]]
-        const std::vector<uint32_t> &getIndices() const;
+        [[nodiscard]] const std::vector<uint32_t> &getIndices() const;
     };
 
     extern "C" {
