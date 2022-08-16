@@ -35,9 +35,11 @@ namespace KCore {
                     loadDataFromUrl();
                     break;
                 default:
-                    std::runtime_error("wrong file format");
+                    std::runtime_error("Undefined file format!");
             }
         }
+
+        virtual ~ISource() = default;
 
     private:
         void parseFilename() {

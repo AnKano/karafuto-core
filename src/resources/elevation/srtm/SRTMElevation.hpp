@@ -10,19 +10,19 @@ namespace KCore {
     public:
         SRTMElevation() = default;
 
-        std::vector<float> getTileElevation
-                (const uint8_t &zoom, const uint16_t &x, const uint16_t &y,
-                 const uint16_t &slicesX, const uint16_t &slicesY) override;
+        ~SRTMElevation() = default;
+
+        std::vector<std::vector<float>> getTileElevation
+                (const glm::ivec3 &tilecode, const glm::ivec2 &slices) override;
 
         float getElevationAtLatLon
                 (const float &latitude, const float &longitude) override;
 
-        std::vector<float> getDataForXYZ
-                (const uint8_t &zoom, const uint16_t &x, const uint16_t &y,
-                 const uint16_t &slicesX, const uint16_t &slicesY) override;
+        std::vector<std::vector<float>> getDataForXYZ
+                (const glm::ivec3 &tilecode, const glm::ivec2 &slices) override;
 
         void collectTileKernel
-                (float *collectorPtr,
+                (std::vector<std::vector<float>> &collector,
                  const float &minimalX, const float &minimalY, const float &offsetX, const float &offsetY,
                  const uint16_t &slicesX, const uint16_t &slicesY);
     };

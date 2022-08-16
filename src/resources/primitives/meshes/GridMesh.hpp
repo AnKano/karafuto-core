@@ -8,27 +8,22 @@
 namespace KCore {
     class GridMesh : public BaseMesh {
     public:
-        GridMesh(float width, float length,
-                 int segmentsX, int segmentsY,
-                 bool flipUVsX, bool flipUVsY,
-                 const float *heights);
+        GridMesh(const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
+                 const std::vector<std::vector<float>> &heights);
 
         ~GridMesh() = default;
 
     private:
-        void createMesh() override;
+        void createGeneralSurface
+                (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
+                 const std::vector<std::vector<float>> &heights);
 
-        void createGeneralSurface(float width, float length,
-                                  int segmentsX, int segmentsY,
-                                  bool flipUVsX, bool flipUVsY,
-                                  const std::vector<float> &heights);
+        void makeHorizontalBorder
+                (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
+                 const float &constraint, const std::vector<float> &heights, const bool &downBorder);
 
-        void makeHorizontalBorder(float width, int segments, float constraint,
-                                  const std::vector<float> &heights, bool downBorder,
-                                  bool flipUVsX, bool flipUVsY);
-
-        void makeVerticalBorder(float height, int segments, float constraint,
-                                const std::vector<float> &heights, bool rightBorder,
-                                bool flipUVsX, bool flipUVsY);
+        void makeVerticalBorder
+                (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
+                 const float &constraint, const std::vector<float> &heights, const bool &rightBorder);
     };
 }
