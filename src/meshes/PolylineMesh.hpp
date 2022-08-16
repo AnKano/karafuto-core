@@ -8,7 +8,7 @@
 #include "glm/gtx/vector_angle.hpp"
 #include "mapbox/earcut.hpp"
 
-#include "../GeoJSONObject.hpp"
+#include "../resources/primitives/GeoJSONObject.hpp"
 
 namespace KCore {
     class PolylineMesh : public BaseMesh {

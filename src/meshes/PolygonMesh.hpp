@@ -10,8 +10,7 @@
 #include "glm/gtx/normal.hpp"
 #include "mapbox/earcut.hpp"
 
-#include "GeoJSONObject.hpp"
-
+#include "../resources/primitives/GeoJSONObject.hpp"
 
 namespace KCore {
     class PolygonMesh : public BaseMesh {
