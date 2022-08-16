@@ -1,15 +1,16 @@
-
 #include "SRTMElevation.hpp"
 
+#include <array>
+
 namespace KCore {
-    std::vector<float> KCore::SRTMElevation::getTileElevation(uint8_t zoom, uint16_t x, uint16_t y,
-                                                              uint16_t slicesX, uint16_t slicesY) {
-        const auto kernel = this->getDataForXYZ(zoom, x, y, slicesX, slicesY);
-        std::vector<float> results{kernel, kernel + ((slicesX + 1) * (slicesY + 1))};
-        return results;
+    std::vector<float> KCore::SRTMElevation::getTileElevation
+            (const uint8_t &zoom, const uint16_t &x, const uint16_t &y,
+             const uint16_t &slicesX, const uint16_t &slicesY) {
+        return this->getDataForXYZ(zoom, x, y, slicesX, slicesY);
     }
 
-    float SRTMElevation::getElevationAtLatLon(float latitude, float longitude) {
+    float SRTMElevation::getElevationAtLatLon
+            (const float &latitude, const float &longitude) {
         for (const auto &part: mSources) {
             auto *raster = (SRTMSource *) part.get();
 
@@ -37,7 +38,9 @@ namespace KCore {
         return 0.0f;
     }
 
-    float *SRTMElevation::getDataForXYZ(uint8_t zoom, uint16_t x, uint16_t y, uint16_t slicesX, uint16_t slicesY) {
+    std::vector<float> SRTMElevation::getDataForXYZ
+            (const uint8_t &zoom, const uint16_t &x, const uint16_t &y,
+             const uint16_t &slicesX, const uint16_t &slicesY) {
         auto minimalX = GeographyConverter::tileToLon(x, zoom);
         auto maximalY = GeographyConverter::tileToLat(y, zoom);
         auto maximalX = GeographyConverter::tileToLon(x + 1, zoom);
@@ -47,32 +50,36 @@ namespace KCore {
         float interVtxGapY = std::abs(maximalY - minimalY) / slicesY;
 
         auto elements = (slicesX + 1) * (slicesY + 1);
-        auto *collector = new float[elements];
-        std::memset(collector, 0, elements * sizeof(float));
 
-        collectTileKernel(collector, minimalX, minimalY, interVtxGapX, interVtxGapY, slicesX, slicesY);
+        auto collector = std::vector<float>();
+        collector.resize(elements);
+        std::memset(collector.data(), 0, elements * sizeof(float));
+
+        collectTileKernel(collector.data(), minimalX, minimalY, interVtxGapX, interVtxGapY, slicesX, slicesY);
 
         return collector;
     }
 
-    void SRTMElevation::collectTileKernel(float *collectorPtr, const float &minimalX, const float &minimalY,
-                                          const float &offsetX, const float &offsetY, const uint16_t &slicesX,
-                                          const uint16_t &slicesY) {
+    void SRTMElevation::collectTileKernel
+            (float *collectorPtr, const float &minimalX, const float &minimalY,
+             const float &offsetX, const float &offsetY,
+             const uint16_t &slicesX, const uint16_t &slicesY) {
         for (int j = 0; j <= slicesY; j++) {
             for (int i = 0; i <= slicesX; i++) {
                 float pX = minimalX + offsetX * i;
                 float pY = minimalY + offsetY * j;
 
-                collectorPtr[j * (slicesX+1) + i] = getElevationAtLatLon(pX, pY);
+                collectorPtr[j * (slicesX + 1) + i] = getElevationAtLatLon(pX, pY);
             }
         }
     }
 
-    DllExport SRTMElevation* CreateSRTMElevationSource() {
-            return new SRTMElevation();
+    DllExport SRTMElevation *CreateSRTMElevationSource() {
+        return new SRTMElevation();
     }
 
-    DllExport void AddPieceToSRTMElevationSource(SRTMElevation* source_ptr, const char* path, SourceType type) {
+    DllExport void AddPieceToSRTMElevationSource
+            (SRTMElevation *source_ptr, const char *path, SourceType type) {
         source_ptr->addSourcePart(new SRTMSource(path, type));
     }
 }

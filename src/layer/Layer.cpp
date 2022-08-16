@@ -6,7 +6,8 @@
 namespace KCore {
     Layer::Layer() : Layer(0.0f, 0.0f) {}
 
-    Layer::Layer(float latitude, float longitude) {
+    Layer::Layer
+            (float latitude, float longitude) {
         mOriginLatLon = GeographyConverter::latLonToPoint({latitude, longitude});
         mOriginPosition = {latitude, 0.0f, longitude};
 
@@ -20,21 +21,25 @@ namespace KCore {
         calculateTiles();
     }
 
-    glm::vec2 Layer::latLonToWorldPosition(const glm::vec2 &latLon) const {
+    glm::vec2 Layer::latLonToWorldPosition
+            (const glm::vec2 &latLon) const {
         auto projectedPoint = GeographyConverter::latLonToPoint(latLon);
         return projectedPoint - mOriginLatLon;
     }
 
-    glm::vec2 Layer::worldPositionToLatLon(const glm::vec2 &point) const {
+    glm::vec2 Layer::worldPositionToLatLon
+            (const glm::vec2 &point) const {
         auto projectedPoint = point + mOriginLatLon;
         return GeographyConverter::pointToLatLon(projectedPoint);
     }
 
-    void Layer::updateFrustum(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) {
+    void Layer::updateFrustum
+            (const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) {
         mCullingFilter.updateFrustum(projectionMatrix, viewMatrix);
     }
 
-    void Layer::setPosition(const glm::vec3 &position) {
+    void Layer::setPosition
+            (const glm::vec3 &position) {
         mOriginPosition = position;
     }
 
@@ -48,12 +53,14 @@ namespace KCore {
         processTiles();
     }
 
-    void Layer::pushToCoreEvents(const LayerEvent &event) {
+    void Layer::pushToCoreEvents
+            (const LayerEvent &event) {
         std::lock_guard<std::mutex> lock{mQueueLock};
         mCoreEventsQueue.push_back(event);
     }
 
-    void Layer::pushToImageEvents(const LayerEvent &event) {
+    void Layer::pushToImageEvents
+            (const LayerEvent &event) {
         std::lock_guard<std::mutex> lock{mQueueLock};
         mImageEventsQueue.push_back(event);
     }
@@ -80,7 +87,8 @@ namespace KCore {
         return copy;
     }
 
-    std::vector<TileDescription> Layer::subdivideSpace(float target) {
+    std::vector<TileDescription> Layer::subdivideSpace
+            (float target) {
         std::vector<TileDescription> tiles{};
 
         // create tiles
@@ -106,7 +114,8 @@ namespace KCore {
         return tiles;
     }
 
-    bool Layer::screenSpaceError(TileDescription &tile, float target, float quality) {
+    bool Layer::screenSpaceError
+            (TileDescription &tile, float target, float quality) {
         const auto &quadcode = tile.getQuadcode();
 
         if (!checkTileInFrustum(tile)) {
@@ -122,7 +131,8 @@ namespace KCore {
         return error > target;
     }
 
-    bool Layer::checkTileInFrustum(const TileDescription &tile) {
+    bool Layer::checkTileInFrustum
+            (const TileDescription &tile) {
         auto pos = tile.getCenter();
         auto scale = tile.getScale();
 
@@ -135,12 +145,14 @@ namespace KCore {
         return mCullingFilter.testAABB(minX, minY, minZ, maxX, maxY, maxZ);
     }
 
-    void Layer::setRasterUrl(const char *url) {
+    void Layer::setRasterUrl
+            (const char *url) {
         mRemoteSource = std::make_unique<RemoteSource>(url);
         mRequested.clear();
     }
 
-    void Layer::processTiles(float target) {
+    void Layer::processTiles
+            (float target) {
         auto subdivisionResult = subdivideSpace(target);
 
         // filter & associate

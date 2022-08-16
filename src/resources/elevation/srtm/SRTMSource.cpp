@@ -1,8 +1,12 @@
 
 #include "SRTMSource.hpp"
 
+#include <sstream>
+#include <regex>
+
 namespace KCore {
-    KCore::SRTMSource::SRTMSource(const char *path, SourceType type) : ISource(path, type) {
+    KCore::SRTMSource::SRTMSource
+            (const char *path, SourceType type) : ISource(path, type) {
         //!TODO: describe parsing
         std::regex rgx("([NS])([0-9]+)([EW])([0-9]+)");
         std::smatch matches;

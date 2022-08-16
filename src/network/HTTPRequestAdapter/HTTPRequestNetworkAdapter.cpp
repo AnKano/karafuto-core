@@ -7,7 +7,8 @@
 #include <iostream>
 
 namespace KCore {
-    std::vector<uint8_t> HTTPRequestNetworkAdapter::SyncRequest(const std::string &url, const std::string &method) {
+    std::vector<uint8_t> HTTPRequestNetworkAdapter::SyncRequest
+            (const std::string &url, const std::string &method) {
         auto result = getFromCache(url);
         if (result.has_value())
             return {result->begin(), result->end()};

@@ -6,7 +6,8 @@
 #include "../layer/Layer.hpp"
 
 namespace KCore {
-    TileDescription::TileDescription(const Layer *parent, const std::string &quadcode) {
+    TileDescription::TileDescription
+            (const Layer *parent, const std::string &quadcode) {
         if (quadcode.empty()) throw std::invalid_argument("Provided empty quadcode!");
         setQuadcode(quadcode);
 
@@ -50,35 +51,43 @@ namespace KCore {
         return strstream.str();
     }
 
-    void TileDescription::setQuadcode(const std::string &quadcode) {
+    void TileDescription::setQuadcode
+            (const std::string &quadcode) {
         TileDescription::mQuadcode = quadcode;
     }
 
-    void TileDescription::setTilecode(const glm::ivec3 &tilecode) {
+    void TileDescription::setTilecode
+            (const glm::ivec3 &tilecode) {
         TileDescription::mTilecode = tilecode;
     }
 
-    void TileDescription::setBoundsLatLon(const glm::vec4 &boundsLatLon) {
+    void TileDescription::setBoundsLatLon
+            (const glm::vec4 &boundsLatLon) {
         TileDescription::mBoundsLatLon = boundsLatLon;
     }
 
-    void TileDescription::setBoundsWorld(const glm::vec4 &boundsWorld) {
+    void TileDescription::setBoundsWorld
+            (const glm::vec4 &boundsWorld) {
         TileDescription::mBoundsWorld = boundsWorld;
     }
 
-    void TileDescription::setCenter(const glm::vec2 &center) {
+    void TileDescription::setCenter
+            (const glm::vec2 &center) {
         TileDescription::mCenter = center;
     }
 
-    void TileDescription::setScale(float scale) {
+    void TileDescription::setScale
+            (const float &scale) {
         TileDescription::mScale = scale;
     }
 
-    void TileDescription::setType(TileType type) {
+    void TileDescription::setType
+            (const TileType &type) {
         TileDescription::mType = type;
     }
 
-    void TileDescription::setVisibility(TileVisibility visibility) {
+    void TileDescription::setVisibility
+            (const TileVisibility &visibility) {
         TileDescription::mVisibility = visibility;
     }
 

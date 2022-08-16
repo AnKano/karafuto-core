@@ -5,7 +5,8 @@
 #include <map>
 #include <any>
 
-static std::vector<uint8_t> anythingToByteVector(void *data, uint64_t length, uint64_t elementSize) {
+static std::vector<uint8_t> anythingToByteVector
+        (void *data, uint64_t length, uint64_t elementSize) {
     std::vector<uint8_t> convertedVtxPosData;
     auto *begin_ptr = reinterpret_cast<uint8_t *>(data);
     convertedVtxPosData.assign(begin_ptr, begin_ptr + (length * elementSize));
@@ -13,7 +14,8 @@ static std::vector<uint8_t> anythingToByteVector(void *data, uint64_t length, ui
 }
 
 template<typename F, typename S>
-static std::vector<F> mapKeysDifference(const std::map<F, S> &fMap, const std::map<F, S> &sMap) {
+static std::vector<F> mapKeysDifference
+        (const std::map<F, S> &fMap, const std::map<F, S> &sMap) {
     auto result = std::vector<F>{};
 
     auto collector = std::map<F, uint8_t>{};
@@ -30,7 +32,8 @@ static std::vector<F> mapKeysDifference(const std::map<F, S> &fMap, const std::m
 }
 
 template<typename F, typename S>
-static std::vector<F> mapKeysIntersection(const std::map<F, S> &fMap, const std::map<F, S> &sMap) {
+static std::vector<F> mapKeysIntersection
+        (const std::map<F, S> &fMap, const std::map<F, S> &sMap) {
     auto result = std::vector<F>{};
 
     auto collector = std::map<F, uint8_t>{};

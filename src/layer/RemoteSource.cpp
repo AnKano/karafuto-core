@@ -1,16 +1,19 @@
 #include "RemoteSource.hpp"
 
 namespace KCore {
-    RemoteSource::RemoteSource(std::string rawUrl) : mRawUrl(std::move(rawUrl)) {
+    RemoteSource::RemoteSource
+            (std::string rawUrl) : mRawUrl(std::move(rawUrl)) {
         restoreAffixes();
     }
 
-    RemoteSource::RemoteSource(std::string prefix, std::string affix)
+    RemoteSource::RemoteSource
+            (std::string prefix, std::string affix)
             : mURLPrefix(std::move(prefix)), mURLSuffix(std::move(affix)) {
         restoreRawUrl();
     }
 
-    std::string RemoteSource::bakeUrl(const TileDescription &desc) {
+    std::string RemoteSource::bakeUrl
+    (const TileDescription &desc) {
         return mURLPrefix + desc.createTileURL() + mURLSuffix;
     }
 

@@ -36,30 +36,40 @@ namespace KCore {
         Layer(float latitude, float longitude);
 
         [[nodiscard]]
-        glm::vec2 latLonToWorldPosition(const glm::vec2 &latLon) const;
+        glm::vec2 latLonToWorldPosition
+                (const glm::vec2 &latLon) const;
 
         [[nodiscard]]
-        glm::vec2 worldPositionToLatLon(const glm::vec2 &point) const;
+        glm::vec2 worldPositionToLatLon
+                (const glm::vec2 &point) const;
 
-        void updateFrustum(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix);
+        void updateFrustum
+                (const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix);
 
-        void setPosition(const glm::vec3 &position);
+        void setPosition
+                (const glm::vec3 &position);
 
         void update();
 
-        void processTiles(float target = 1.0f);
+        void processTiles
+                (float target = 1.0f);
 
-        void pushToCoreEvents(const LayerEvent &event);
+        void pushToCoreEvents
+                (const LayerEvent &event);
 
-        void pushToImageEvents(const LayerEvent &event);
+        void pushToImageEvents
+                (const LayerEvent &event);
 
-        std::vector<TileDescription> subdivideSpace(float target = 1.0);
+        std::vector<TileDescription> subdivideSpace
+                (float target = 1.0);
 
         void calculateTiles();
 
-        bool screenSpaceError(TileDescription &tile, float target, float quality = 3.0f);
+        bool screenSpaceError
+                (TileDescription &tile, float target, float quality = 3.0f);
 
-        bool checkTileInFrustum(const TileDescription &tile);
+        bool checkTileInFrustum
+                (const TileDescription &tile);
 
         std::vector<LayerEvent> getCoreEventsCopyAndClearQueue();
 

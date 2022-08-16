@@ -21,7 +21,8 @@ namespace KCore {
     public:
         FrustumCulling() = default;
 
-        void updateFrustum(const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) {
+        void updateFrustum
+                (const glm::mat4 &projectionMatrix, const glm::mat4 &viewMatrix) {
             mProjectViewMatrix = projectionMatrix * viewMatrix;
 
             nxX = mProjectViewMatrix[0][3] + mProjectViewMatrix[0][0];
@@ -56,7 +57,8 @@ namespace KCore {
         }
 
         [[nodiscard]]
-        bool testAABB(float minX, float minY, float minZ, float maxX, float maxY, float maxZ) const {
+        bool testAABB
+                (float minX, float minY, float minZ, float maxX, float maxY, float maxZ) const {
             return nxX * (nxX < 0 ? minX : maxX) +
                    nxY * (nxY < 0 ? minY : maxY) +
                    nxZ * (nxZ < 0 ? minZ : maxZ) >= -nxW &&

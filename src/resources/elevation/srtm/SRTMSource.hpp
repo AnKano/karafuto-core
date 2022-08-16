@@ -2,12 +2,7 @@
 
 #include "../../ISource.hpp"
 
-#include <sstream>
-#include <regex>
-#include <exception>
-
 namespace KCore {
-
     class SRTMSource : public ISource {
     public:
         double mXOrigin{}, mYOrigin{};

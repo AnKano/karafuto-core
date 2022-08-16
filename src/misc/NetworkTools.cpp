@@ -6,8 +6,8 @@
 #include <iostream>
 
 namespace KCore {
-    void NetworkTools::performGETRequestAsync(const std::string &url,
-                                              const std::function<void(const std::vector<uint8_t> &)> &callback) {
+    void NetworkTools::performGETRequestAsync
+            (const std::string &url, const std::function<void(const std::vector<uint8_t> &)> &callback) {
         std::thread{[url, callback]() {
             try {
                 http::Request request{url};
@@ -24,7 +24,8 @@ namespace KCore {
         }}.detach();
     }
 
-    std::vector<uint8_t> NetworkTools::performGETRequestSync(const std::string &url) {
+    std::vector<uint8_t> NetworkTools::performGETRequestSync
+            (const std::string &url) {
         try {
             http::Request request{url};
             const auto response = request.send("GET", "", {

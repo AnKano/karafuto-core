@@ -12,6 +12,7 @@
 
 namespace KCore {
     class Layer;
+
     class TileDescription;
 
     enum TileType {
@@ -42,25 +43,34 @@ namespace KCore {
     public:
         TileDescription() = default;
 
-        TileDescription(const Layer* parent, const std::string &quadcode);
+        TileDescription
+                (const Layer *parent, const std::string &quadcode);
 
         ~TileDescription() = default;
 
-        void setQuadcode(const std::string &quadcode);
+        void setQuadcode
+                (const std::string &quadcode);
 
-        void setTilecode(const glm::ivec3 &tilecode);
+        void setTilecode
+                (const glm::ivec3 &tilecode);
 
-        void setBoundsLatLon(const glm::vec4 &boundsLatLon);
+        void setBoundsLatLon
+                (const glm::vec4 &boundsLatLon);
 
-        void setBoundsWorld(const glm::vec4 &boundsWorld);
+        void setBoundsWorld
+                (const glm::vec4 &boundsWorld);
 
-        void setCenter(const glm::vec2 &center);
+        void setCenter
+                (const glm::vec2 &center);
 
-        void setVisibility(TileVisibility visibility);
+        void setVisibility
+                (const TileVisibility &visibility);
 
-        void setScale(float scale);
+        void setScale
+                (const float &scale);
 
-        void setType(TileType type);
+        void setType
+                (const TileType &type);
 
         [[nodiscard]]
         const std::string &getQuadcode() const;

@@ -23,7 +23,8 @@ namespace KCore {
         uint8_t *data{nullptr};
 
     public:
-        explicit ImageResultEvent(const std::vector<uint8_t> &rawResult) {
+        explicit ImageResultEvent
+                (const std::vector<uint8_t> &rawResult) {
             int w = -1, h = -1, ch = -1;
             auto result = STBImageUtils::decodeImageBuffer(rawResult.data(), rawResult.size(), w, h, ch);
 
@@ -33,12 +34,14 @@ namespace KCore {
         }
 
     private:
-        void setWidthHeight(const int &w, const int &h) {
+        void setWidthHeight
+                (const int &w, const int &h) {
             width = w;
             height = h;
         }
 
-        void setFormat(const int &channels) {
+        void setFormat
+                (const int &channels) {
             switch (channels) {
                 case 2:
                     format = RGB565;
@@ -54,7 +57,8 @@ namespace KCore {
             }
         }
 
-        void setData(const std::vector<uint8_t> &result) {
+        void setData
+                (const std::vector<uint8_t> &result) {
             size = result.size();
             data = new uint8_t[size];
             std::copy(result.begin(), result.end(), data);
@@ -76,7 +80,8 @@ namespace KCore {
         char quadcode[32]{};
 
     public:
-        explicit TilePayloadEvent(const TileDescription &description) {
+        explicit TilePayloadEvent
+                (const TileDescription &description) {
             setTilecode(description);
             setCenter(description);
             setScale(description);
@@ -86,27 +91,33 @@ namespace KCore {
         }
 
     private:
-        void setTilecode(const TileDescription &description) {
+        void setTilecode
+                (const TileDescription &description) {
             tilecode = description.getTilecode();
         }
 
-        void setCenter(const TileDescription &description) {
+        void setCenter
+                (const TileDescription &description) {
             center = description.getCenter();
         }
 
-        void setScale(const TileDescription &description) {
+        void setScale
+                (const TileDescription &description) {
             scale = description.getScale();
         }
 
-        void setType(const TileDescription &description) {
+        void setType
+                (const TileDescription &description) {
             type = description.getType();
         }
 
-        void setVisibility(const TileDescription &description) {
+        void setVisibility
+                (const TileDescription &description) {
             visibility = description.getVisibility();
         }
 
-        void setQuadcode(const TileDescription &description) {
+        void setQuadcode
+                (const TileDescription &description) {
 #if defined(_MSC_VER)
             strcpy_s(quadcode, description.getQuadcode().c_str());
 #elif defined(__GNUC__)
