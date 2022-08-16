@@ -4,27 +4,32 @@
 #include "BaseMesh.hpp"
 
 #include "../../elevation/Elevation.hpp"
+
 #include <vector>
 
 namespace KCore {
     class GridMesh : public BaseMesh {
+    private:
+        Elevation mElevation;
+
+        glm::vec2 mDims;
+        glm::ivec2 mSegments;
+        glm::bvec2 mFlipUVs;
+
+
     public:
-        GridMesh(const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
-                 const Elevation &elevation);
+        GridMesh(const glm::vec2 &dims, const glm::ivec2 &segments,
+                 const glm::bvec2 &flipUVs, Elevation elevation);
 
         ~GridMesh() = default;
 
     private:
-        void createGeneralSurface
-                (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
-                 const Elevation &elevation);
+        void buildUpSurface();
 
         void makeHorizontalBorder
-                (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
-                 const float &constraint, const Elevation &elevation, const bool &downBorder);
+                (const float &constraint, const bool &downBorder);
 
         void makeVerticalBorder
-                (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
-                 const float &constraint, const Elevation &elevation, const bool &rightBorder);
+                (const float &constraint, const bool &rightBorder);
     };
 }

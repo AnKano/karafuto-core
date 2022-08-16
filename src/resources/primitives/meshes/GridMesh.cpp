@@ -1,80 +1,64 @@
 #include "GridMesh.hpp"
 
-//struct ElevationObject {
-//    std::vector<std::vector<float>> kernel;
-//    std::vector<float> north, south, west, east;
-//};
+#include <utility>
 
 namespace KCore {
     GridMesh::GridMesh
-            (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
-             const Elevation &elevation) : BaseMesh() {
-//             const std::vector<std::vector<float>> &heights) : BaseMesh() {
-//        ElevationObject elevation{.kernel = heights};
+            (const glm::vec2 &dims, const glm::ivec2 &segments,
+             const glm::bvec2 &flipUVs, Elevation elevation)
+            : BaseMesh(),
+              mDims(dims), mSegments(segments),
+              mFlipUVs(flipUVs), mElevation(std::move(elevation)) {
+        buildUpSurface();
 
-//        for (int j = 0; j < segments.y + 1; j++) {
-//            for (int i = 0; i < segments.x + 1; i++) {
-//                const float height = heights[j][i];
-//
-//                if (j == 0) elevation.south.push_back(height);
-//                if (j == segments.y) elevation.north.push_back(height);
-//
-//                if (i == 0) elevation.west.push_back(height);
-//                if (i == segments.x) elevation.east.push_back(height);
-//            }
-//        }
+        makeHorizontalBorder(dims.x / 2, false);
+        makeHorizontalBorder(-dims.x / 2, true);
 
-        createGeneralSurface(dims, segments, flipUVs, elevation);
-
-        makeHorizontalBorder(dims, segments, flipUVs, dims.x / 2, elevation, false);
-        makeHorizontalBorder(dims, segments, flipUVs, -dims.x / 2, elevation, true);
-
-        makeVerticalBorder(dims, segments, flipUVs, dims.y / 2, elevation, false);
-        makeVerticalBorder(dims, segments, flipUVs, -dims.y / 2, elevation, true);
+        makeVerticalBorder(dims.y / 2, false);
+        makeVerticalBorder(-dims.y / 2, true);
     }
 
-    void GridMesh::createGeneralSurface
-            (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
-             const Elevation &elevation) {
-        const float length_x = dims.x;
-        const float length_y = dims.y;
+    void GridMesh::buildUpSurface() {
+        const float length_x = mDims.x;
+        const float length_y = mDims.y;
 
         const float length_x_half = length_x / 2.0f;
         const float length_y_half = length_y / 2.0f;
 
-        const int grid_x = segments.x + 1;
-        const int grid_y = segments.y + 1;
+        const int loop_steps_x = mSegments.x + 1;
+        const int loop_steps_y = mSegments.y + 1;
 
-        const float segment_x_length = length_x / (float) segments.x;
-        const float segment_y_length = length_y / (float) segments.y;
+        const float segment_x_length = length_x / (float) mSegments.x;
+        const float segment_y_length = length_y / (float) mSegments.y;
 
-        for (int iy = 0; iy < grid_y; iy++) {
-            const float y = (float) iy * segment_y_length - length_y_half;
-            for (int ix = 0; ix < grid_x; ix++) {
+        for (int iy = 0; iy < loop_steps_y; iy++) {
+            for (int ix = 0; ix < loop_steps_x; ix++) {
                 const float x = (float) ix * segment_x_length - length_x_half;
+                const float y = (float) iy * segment_y_length - length_y_half;
 
-                const float val = elevation.get(iy,ix);
+                const float val = mElevation.get(iy, ix);
+
                 const auto height = (val <= 5000.0f) ? val * 0.001f : 0.0f;
 
-                mVertices.emplace_back(-1 * x, height, -1 * y);
+                mVertices.emplace_back(x, height, y);
                 mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
-                float uvX = (float) ix / ((float) segments.x);
-                float uvY = (float) iy / ((float) segments.y);
+                float uvX = (float) ix / ((float) mSegments.x);
+                float uvY = (float) iy / ((float) mSegments.y);
 
-                float modUvX = (flipUVs.x) ? 1.0f - uvX : uvX;
-                float modUvY = (flipUVs.y) ? 1.0f - uvY : uvY;
+                float modUvX = (mFlipUVs.x) ? 1.0f - uvX : uvX;
+                float modUvY = (mFlipUVs.y) ? 1.0f - uvY : uvY;
 
                 mUVs.emplace_back(modUvX, modUvY);
             }
         }
 
-        for (int iy = 0; iy < segments.y; iy++) {
-            for (int ix = 0; ix < segments.x; ix++) {
-                const unsigned int a = ix + grid_x * iy;
-                const unsigned int b = ix + grid_x * (iy + 1);
-                const unsigned int c = (ix + 1) + grid_x * (iy + 1);
-                const unsigned int d = (ix + 1) + grid_x * iy;
+        for (int iy = 0; iy < mSegments.y; iy++) {
+            for (int ix = 0; ix < mSegments.x; ix++) {
+                const unsigned int a = ix + loop_steps_x * iy;
+                const unsigned int b = ix + loop_steps_x * (iy + 1);
+                const unsigned int c = (ix + 1) + loop_steps_x * (iy + 1);
+                const unsigned int d = (ix + 1) + loop_steps_x * iy;
 
                 mIndices.insert(mIndices.end(), {a, b, c});
                 mIndices.insert(mIndices.end(), {a, c, d});
@@ -83,50 +67,49 @@ namespace KCore {
     }
 
     void GridMesh::makeHorizontalBorder
-            (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
-             const float &constraint, const Elevation &elevation, const bool &downBorder) {
-        auto heights = elevation.getRow((downBorder) ? 0 : segments.y);
+            (const float &constraint, const bool &downBorder) {
+        auto heights = mElevation.getRow((downBorder) ? 0 : mSegments.y);
 
-        const auto length_x = dims.x;
-        const int grid_x = segments.x + 1;
+        const auto length_x = mDims.x;
+        const int grid_x = mSegments.x + 1;
         const float length_x_half = length_x / 2.0f;
-        const float segment_x_length = length_x / (float) segments.x;
+        const float segment_x_length = length_x / (float) mSegments.x;
 
         const auto vtxCountCopy = mVertices.size();
 
-        const float uvs = 1.0f / (float) segments.x;
+        const float uvs = 1.0f / (float) mSegments.x;
         for (int ix = 0; ix < grid_x; ix++) {
             const float x = (float) ix * segment_x_length - length_x_half;
             const float height = (heights[ix] <= 5000.0f) ? heights[ix] * 0.001f : 0.0f;
 
-            mVertices.emplace_back(-x, height, -constraint);
+            mVertices.emplace_back(x, height, constraint);
 
             mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
-            float modUV = (flipUVs.x) ? 1.0f - (uvs * (float) ix) : uvs * (float) ix;
+            float modUV = (mFlipUVs.x) ? 1.0f - (uvs * (float) ix) : uvs * (float) ix;
 
-            if (downBorder) mUVs.emplace_back(modUV, (flipUVs.y) ? 0.0f : 1.0f);
-            if (!downBorder) mUVs.emplace_back(modUV, (flipUVs.y) ? 1.0f : 0.0f);
+            if (downBorder) mUVs.emplace_back(modUV, (mFlipUVs.y) ? 0.0f : 1.0f);
+            if (!downBorder) mUVs.emplace_back(modUV, (mFlipUVs.y) ? 1.0f : 0.0f);
         }
 
         for (int ix = 0; ix < grid_x; ix++) {
             const float x = (float) ix * segment_x_length - length_x_half;
 
-            mVertices.emplace_back(-x, -1.0f, -constraint);
+            mVertices.emplace_back(x, -1.0f, constraint);
 
             mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
-            float modUV = (flipUVs.x) ? 1.0f - (uvs * (float) ix) : uvs * (float) ix;
+            float modUV = (mFlipUVs.x) ? 1.0f - (uvs * (float) ix) : uvs * (float) ix;
 
-            if (downBorder) mUVs.emplace_back(modUV, (flipUVs.y) ? -0.1f : 1.1f);
-            if (!downBorder) mUVs.emplace_back(modUV, (flipUVs.y) ? 1.1f : -0.1f);
+            if (downBorder) mUVs.emplace_back(modUV, (mFlipUVs.y) ? -0.1f : 1.1f);
+            if (!downBorder) mUVs.emplace_back(modUV, (mFlipUVs.y) ? 1.1f : -0.1f);
         }
 
-        for (int ix = 0; ix < segments.x; ix++) {
+        for (int ix = 0; ix < mSegments.x; ix++) {
             unsigned int a = ix;
             unsigned int b = ix + 1;
-            unsigned int d = (ix + 1) + (segments.x + 1);
-            unsigned int c = ix + (segments.x + 1);
+            unsigned int d = (ix + 1) + (mSegments.x + 1);
+            unsigned int c = ix + (mSegments.x + 1);
 
             a += vtxCountCopy;
             b += vtxCountCopy;
@@ -144,52 +127,51 @@ namespace KCore {
     }
 
     void GridMesh::makeVerticalBorder
-            (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
-             const float &constraint, const Elevation &elevation, const bool &rightBorder) {
-        auto heights = elevation.getColumn((rightBorder) ? 0 : segments.x);
+            (const float &constraint, const bool &rightBorder) {
+        auto heights = mElevation.getColumn((rightBorder) ? 0 : mSegments.x);
 
-        const auto length_y = dims.y;
-        const int grid_y = segments.y + 1;
+        const auto length_y = mDims.y;
+        const int grid_y = mSegments.y + 1;
         const float length_y_half = length_y / 2.0f;
-        const float segment_y_length = length_y / (float) segments.y;
+        const float segment_y_length = length_y / (float) mSegments.y;
 
         const auto vtxCountCopy = mVertices.size();
 
-        const float uvs = 1.0f / (float) segments.y;
+        const float uvs = 1.0f / (float) mSegments.y;
         for (int ix = 0; ix < grid_y; ix++) {
             const float x = (float) ix * segment_y_length - length_y_half;
 
             const float val = heights[heights.size() - ix - 1];
             const float height = (val <= 5000.0f) ? val * 0.001f : 0.0f;
 
-            mVertices.emplace_back(-constraint, height, x);
+            mVertices.emplace_back(constraint, height, -x);
 
             mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
-            float modUV = (!flipUVs.y) ? 1.0f - (uvs * (float) ix) : uvs * (float) ix;
+            float modUV = (!mFlipUVs.y) ? 1.0f - (uvs * (float) ix) : uvs * (float) ix;
 
-            if (rightBorder) mUVs.emplace_back((flipUVs.x) ? 0.0f : 1.0f, modUV);
-            if (!rightBorder) mUVs.emplace_back((flipUVs.x) ? 1.0f : 0.0f, modUV);
+            if (rightBorder) mUVs.emplace_back((mFlipUVs.x) ? 0.0f : 1.0f, modUV);
+            if (!rightBorder) mUVs.emplace_back((mFlipUVs.x) ? 1.0f : 0.0f, modUV);
         }
 
         for (int ix = 0; ix < grid_y; ix++) {
             const float x = (float) ix * segment_y_length - length_y_half;
 
-            mVertices.emplace_back(-constraint, -1.0f, x);
+            mVertices.emplace_back(constraint, -1.0f, -x);
 
             mNormals.emplace_back(0.0f, 1.0f, 0.0f);
 
-            float modUV = (!flipUVs.y) ? 1.0f - (uvs * (float) ix) : uvs * (float) ix;
+            float modUV = (!mFlipUVs.y) ? 1.0f - (uvs * (float) ix) : uvs * (float) ix;
 
-            if (rightBorder) mUVs.emplace_back((flipUVs.x) ? -0.1f : 1.1f, modUV);
-            if (!rightBorder) mUVs.emplace_back((flipUVs.x) ? 1.1f : -0.1f, modUV);
+            if (rightBorder) mUVs.emplace_back((mFlipUVs.x) ? -0.1f : 1.1f, modUV);
+            if (!rightBorder) mUVs.emplace_back((mFlipUVs.x) ? 1.1f : -0.1f, modUV);
         }
 
-        for (int ix = 0; ix < segments.y; ix++) {
+        for (int ix = 0; ix < mSegments.y; ix++) {
             unsigned int a = ix;
             unsigned int b = ix + 1;
-            unsigned int d = (ix + 1) + (segments.y + 1);
-            unsigned int c = ix + (segments.y + 1);
+            unsigned int d = (ix + 1) + (mSegments.y + 1);
+            unsigned int c = ix + (mSegments.y + 1);
 
             a += vtxCountCopy;
             b += vtxCountCopy;
