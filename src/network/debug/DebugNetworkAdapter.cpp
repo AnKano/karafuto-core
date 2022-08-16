@@ -1,4 +1,5 @@
 #include "DebugNetworkAdapter.hpp"
+
 #include "misc/DebugNewtorkResources.inl"
 
 namespace KCore {

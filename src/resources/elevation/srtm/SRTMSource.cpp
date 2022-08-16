@@ -1,4 +1,3 @@
-
 #include "SRTMSource.hpp"
 
 #include <sstream>

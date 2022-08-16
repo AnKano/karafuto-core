@@ -1,9 +1,9 @@
 #include "NetworkTools.hpp"
 
-#include "HTTPRequest.hpp"
-
 #include <thread>
 #include <iostream>
+
+#include "HTTPRequest.hpp"
 
 namespace KCore {
     void NetworkTools::performGETRequestAsync

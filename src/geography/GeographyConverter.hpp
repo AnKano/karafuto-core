@@ -1,15 +1,13 @@
 #pragma once
 
-#include "glm/glm.hpp"
-
 #ifdef WIN32
-
-#include <cmath>
-
+    #include <cmath>
 #endif
 
 #include <string>
 #include <iostream>
+
+#include "glm/glm.hpp"
 
 namespace KCore {
     class GeographyConverter {

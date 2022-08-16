@@ -3,13 +3,14 @@
 #include <functional>
 #include <mutex>
 
+#include "LRUCache17.hpp"
+
 #include "RemoteSource.hpp"
 #include "events/LayerEvent.hpp"
 #include "../misc/FrustumCulling.hpp"
 #include "../geography/TileDescription.hpp"
 #include "../network/INetworkAdapter.hpp"
 
-#include "LRUCache17.hpp"
 
 namespace KCore {
     class Layer {

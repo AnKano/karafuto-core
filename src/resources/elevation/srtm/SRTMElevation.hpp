@@ -1,9 +1,8 @@
 #pragma once
 
+#include "SRTMSource.hpp"
 #include "../IElevationSource.hpp"
 #include "../../../geography/GeographyConverter.hpp"
-
-#include "SRTMSource.hpp"
 
 namespace KCore {
     class SRTMElevation : public IElevationSource {

@@ -1,9 +1,9 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
-#include <string>
 #include <fstream>
+#include <string>
+#include <vector>
 
 #include "../misc/FileTools.hpp"
 #include "../misc/NetworkTools.hpp"

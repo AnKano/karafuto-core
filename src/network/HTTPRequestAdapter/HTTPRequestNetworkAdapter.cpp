@@ -1,7 +1,3 @@
-//
-// Created by anshu on 8/13/2022.
-//
-
 #include "HTTPRequestNetworkAdapter.hpp"
 
 #include <iostream>

@@ -1,7 +1,8 @@
+#include "GridMesh.hpp"
+
 #include <utility>
 
-#include "GridMesh.hpp"
-#include "../../../geography/GeographyConverter.hpp"
+#include "../geography/GeographyConverter.hpp"
 
 namespace KCore {
     GridMesh::GridMesh

@@ -1,24 +1,19 @@
 #pragma once
 
-#include <vector>
-#include <string>
 #include <exception>
 #include <iostream>
+#include <string>
+#include <vector>
 
 #include "rapidjson/document.h"
 
-#include "../../misc/NetworkTools.hpp"
-#include "../../misc/FileTools.hpp"
-
 #include "GeoJSONTransObject.hpp"
 #include "GeoJSONObject.hpp"
-
-#include "meshes/PolylineMesh.hpp"
-#include "meshes/PolygonMesh.hpp"
-
+#include "../elevation/IElevationSource.hpp"
+#include "../../misc/NetworkTools.hpp"
+#include "../../misc/FileTools.hpp"
 #include "../../layer/LayerInterface.hpp"
 #include "../../layer/Layer.hpp"
-#include "../elevation/IElevationSource.hpp"
 
 namespace KCore {
     enum GeoJSONSourceType {

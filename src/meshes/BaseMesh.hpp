@@ -1,10 +1,11 @@
 #pragma once
 
-#include "../../../misc/Bindings.hpp"
-
 #include <vector>
+
 #include "glm/glm.hpp"
 #include "glm/gtc/type_ptr.hpp"
+
+#include "../misc/Bindings.hpp"
 
 namespace KCore {
     class BaseMesh {

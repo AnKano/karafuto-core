@@ -1,14 +1,15 @@
 #pragma once
 
-#include "GeographyConverter.hpp"
-
-#include "glm/glm.hpp"
+#include <array>
+#include <map>
+#include <memory>
+#include <optional>
 #include <string>
 #include <vector>
-#include <optional>
-#include <array>
-#include <memory>
-#include <map>
+
+#include "glm/glm.hpp"
+
+#include "GeographyConverter.hpp"
 
 namespace KCore {
     class Layer;

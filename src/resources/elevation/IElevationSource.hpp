@@ -4,8 +4,8 @@
 #include <memory>
 
 #include "../ISource.hpp"
+#include "../../meshes/GridMesh.hpp"
 #include "../../misc/Bindings.hpp"
-#include "../primitives/meshes/GridMesh.hpp"
 
 namespace KCore {
     class IElevationSource {

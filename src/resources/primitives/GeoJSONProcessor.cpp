@@ -1,5 +1,8 @@
 #include "GeoJSONProcessor.hpp"
 
+#include "../../meshes/PolylineMesh.hpp"
+#include "../../meshes/PolygonMesh.hpp"
+
 namespace KCore {
     std::vector<GeoJSONObject> ParseGeoJSON(const std::string &data) {
         std::vector<GeoJSONObject> accumulator;

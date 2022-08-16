@@ -3,9 +3,9 @@
 #include <vector>
 
 #include "glm/glm.hpp"
-#include "BaseMesh.hpp"
 
-#include "../../elevation/Elevation.hpp"
+#include "BaseMesh.hpp"
+#include "../resources/elevation/Elevation.hpp"
 
 namespace KCore {
     class GridMesh : public BaseMesh {

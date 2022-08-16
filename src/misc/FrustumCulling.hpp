@@ -1,11 +1,12 @@
 #pragma once
 
+#include <array>
+#include <iostream>
+
 #include "glm/glm.hpp"
 #include "glm/gtx/intersect.hpp"
 #include "glm/gtx/vector_angle.hpp"
 
-#include <array>
-#include <iostream>
 
 namespace KCore {
     class FrustumCulling {

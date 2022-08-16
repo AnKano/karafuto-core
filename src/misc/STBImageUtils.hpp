@@ -1,8 +1,8 @@
 #pragma once
 
 #include <cstdint>
-#include <vector>
 #include <stdexcept>
+#include <vector>
 
 #define STB_IMAGE_IMPLEMENTATION
 #define STB_IMAGE_STATIC

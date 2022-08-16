@@ -2,8 +2,9 @@
 
 #include <exception>
 
-#include "../INetworkAdapter.hpp"
 #include "HTTPRequest.hpp"
+
+#include "../INetworkAdapter.hpp"
 
 namespace KCore {
     class HTTPRequestNetworkAdapter : public INetworkAdapter {

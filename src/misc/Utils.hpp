@@ -1,9 +1,8 @@
 #pragma once
 
-#include <vector>
 #include <cstdint>
 #include <map>
-#include <any>
+#include <vector>
 
 static std::vector<uint8_t> anythingToByteVector
         (void *data, uint64_t length, uint64_t elementSize) {
