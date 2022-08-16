@@ -8,12 +8,12 @@
 #include "../primitives/meshes/GridMesh.hpp"
 
 namespace KCore {
-    class IElevationSrc {
+    class IElevationSource {
     protected:
         std::vector<std::unique_ptr<ISource>> mSources;
 
     public:
-        IElevationSrc() = default;
+        IElevationSource() = default;
 
         void addSourcePart(ISource *part) {
             mSources.emplace_back(part);
@@ -34,13 +34,14 @@ namespace KCore {
 
     extern "C" {
     DllExport GridMesh *CreateTileMeshXYZ
-            (IElevationSrc *srcPtr,
+            (IElevationSource *srcPtr,
              uint8_t zoom, uint16_t x, uint16_t y,
              uint16_t segmentsX, uint16_t segmentsY,
              bool flipUVsX, bool flipUVsY);
 
     DllExport GridMesh *CreateTileMeshQuadcode
-            (IElevationSrc *srcPtr, const char *quadcode,
+            (IElevationSource *srcPtr,
+             const char *quadcode,
              uint16_t segmentsX, uint16_t segmentsY,
              bool flipUVsX, bool flipUVsY);
     }

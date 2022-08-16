@@ -1,12 +1,12 @@
 #pragma once
 
-#include "../IElevationSrc.hpp"
+#include "../IElevationSource.hpp"
 #include "../../../geography/GeographyConverter.hpp"
 
 #include "SRTMSource.hpp"
 
 namespace KCore {
-    class SRTMElevation : public IElevationSrc {
+    class SRTMElevation : public IElevationSource {
     public:
         SRTMElevation() = default;
 

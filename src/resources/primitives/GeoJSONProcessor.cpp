@@ -31,7 +31,7 @@ namespace KCore {
     }
 
     std::vector<GeoJSONTransObject> *
-    ProcessGeoJSONObjects(Layer *layer, const std::vector<GeoJSONObject> &jsonObjects, IElevationSrc *elevationSrc) {
+    ProcessGeoJSONObjects(Layer *layer, const std::vector<GeoJSONObject> &jsonObjects, IElevationSource *elevationSrc) {
         auto *objects = new std::vector<KCore::GeoJSONTransObject>();
 
         for (auto &geojsonObject: jsonObjects) {
@@ -97,13 +97,13 @@ namespace KCore {
     }
 
     std::vector<GeoJSONTransObject> *
-    ProcessGeoJSONRaw(LayerInterface *layerPtr, const char *raw, IElevationSrc *elevationSrc) {
+    ProcessGeoJSONRaw(LayerInterface *layerPtr, const char *raw, IElevationSource *elevationSrc) {
 //        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(raw), elevationSrc);
         return nullptr;
     }
 
     std::vector<GeoJSONTransObject> *
-    ProcessGeoJSONFile(LayerInterface *layerPtr, const char *path, IElevationSrc *elevationSrc) {
+    ProcessGeoJSONFile(LayerInterface *layerPtr, const char *path, IElevationSource *elevationSrc) {
         auto download = readFile(path);
         auto str = std::string{download.begin(), download.end()};
 //        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(str), elevationSrc);
@@ -111,7 +111,7 @@ namespace KCore {
     }
 
     std::vector<GeoJSONTransObject> *
-    ProcessGeoJSONUrl(LayerInterface *layerPtr, const char *url, IElevationSrc *elevationSrc) {
+    ProcessGeoJSONUrl(LayerInterface *layerPtr, const char *url, IElevationSource *elevationSrc) {
         auto download = NetworkTools::performGETRequestSync(url);
         auto str = std::string{download.begin(), download.end()};
 //        return ProcessGeoJSONObjects(layerPtr->raw(), ParseGeoJSON(str), elevationSrc);
@@ -124,7 +124,7 @@ namespace KCore {
     }
 
     DllExport std::vector<GeoJSONTransObject> *
-    ProcessGeoJSONWithElevation(LayerInterface *layerPtr, IElevationSrc *elevation, GeoJSONSourceType type,
+    ProcessGeoJSONWithElevation(LayerInterface *layerPtr, IElevationSource *elevation, GeoJSONSourceType type,
                                 const char *param) {
         switch (type) {
             case GeoJSONRaw:

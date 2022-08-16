@@ -1,41 +1,41 @@
 #include "GridMesh.hpp"
 
-struct ElevationObject {
-    std::vector<std::vector<float>> kernel;
-    std::vector<float> north, south, west, east;
-};
+//struct ElevationObject {
+//    std::vector<std::vector<float>> kernel;
+//    std::vector<float> north, south, west, east;
+//};
 
 namespace KCore {
     GridMesh::GridMesh
             (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
-             const std::vector<std::vector<float>> &heights) : BaseMesh() {
-        ElevationObject elevation;
-        elevation.kernel = heights;
+             const Elevation &elevation) : BaseMesh() {
+//             const std::vector<std::vector<float>> &heights) : BaseMesh() {
+//        ElevationObject elevation{.kernel = heights};
 
-        for (int j = 0; j < segments.y + 1; j++) {
-            for (int i = 0; i < segments.x + 1; i++) {
-                const float height = heights[j][i];
+//        for (int j = 0; j < segments.y + 1; j++) {
+//            for (int i = 0; i < segments.x + 1; i++) {
+//                const float height = heights[j][i];
+//
+//                if (j == 0) elevation.south.push_back(height);
+//                if (j == segments.y) elevation.north.push_back(height);
+//
+//                if (i == 0) elevation.west.push_back(height);
+//                if (i == segments.x) elevation.east.push_back(height);
+//            }
+//        }
 
-                if (j == 0) elevation.south.push_back(height);
-                if (j == segments.y) elevation.north.push_back(height);
+        createGeneralSurface(dims, segments, flipUVs, elevation);
 
-                if (i == 0) elevation.west.push_back(height);
-                if (i == segments.x) elevation.east.push_back(height);
-            }
-        }
+        makeHorizontalBorder(dims, segments, flipUVs, dims.x / 2, elevation, false);
+        makeHorizontalBorder(dims, segments, flipUVs, -dims.x / 2, elevation, true);
 
-        createGeneralSurface(dims, segments, flipUVs, elevation.kernel);
-
-        makeHorizontalBorder(dims, segments, flipUVs, dims.x / 2, elevation.north, false);
-        makeHorizontalBorder(dims, segments, flipUVs, -dims.x / 2, elevation.south, true);
-
-        makeVerticalBorder(dims, segments, flipUVs, dims.y / 2, elevation.east, false);
-        makeVerticalBorder(dims, segments, flipUVs, -dims.y / 2, elevation.west, true);
+        makeVerticalBorder(dims, segments, flipUVs, dims.y / 2, elevation, false);
+        makeVerticalBorder(dims, segments, flipUVs, -dims.y / 2, elevation, true);
     }
 
     void GridMesh::createGeneralSurface
             (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
-             const std::vector<std::vector<float>> &heights) {
+             const Elevation &elevation) {
         const float length_x = dims.x;
         const float length_y = dims.y;
 
@@ -53,8 +53,8 @@ namespace KCore {
             for (int ix = 0; ix < grid_x; ix++) {
                 const float x = (float) ix * segment_x_length - length_x_half;
 
-                const float val = heights[iy][ix];
-                const auto height = (val <= 5000.0f) ? val * 0.001 : 0.0;
+                const float val = elevation.get(iy,ix);
+                const auto height = (val <= 5000.0f) ? val * 0.001f : 0.0f;
 
                 mVertices.emplace_back(-1 * x, height, -1 * y);
                 mNormals.emplace_back(0.0f, 1.0f, 0.0f);
@@ -84,7 +84,9 @@ namespace KCore {
 
     void GridMesh::makeHorizontalBorder
             (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
-             const float &constraint, const std::vector<float> &heights, const bool &downBorder) {
+             const float &constraint, const Elevation &elevation, const bool &downBorder) {
+        auto heights = elevation.getRow((downBorder) ? 0 : segments.y);
+
         const auto length_x = dims.x;
         const int grid_x = segments.x + 1;
         const float length_x_half = length_x / 2.0f;
@@ -143,7 +145,9 @@ namespace KCore {
 
     void GridMesh::makeVerticalBorder
             (const glm::vec2 &dims, const glm::ivec2 &segments, const glm::bvec2 &flipUVs,
-             const float &constraint, const std::vector<float> &heights, const bool &rightBorder) {
+             const float &constraint, const Elevation &elevation, const bool &rightBorder) {
+        auto heights = elevation.getColumn((rightBorder) ? 0 : segments.x);
+
         const auto length_y = dims.y;
         const int grid_y = segments.y + 1;
         const float length_y_half = length_y / 2.0f;
