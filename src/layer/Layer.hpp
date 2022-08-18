@@ -11,7 +11,6 @@
 #include "../geography/TileDescription.hpp"
 #include "../network/INetworkAdapter.hpp"
 
-
 namespace KCore {
     class Layer {
     private:

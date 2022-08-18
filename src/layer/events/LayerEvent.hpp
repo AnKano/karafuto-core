@@ -18,36 +18,12 @@ namespace KCore {
         void *payload;
 
         static LayerEvent MakeInFrustumEvent
-                (const std::string &quadcode, const TileDescription &description) {
-            LayerEvent event{.type = InFrustum, .payload = new TilePayloadEvent(description)};
-#if defined(_MSC_VER)
-            strcpy_s(event.quadcode, quadcode.c_str());
-#elif defined(__GNUC__)
-            strcpy(event.quadcode, quadcode.c_str());
-#endif
-            return event;
-        }
+                (const std::string &quadcode, const TileDescription &description);
 
         static LayerEvent MakeNotInFrustumEvent
-                (const std::string &quadcode) {
-            LayerEvent event{.type = NotInFrustum, .payload = nullptr};
-#if defined(_MSC_VER)
-            strcpy_s(event.quadcode, quadcode.c_str());
-#elif defined(__GNUC__)
-            strcpy(event.quadcode, quadcode.c_str());
-#endif
-            return event;
-        }
+                (const std::string &quadcode);
 
         static LayerEvent MakeImageEvent
-                (const std::string &quadcode, const std::vector<uint8_t> &result) {
-            LayerEvent event{.type = ImageReady, .payload = new ImageResultEvent(result)};
-#if defined(_MSC_VER)
-            strcpy_s(event.quadcode, quadcode.c_str());
-#elif defined(__GNUC__)
-            strcpy(event.quadcode, quadcode.c_str());
-#endif
-            return event;
-        }
+                (const std::string &quadcode, const std::vector<uint8_t> &result);
     };
 }

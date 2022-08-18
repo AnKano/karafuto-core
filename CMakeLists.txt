@@ -84,11 +84,6 @@ if (ON)
             ${THIRD_PARTY_DIR}/rapidjson/include
             ${THIRD_PARTY_DIR}/lrucache17
             ${THIRD_PARTY_DIR}/stb-image)
-    if (${PLATFORM} STREQUAL "Windows")
-        target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
-        target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
-    else ()
-        target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
-        target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
-    endif ()
+    target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
+    target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
 endif ()

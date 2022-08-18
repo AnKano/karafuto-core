@@ -180,7 +180,7 @@ namespace KCore {
             (std::vector<LayerEvent> *vector_ptr) {
         for (const auto &item: *vector_ptr) {
             if (item.type == ImageReady) {
-                auto *castedPayload = (ImageResultEvent *) item.payload;
+                auto *castedPayload = (ImagePayloadEvent *) item.payload;
                 delete[] castedPayload->data;
                 delete castedPayload;
             }

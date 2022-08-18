@@ -77,7 +77,7 @@ namespace KCore {
         return new SRTMElevation();
     }
 
-    DllExport void AddPieceToSRTMElevationSource
+    DllExport void AddSRTMPiece
             (SRTMElevation *source_ptr,
              const char *path, SourceType type) {
         source_ptr->addSourcePart(new SRTMSource(path, type));

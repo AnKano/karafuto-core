@@ -29,7 +29,7 @@ namespace KCore {
     extern "C" {
     DllExport SRTMElevation *CreateSRTMElevationSource();
 
-    DllExport void AddPieceToSRTMElevationSource
+    DllExport void AddSRTMPiece
             (SRTMElevation *source_ptr, const char *path, SourceType type);
     }
 }

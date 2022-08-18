@@ -4,6 +4,7 @@
 #include <vector>
 
 #include "../../misc/STBImageUtils.hpp"
+#include "../../geography/TileDescription.hpp"
 
 namespace KCore {
     enum ImageFormat {
@@ -12,7 +13,7 @@ namespace KCore {
         RGBA8888 = 2
     };
 
-    struct ImageResultEvent {
+    struct ImagePayloadEvent {
         /* 00..04..08     bytes */
         uint32_t width{0}, height{0};
         /* 08..12         bytes */
@@ -23,46 +24,18 @@ namespace KCore {
         uint8_t *data{nullptr};
 
     public:
-        explicit ImageResultEvent
-                (const std::vector<uint8_t> &rawResult) {
-            int w = -1, h = -1, ch = -1;
-            auto result = STBImageUtils::decodeImageBuffer(rawResult.data(), rawResult.size(), w, h, ch);
-
-            setWidthHeight(w, h);
-            setFormat(ch);
-            setData(result);
-        }
+        explicit ImagePayloadEvent
+                (const std::vector<uint8_t> &rawResult);
 
     private:
         void setWidthHeight
-                (const int &w, const int &h) {
-            width = w;
-            height = h;
-        }
+                (const int &w, const int &h);
 
         void setFormat
-                (const int &channels) {
-            switch (channels) {
-                case 2:
-                    format = RGB565;
-                    break;
-                case 3:
-                    format = RGB888;
-                    break;
-                case 4:
-                    format = RGBA8888;
-                    break;
-                default:
-                    throw std::runtime_error("Unable to find a suitable image format!");
-            }
-        }
+                (const int &channels);
 
         void setData
-                (const std::vector<uint8_t> &result) {
-            size = result.size();
-            data = new uint8_t[size];
-            std::copy(result.begin(), result.end(), data);
-        }
+                (const std::vector<uint8_t> &result);
     };
 
     struct TilePayloadEvent {
@@ -81,48 +54,25 @@ namespace KCore {
 
     public:
         explicit TilePayloadEvent
-                (const TileDescription &description) {
-            setTilecode(description);
-            setCenter(description);
-            setScale(description);
-            setType(description);
-            setVisibility(description);
-            setQuadcode(description);
-        }
+                (const TileDescription &description);
 
     private:
         void setTilecode
-                (const TileDescription &description) {
-            tilecode = description.getTilecode();
-        }
+                (const TileDescription &description);
 
         void setCenter
-                (const TileDescription &description) {
-            center = description.getCenter();
-        }
+                (const TileDescription &description);
 
         void setScale
-                (const TileDescription &description) {
-            scale = description.getScale();
-        }
+                (const TileDescription &description);
 
         void setType
-                (const TileDescription &description) {
-            type = description.getType();
-        }
+                (const TileDescription &description);
 
         void setVisibility
-                (const TileDescription &description) {
-            visibility = description.getVisibility();
-        }
+                (const TileDescription &description);
 
         void setQuadcode
-                (const TileDescription &description) {
-#if defined(_MSC_VER)
-            strcpy_s(quadcode, description.getQuadcode().c_str());
-#elif defined(__GNUC__)
-            strcpy(quadcode, description.getQuadcode().c_str());
-#endif
-        }
+                (const TileDescription &description);
     };
 }
