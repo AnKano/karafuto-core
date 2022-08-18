@@ -5,7 +5,7 @@
 #include "glm/glm.hpp"
 
 #include "BaseMesh.hpp"
-#include "../resources/elevation/Elevation.hpp"
+#include "../elevation/Elevation.hpp"
 
 namespace KCore {
     class GridMesh : public BaseMesh {

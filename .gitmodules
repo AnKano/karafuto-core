@@ -1,12 +1,6 @@
 [submodule "third-party/glm"]
 	path = third-party/glm
 	url = https://github.com/g-truc/glm.git
-[submodule "third-party/earcut"]
-	path = third-party/earcut
-	url = https://github.com/mapbox/earcut.hpp
-[submodule "third-party/rapidjson"]
-	path = third-party/rapidjson
-	url = https://github.com/Tencent/rapidjson
 [submodule "third-party/HTTPRequest"]
 	path = third-party/HTTPRequest
 	url = https://github.com/elnormous/HTTPRequest.git

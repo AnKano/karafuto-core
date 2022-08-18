@@ -9,11 +9,11 @@ set(THIRD_PARTY_DIR "${CMAKE_CURRENT_SOURCE_DIR}/third-party")
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR})
 
-# Grab all sources
+# Get all source files
 file(GLOB_RECURSE CPP_HEADERS ${MAIN_SOURCE_DIR}/*.hpp ${MAIN_SOURCE_DIR}/*.inl)
 file(GLOB_RECURSE CPP_SOURCES ${MAIN_SOURCE_DIR}/*.cpp)
 
-# Select platform and default backend if not set
+# Create platform variable
 if (NOT EXISTS PLATFORM)
     if (ANDROID)
         set(PLATFORM "Android")
@@ -28,24 +28,28 @@ if (NOT EXISTS PLATFORM)
     endif ()
 endif ()
 
-message("🖥️ Current platform: ${PLATFORM}")
+message("\n🖥️ Current platform: ${PLATFORM}")
 
 # Declare specific platform definitions
-if (${PLATFORM} STREQUAL "Windows")
-    message("📰️ Make platform-specific declarations")
+if (ON)
+    if (${PLATFORM} STREQUAL "Windows")
+        message("\n📰️ Make platform-specific declarations")
 
-    if (MSVC)
-        message("\t - Declare specific C-math definitions")
-        add_compile_definitions(_USE_MATH_DEFINES)
+        if (MSVC)
+            message("\t - Declare specific C-math definitions")
+            add_compile_definitions(_USE_MATH_DEFINES)
 
-        # build msvc
-        set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS 1)
+            # build msvc
+            set(CMAKE_WINDOWS_EXPORT_ALL_SYMBOLS 1)
+        elseif ()
+            message("\t - None")
+        endif ()
     endif ()
 endif ()
 
 # Declare libraries
 if (ON)
-    message("🧾 Declare libraries")
+    message("\n🧾 Declare libraries")
 
     message("\t - Added HTTPRequest")
     add_subdirectory(${THIRD_PARTY_DIR}/HTTPRequest)
@@ -59,38 +63,31 @@ endif ()
 
 # Declare targets
 if (ON)
-    message("")
-    message("🎯 Declare targets")
+    message("\n 🎯 Declare targets")
 
     add_library(libkcore SHARED ${CPP_HEADERS} ${CPP_SOURCES})
     add_executable(karafuto_core ${CPP_HEADERS} ${CPP_SOURCES})
 
+    set(LINK_COMPOUND glm HTTPRequest)
+
     message("\t - Link libraries")
     if (${PLATFORM} STREQUAL "Windows")
-        set(LIBRARIES glm HTTPRequest wsock32 ws2_32)
-        target_link_libraries(libkcore PRIVATE ${LIBRARIES})
-        target_link_libraries(karafuto_core PRIVATE ${LIBRARIES})
+        target_link_libraries(libkcore PRIVATE ${LINK_COMPOUND} wsock32 ws2_32)
+        target_link_libraries(karafuto_core PRIVATE ${LINK_COMPOUND} wsock32 ws2_32)
     else ()
-        set(LIBRARIES glm HTTPRequest)
-        target_link_libraries(libkcore PRIVATE ${LIBRARIES})
-        target_link_libraries(karafuto_core PRIVATE ${LIBRARIES})
+        target_link_libraries(libkcore PRIVATE ${LINK_COMPOUND})
+        target_link_libraries(karafuto_core PRIVATE ${LINK_COMPOUND})
     endif ()
 
     message("\t - Add headers")
+    set(INCLUDE_COMPOUND
+            ${THIRD_PARTY_DIR}/rapidjson/include
+            ${THIRD_PARTY_DIR}/lrucache17
+            ${THIRD_PARTY_DIR}/stb-image)
     if (${PLATFORM} STREQUAL "Windows")
-        set(INCLUDE_COMPOUND
-                ${THIRD_PARTY_DIR}/rapidjson/include
-                ${THIRD_PARTY_DIR}/lrucache17
-                ${THIRD_PARTY_DIR}/earcut/include
-                ${THIRD_PARTY_DIR}/stb-image)
         target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
         target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
     else ()
-        set(INCLUDE_COMPOUND
-                ${THIRD_PARTY_DIR}/rapidjson/include
-                ${THIRD_PARTY_DIR}/lrucache17
-                ${THIRD_PARTY_DIR}/earcut/include
-                ${THIRD_PARTY_DIR}/stb-image)
         target_include_directories(libkcore PUBLIC ${INCLUDE_COMPOUND})
         target_include_directories(karafuto_core PUBLIC ${INCLUDE_COMPOUND})
     endif ()

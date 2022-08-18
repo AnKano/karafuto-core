@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../../ISource.hpp"
+#include "../ISource.hpp"
 
 namespace KCore {
     class SRTMSource : public ISource {

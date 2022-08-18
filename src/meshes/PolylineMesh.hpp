@@ -8,13 +8,13 @@
 #include "glm/gtx/vector_angle.hpp"
 #include "mapbox/earcut.hpp"
 
-#include "../resources/primitives/GeoJSONObject.hpp"
+#include "../resources/primitives/GeoJSONFeature.hpp"
 
 namespace KCore {
     class PolylineMesh : public BaseMesh {
     public:
-        PolylineMesh(const GeoJSONObject &object, const std::vector<std::array<double, 2>> &convertedCoords) {
-            if (object.mType != Polyline)
+        PolylineMesh(const GeoJSONFeature &object, const std::vector<std::array<double, 2>> &convertedCoords) {
+            if (object.mType != LineString)
                 throw std::runtime_error("Can't instantiate mesh using object of different type!");
 
             createMeshFromObject(object, convertedCoords);
@@ -22,7 +22,7 @@ namespace KCore {
 
     private:
         void
-        createMeshFromObject(const GeoJSONObject &object,
+        createMeshFromObject(const GeoJSONFeature &object,
                              const std::vector<std::array<double, 2>> &convertedCoords) {
             std::vector<std::vector<std::array<double, 2>>> collector;
             // map main shape

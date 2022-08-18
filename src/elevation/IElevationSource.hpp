@@ -3,9 +3,9 @@
 #include <vector>
 #include <memory>
 
-#include "../ISource.hpp"
-#include "../../meshes/GridMesh.hpp"
-#include "../../misc/Bindings.hpp"
+#include "ISource.hpp"
+#include "../meshes/GridMesh.hpp"
+#include "../misc/Bindings.hpp"
 
 namespace KCore {
     class IElevationSource {

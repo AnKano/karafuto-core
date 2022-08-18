@@ -2,7 +2,7 @@
 
 #include "SRTMSource.hpp"
 #include "../IElevationSource.hpp"
-#include "../../../geography/GeographyConverter.hpp"
+#include "../../geography/GeographyConverter.hpp"
 
 namespace KCore {
     class SRTMElevation : public IElevationSource {

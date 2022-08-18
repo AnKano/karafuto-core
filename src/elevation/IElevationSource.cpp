@@ -1,7 +1,7 @@
 #include "IElevationSource.hpp"
 
 #include "Elevation.hpp"
-#include "../../geography/GeographyConverter.hpp"
+#include "../geography/GeographyConverter.hpp"
 
 namespace KCore {
     GridMesh *IElevationSource::createTile

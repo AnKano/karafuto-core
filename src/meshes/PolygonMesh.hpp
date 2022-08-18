@@ -10,7 +10,7 @@
 #include "glm/gtx/normal.hpp"
 #include "mapbox/earcut.hpp"
 
-#include "../resources/primitives/GeoJSONObject.hpp"
+#include "../resources/primitives/GeoJSONFeature.hpp"
 
 namespace KCore {
     class PolygonMesh : public BaseMesh {
@@ -20,7 +20,7 @@ namespace KCore {
         };
 
     public:
-        PolygonMesh(const GeoJSONObject &object,
+        PolygonMesh(const GeoJSONFeature &object,
                     const std::vector<std::array<double, 2>> &convertedMainCoords,
                     const std::vector<std::array<double, 2>> &convertedHoleCoords) : BaseMesh() {
             if (object.mType != Polygon && object.mType != PolygonWithHole)
@@ -51,7 +51,7 @@ namespace KCore {
             return (accumulator > 0 ? CW : CCW);
         }
 
-        void createMeshFromObjectAndExtrude(const GeoJSONObject &object,
+        void createMeshFromObjectAndExtrude(const GeoJSONFeature &object,
                                             const std::vector<std::array<double, 2>> &convertedMainCoords,
                                             const std::vector<std::array<double, 2>> &convertedHoleCoords) {
             auto withHole = !convertedHoleCoords.empty();
@@ -181,7 +181,7 @@ namespace KCore {
             }
         }
 
-        void createMeshFromObject(const GeoJSONObject &object,
+        void createMeshFromObject(const GeoJSONFeature &object,
                                   const std::vector<std::array<double, 2>> &convertedMainCoords,
                                   const std::vector<std::array<double, 2>> &convertedHoleCoords) {
             std::vector<std::vector<std::array<double, 2>>> collector;

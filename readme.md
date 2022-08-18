@@ -143,7 +143,7 @@ DllExport GridMesh *CreateTileMeshQuadcode(IElevationSrc *srcPtr, const char *qu
 
 ### GeoJSON meshes
 
-The built-in GeoJSON processing functionality is capable of creating meshes for Polygon, Point and Polyline types. If you pass in the elevation source argument, the elevation value will be added to the object
+The built-in GeoJSON processing functionality is capable of creating meshes for Polygon, Point and LineString types. If you pass in the elevation source argument, the elevation value will be added to the object
 
 <img src="github-assets/primitives-without-adaptation.png" height="150" />
 <img src="github-assets/primitives-adaptation.png" height="150" /> 
