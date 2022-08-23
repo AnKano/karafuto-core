@@ -1,5 +1,7 @@
 # Karafuto Core. Library for relief maps generation 
 
+#StandWithUkraine 🇺🇦
+
 This project is a small part of my master's thesis.
 Library (static or shared) allows you to simplify the creation of three-dimensional relief maps (tile network
 generation, generation meshes with elevation and tile raster downloading)
