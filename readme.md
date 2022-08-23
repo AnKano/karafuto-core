@@ -1,117 +1,89 @@
-# Karafuto Core
+# Karafuto Core. Library for relief maps generation 
 
-The easiest way to create maps in your native apps (maybe not)
-
-<p align="center">
-    <img src="github-assets/logo.png" height="300" />
-</p>
-
-You implement the renderer yourself. The library gives only a description of your map and ready-made objects, which you can immediately load into the GPU after a little post-processing. Tested in Unity, Raylib, and when used with QtGraphicsScene. Works on Windows, MacOS, Linux and Android. It is possible that it can be used on iOS, since there are no special dependencies, but it has not been tested. 
-
-### Shortcuts
-
-- [Based on](#based-on)
-- [How it works](#how-it-works)
-- [Result](#result)
-- [TODO](#todo)
-- [License](#license)
+This project is a small part of my master's thesis.
+Library (static or shared) allows you to simplify the creation of three-dimensional relief maps (tile network
+generation, generation meshes with elevation and tile raster downloading)
+using only projection and view camera matrices.
+Tested in Unity, Raylib. Tested on Windows (MinGW and MSVC), MacOS, Linux and Android.
 
 ## Based on
 
-- [OpenGL Mathematics (GLM)](https://github.com/g-truc/glm) to matrix manipulation and store data in vector-like types
-- [HTTPRequest](https://github.com/elnormous/HTTPRequest)
-- [lrucache17](https://github.com/marty1885/lrucache17) ...I was too lazy to do it myself
-- [RapidJSON](https://github.com/Tencent/rapidjson) to GeoJSON parsing
-- stb_image.h from [STB](https://github.com/nothings/stb) to decode .png and .jpg tile images
-- GPU APIs
-    - Vulkan (MoltenVK on Apple devices)
-    - OpenCL (1.2 version for GPUs that not support Vulkan for any reasons)
+- [OpenGL Mathematics (GLM)](https://github.com/g-truc/glm) to matrix manipulation and specific math types
+- [HTTPRequest](https://github.com/elnormous/HTTPRequest) for cross-platform GET requests
+- [lrucache17](https://github.com/marty1885/lrucache17) for LRU-cache
+- stb_image.h from [STB](https://github.com/nothings/stb) for .png and .jpg raster decoding
 
-Special thanks for [ViziCities](https://github.com/UDST/vizicities)
+Special thanks [ViziCities](https://github.com/UDST/vizicities) for inspiration.
 
 ## How it works
 
-First, I'm not a professional C++ developer - it was developed for fun and doesn't have any seriousness. My first experience in developing a large project. So...
+<img src="https://i.kym-cdn.com/entries/icons/original/000/008/342/ihave.jpg" height="150" />
 
-<img src="https://i.kym-cdn.com/entries/icons/original/000/008/342/ihave.jpg" height="250" />
+### Layer declaration
 
-Using the two camera matrices: the projection matrix and the view matrix, the observable space is subdivided. Its description is sent to the queue, which can be read on the application side.
+After creating the layer instance and updating the matrices the observable space is updated.
+Appeared and disappeared tiles fill the event queue (core events) with `InFrustum` and `NotInFrustum` types.
+This queue allows you to create real-time relief scenes.
 
-```
-// update layer        
-DllExport void UpdateLayer(KCore::LayerInterface *corePtr, float *cameraProjectionMatrix,
-                            float *cameraViewMatrix, float *cameraPosition);
+At the same time, the images are loaded. The results fill in a separate queue (image events) with events with
+type `ImageReady`.
 
-// get pointer to events queue copy                             
-DllExport std::vector<LayerEvent> *GetEventsVector(KCore::LayerInterface *layerPtr);
-```
-
-<img src="github-assets/1.png" height="150" />
-
-The result is the following view of the scene:
-
-<img src="github-assets/1-1.png" height="150" />
-
-### Layer core
-
-First, you need to create an instance of the layer that implements all the logic of the library
+The following interface functions are responsible for this process:
 
 ```
-// create layer that use OSM rasters
-DllExport KCore::LayerInterface *CreateTileLayerOSM(float latitude, float longitude);
+// Create layer with origin presented in lat. (arg[0]) and lon (arg[1]) with OSM rasters source.
+DllExport KCore::LayerInterface *CreateTileLayer(float, float);
 
-// create layer that use custom tile service for ex. 'http://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png' where '{z}/{x}/{y}' is necessary
-DllExport KCore::LayerInterface *CreateTileLayerWithURL(float latitude, float longitude, const char *url);
+// Create layer with origin presented in lat. (arg[0]) and lon (arg[1]) with custom rasters URL (arg[2]).
+// for ex. 'http://a.basemaps.cartocdn.com/light_all/{z}/{x}/{y}@2x.png' where '{z}/{x}/{y}'
+DllExport KCore::LayerInterface *CreateTileLayerWithURL(float, float, const char *);
+
+// ...so, url for specified layer (arg[0]) may be set in the future (arg[1]) 
+DllExport void SetLayerRasterUrl(KCore::LayerInterface *, const char *);
+
+
+// DISCLAIMER: Y-axis is related to up-vector and heights 
+
+// We can update project (arg[1]) and view (arg[2]) matrices for specified layer (arg[0]) in same time
+// Also, we indicate the need to transpose (arg[3] and arg[4])  
+DllExport void Update(KCore::LayerInterface *, float *, float *, bool, bool);
+// ...or do it separately  
+DllExport void UpdateProjectionMatrix(KCore::LayerInterface *, float *, bool);
+DllExport void UpdateViewMatrix(KCore::LayerInterface *, float *, bool);
+
+// ...or create matrix on library side from params
+// for projection matrix is: fov (arg[0]), aspect ratio (arg[1]), near (arg[2]), far (arg[3]) values 
+DllExport void UpdateProjectionMatrixFromParams(KCore::LayerInterface *, float, float, float, float);
+// for view matrix is: vector of position (arg[1]) and rotation in radians (arg[2])
+DllExport void UpdateViewMatrixFromParams(KCore::LayerInterface *, float *, float *);
+
+// Invoke update process for specified layer (arg[0])
+DllExport void Calculate(KCore::LayerInterface *);
+
+// Get pointer to arrays with events
+DllExport std::vector<LayerEvent> *GetCoreEventsVector(KCore::LayerInterface *);
+DllExport std::vector<LayerEvent> *GetImageEventsVector(KCore::LayerInterface *);
+// Get raw pointer and length (ref args[1]) from events vector pointer (args[0]) 
+DllExport LayerEvent *EjectEventsFromVector(std::vector<LayerEvent> *, int &);
+// Release vector copy memory
+DllExport void ReleaseEventsVector(std::vector<LayerEvent> *);
 ```
 
-### Subdivision modes
+The result of one iteration without downloaded rasters:
 
-After creating a layer, you can choose the subdivision mode and the type of backend in the case of the two-pass subdivision.
+|                      Out-camera view                      |                      In-camera view                      |
+|:---------------------------------------------------------:|:--------------------------------------------------------:|
+| <img src="github-assets/demo-outside.png" height="150" /> | <img src="github-assets/demo-fitted.png" height="150" /> |
 
-|                        Naive subdivision                        |                                 Two-pass subdivision                                 |
-|:---------------------------------------------------------------:|:------------------------------------------------------------------------------------:|
-|         <img src="github-assets/1.png" height="150" />          |                    <img src="github-assets/2.png" height="150" />                    |
-|            Calculation of high-resolution LOD model             | Calculation of a low-resolution LOD model with an additional high-resolution pass... |
-| <img src="github-assets/subdivision-mode-1.png" height="150" /> |             <img src="github-assets/2-vulkan-chunks.png" height="150" />             |
-
-
-The second pass associates small tiles with large ones, which will become the basis for future Vulkan or OpenCL renderings like that:
-
-<img src="github-assets/consolidated.png" height="150" />
+### Elevation Source
 
 ```
-// select subdivision mode after core creation
-DllExport void SetLayerMode(KCore::LayerInterface *corePtr, LayerMode mode, float param1, float param2);
-
-// where layer mode can be 
-enum LayerMode {
-    OneToOneLOD,          // naive
-    OneToSubdivisionLOD   // two-pass
-};
-
-// select backend mode after core creation
-DllExport void SetBackendMode(KCore::LayerInterface *corePtr, BackendMode mode);
-
-// where backend mode can be 
-enum BackendMode {
-    NonProcessing,        // send raster to queue after loading without additional rendering
-    Vulkan,
-    OpenCL
-};
-```
-
-
-### Elevation sources
-
-
-```
-// process GeoJSON file and try to get elevation value from related SRTM source 
-SRTMElevation* CreateSRTMElevationSource();
+// Create an instance of the SRTM-repository that should contain all related SRTM-files 
+SRTMElevation *CreateSRTMElevationSource();
  
-// process GeoJSON file and without elevation search  
-DllExport void AddPieceToSRTMElevationSource(SRTMElevation* srcPtr, const char* path, SourceType type);
-
-<...>
+// Add one file to the repository (arg[0]) with specified URL (arg[1]) and 
+// resource type (arg[2]; types described below)   
+DllExport void AddSRTMPiece(SRTMElevation*, const char*, SourceType);
 
 // SRTM source can be one from types listed below
 enum SourceType {
@@ -120,70 +92,35 @@ enum SourceType {
 };
 ```
 
-### Tile meshes with elevation
+### Mesh Creation
 
-The created source of heights allows to search heights at the moment of creation of mash tiles
-
-|                      8 Segments                       |                     16   Segments                      |                      128 Segments                       |
-|:-----------------------------------------------------:|--------------------------------------------------------|:-------------------------------------------------------:|
-| <img src="github-assets/terrain8.png" height="150" /> | <img src="github-assets/terrain16.png" height="150" /> | <img src="github-assets/terrain128.png" height="150" /> |
+Using created SRTM-repository you can create elevation meshes at runtime.
 
 ```
-// create tile using TMS-code with count of segments passed in 5 and 6 arguements  
-DllExport GridMesh *CreateTileMeshXYZ(IElevationSrc *srcPtr, uint8_t zoom,
-                                      uint16_t x, uint16_t y,
-                                      uint16_t slicesX, uint16_t slicesY,
+// Create mesh using TMS-code (arg[1] - zoom, arg[2] - x, arg[3] - y)
+// using elevation source (arg[0]) with defined count of x and y segments (arg[4] and arg[5]) 
+// and specified neccesary of flipping uv-map in x (arg[6]) and y (arg[7]) 
+DllExport GridMesh *CreateTileMeshXYZ(IElevationSource *srcPtr,
+                                      uint8_t zoom, uint16_t x, uint16_t y,
+                                      uint16_t segmentsX, uint16_t segmentsY,
                                       bool flipUVsX, bool flipUVsY);
-                                      
-// create tile using quadcode with count of segments passed in 3 and 4 arguements  
-DllExport GridMesh *CreateTileMeshQuadcode(IElevationSrc *srcPtr, const char *quadcode,
-                                           uint16_t slicesX, uint16_t slicesY,
+     
+// Create mesh using tree quadcode (arg[1]) using elevation source (arg[0])
+// with defined count of x and y segments (arg[2] and arg[3]) 
+// and specified neccesary of flipping uv-map in x (arg[4]) and y (arg[5]) 
+DllExport GridMesh *CreateTileMeshQuadcode(IElevationSource *srcPtr,
+                                           const char *quadcode,
+                                           uint16_t segmentsX, uint16_t segmentsY,
                                            bool flipUVsX, bool flipUVsY);
 ```
 
-### GeoJSON meshes
+Example of scene with created tiles:
 
-The built-in GeoJSON processing functionality is capable of creating meshes for Polygon, Point and LineString types. If you pass in the elevation source argument, the elevation value will be added to the object
-
-<img src="github-assets/primitives-without-adaptation.png" height="150" />
-<img src="github-assets/primitives-adaptation.png" height="150" /> 
-
-```
-// process GeoJSON file and try to get elevation value from related SRTM source 
-DllExport std::vector<GeoJSONTransObject> *
-ProcessGeoJSONWithElevation(LayerInterface *layerPtr, IElevationSrc *elevation, GeoJSONSourceType type, const char *param);
- 
-// process GeoJSON file without elevation search  
-DllExport std::vector<GeoJSONTransObject> *
-ProcessGeoJSON(LayerInterface *layerPtr, GeoJSONSourceType type, const char *param);
-
-<...>
-
-// GeoJSON source can be one from types listed below
-enum GeoJSONSourceType {
-    GeoJSONRaw,         // as string text 
-    GeoJSONFile,        // as file path
-    GeoJSONUrl          // as url path
-};
-```
-
-### Result
-
-The result of combining all these functions is a dynamic relief scene
-
-<img src="github-assets/additional-1.png" width="600">
-
-## TODO
-
-- :white_check_mark: - CMake for MacOS
-- :black_square_button: - Troubles on some devices when using RGB565 render target. Fallback to RGBA8888? 
-- :white_check_mark: - CMake for Linux
-- :black_square_button: - GeoTIFF
-- :black_square_button: - Tests 
+|                           8 segments                           | 16   segments                                                   |                           128 segments                           |
+|:--------------------------------------------------------------:|-----------------------------------------------------------------|:----------------------------------------------------------------:|
+| <img src="github-assets/terrain-8segments.png" height="150" /> | <img src="github-assets/terrain-16segments.png" height="150" /> | <img src="github-assets/terrain-128segments.png" height="150" /> |
 
 ## License
-
-Prohibited for any military use. Fuck the war!
 
 ```
 /******************************************************************************
