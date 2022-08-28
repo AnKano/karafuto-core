@@ -17,6 +17,12 @@ Tested in Unity, Raylib. Tested on Windows (MinGW and MSVC), MacOS, Linux and An
 
 Special thanks [ViziCities](https://github.com/UDST/vizicities) for inspiration.
 
+## Examples
+
+You can find a complete example of how to use it...:
+1. [...as a shared library](https://github.com/AnKano/karafuto-layer-csharp-example)
+2. [...as a static library](https://github.com/AnKano/karafuto-layer-cpp-example)
+
 ## How it works
 
 <img src="https://i.kym-cdn.com/entries/icons/original/000/008/342/ihave.jpg" height="150" />
